@@ -37,9 +37,13 @@
   font-weight: 900;
   font-size: 16px;
   line-height: 1;
-  transition: transform .12s ease, filter .12s ease;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
-.ntBtn:active{ transform: scale(.96); filter: brightness(1.08); }
+.ntBtn:active{
+  transform: scale(.96);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.14);
+}
 .ntBtn.isDisabled{ opacity:.35; pointer-events:none; }
 
 .cinsTitleBtn{
@@ -71,6 +75,13 @@
   gap: 10px;
 }
 
+/* ✅ quando picker aperto: nascondi il calendario sotto (niente “pasticcio”) */
+.cinsRoot.isPickerOn .cinsBody{
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(10px);
+}
+
 /* Weekdays row */
 .cinsWeekdays{
   display:grid;
@@ -96,23 +107,17 @@
   padding: 6px;
 }
 
-/* =========================
-   ✅ Day cell = IL QUADRATO UNICO (bottone)
-   ========================= */
-
+/* day cell button */
 .cinsDay{
   border: 1px solid rgba(255,255,255,.14);
   background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
   border-radius: 18px;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
-  padding: 0; /* importantissimo: evita “pill” dentro pill */
+  padding: clamp(6px, 1.2vh, 10px);
   position: relative;
   min-width: 0;
-
   transition: transform .12s ease, filter .12s ease;
 }
 .cinsDay:active{ transform: scale(.98); filter: brightness(1.07); }
@@ -122,53 +127,34 @@
   pointer-events: none;
 }
 
-/* =========================
-   ✅ Contenitore numero (INVISIBILE) – niente bordi, niente shape
-   Serve solo a centrare il numero.
-   ========================= */
-
+/* ✅ QUADRATO interno (come da tua grafica attuale) */
 .cinsCircle{
-  width: 100%;
-  height: 100%;
-  min-height: 0;
+  width: min(44px, 11vw);
+  height: min(44px, 11vw);
+  max-width: 46px;
+  max-height: 46px;
+
+  border-radius: 14px; /* quadrato morbido */
+  border: 2px solid rgba(255,255,255,.16);
 
   display:flex;
   align-items:center;
   justify-content:center;
 
-  border: none;
-  background: transparent;
-
   font-weight: 1000;
   font-variant-numeric: tabular-nums;
   color: var(--text);
-
-  /* numero leggermente più “pieno” come in screenshot */
-  font-size: 18px;
-  letter-spacing: .2px;
+  background: transparent;
 }
 
-/* =========================
-   ✅ TODAY: più visibile + gradient verticale invertito (come switch al contrario)
-   - applicato al QUADRATO (cinsDay), non alla cinsCircle
-   ========================= */
-
-.cinsDay.isToday{
-  border: 2px solid transparent;
-
-  /* Gradient INVERTITO e VERTICALE: rosa → viola → cyan */
-  background:
-    linear-gradient(rgba(255,255,255,.08), rgba(255,255,255,.04)) padding-box,
-    linear-gradient(180deg, var(--accent3), var(--accent1), var(--accent2)) border-box;
-
-  box-shadow:
-    0 14px 34px rgba(0,0,0,.35),
-    0 0 0 6px rgba(255,255,255,.06) inset;
-}
-
+/* ✅ Giorno corrente: più “soft” ma visibile, gradiente VERTICALE */
 .cinsDay.isToday .cinsCircle{
-  /* numero più leggibile sopra il gradient */
-  text-shadow: 0 2px 12px rgba(0,0,0,.35);
+  border-color: transparent;
+  background:
+    linear-gradient(180deg, var(--accent3), var(--accent1), var(--accent2));
+  box-shadow:
+    0 10px 22px rgba(0,0,0,.18),
+    inset 0 0 0 1px rgba(255,255,255,.20);
 }
 
 /* dots (base / extra) sotto */
@@ -189,31 +175,47 @@
 .cinsDot.extra{ background: var(--accent1); }
 .cinsDot.draft{ opacity: .45; }
 
-/* Picker overlay (mese/anno) */
+/* =========================
+   Picker overlay (mese/anno)
+   ========================= */
+
+/* ✅ NIENTE doppio grigio:
+   layer quasi trasparente (solo blur leggero), sotto è già “nascosto” via .isPickerOn */
 .cinsPickerLayer{
   position:absolute;
   inset:0;
   border-radius: var(--rCard);
-  background: rgba(0,0,0,.35);
-  backdrop-filter: blur(12px);
+
+  background: rgba(0,0,0,.02);
+  backdrop-filter: blur(10px);
+
   display:none;
   align-items:center;
   justify-content:center;
   padding: 18px;
+
+  touch-action: none; /* aiuta swipe su iOS */
 }
 .cinsPickerLayer.isOn{ display:flex; }
 
 .cinsPickerCard{
   width: 100%;
   max-width: 420px;
+
   border-radius: 26px;
   border: 1px solid rgba(255,255,255,.14);
+
+  /* ✅ stesso “tema” delle card */
   background:
-    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.14), transparent 55%),
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+
   backdrop-filter: blur(var(--blur));
   box-shadow: var(--shadow);
+
   padding: 14px;
+
+  touch-action: none; /* swipe down */
 }
 
 .cinsPickerTop{
@@ -247,16 +249,26 @@
   gap: 10px;
 }
 
+/* ✅ pulsanti mese: stesso feeling dei bottoni (ntBtn) quando premi */
 .cinsPickBtn{
   height: 44px;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+
   color: var(--text);
   font-weight: 1000;
-  transition: transform .12s ease, filter .12s ease;
+
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
-.cinsPickBtn:active{ transform: scale(.97); filter: brightness(1.08); }
+.cinsPickBtn:active{
+  transform: scale(.97);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.14);
+}
 
 .cinsSwipeHint{
   margin-top: 10px;
