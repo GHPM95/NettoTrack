@@ -4,56 +4,21 @@
   const body = document.body;
   const root = document.documentElement;
 
-  // ===== MENU =====
-  const menuBtn      = $("#menuBtn");
-  const menuDrawer   = $("#menuDrawer");
-  const menuOverlay  = $("#menuOverlay");
+  const menuBtn = $("#menuBtn");
+  const menuDrawer = $("#menuDrawer");
+  const menuOverlay = $("#menuOverlay");
   const menuCloseBtn = $("#menuCloseBtn");
 
-  function syncMenuWidthVar() {
-    if (!menuDrawer) return;
-    const w = menuDrawer.getBoundingClientRect().width || 0;
-    root.style.setProperty("--menuW", `${Math.round(w)}px`);
-  }
-
-  function openMenu() {
-    body.classList.add("isMenuOpen");
-    menuDrawer?.setAttribute("aria-hidden", "false");
-    menuOverlay?.setAttribute("aria-hidden", "false");
-
-    syncMenuWidthVar();
-    requestAnimationFrame(syncMenuWidthVar);
-    setTimeout(syncMenuWidthVar, 280);
-
-    document.dispatchEvent(new Event("nettotrack:refreshMenu"));
-  }
-
-  function closeMenu() {
-    body.classList.remove("isMenuOpen");
-    menuDrawer?.setAttribute("aria-hidden", "true");
-    menuOverlay?.setAttribute("aria-hidden", "true");
-    syncMenuWidthVar();
-  }
-
-  menuBtn?.addEventListener("click", () => {
-    body.classList.contains("isMenuOpen") ? closeMenu() : openMenu();
-  });
-  menuCloseBtn?.addEventListener("click", closeMenu);
-  menuOverlay?.addEventListener("click", closeMenu);
-
-  // ===== CARDS =====
   const cardsViewport = $("#cardsViewport");
-  const cardsTrack    = $("#cardsTrack");
-  const dotsPill      = $("#dotsPill");
-  if (!cardsViewport || !cardsTrack || !dotsPill) return;
+  const cardsTrack = $("#cardsTrack");
+  const dotsPill = $("#dotsPill");
 
-  const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
-  let activeIndex = 0;
-  let gapPx = 18;
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
   function getSlides() {
     return Array.from(cardsTrack.querySelectorAll(".slide"));
   }
+
   function getSlideIndexById(id) {
     return getSlides().findIndex(s => s.dataset.slideId === id);
   }
@@ -76,9 +41,8 @@
 
     inner.appendChild(mount);
     art.appendChild(inner);
-    cardsTrack.appendChild(art);
 
-    renderDots();
+    cardsTrack.appendChild(art);
     return art;
   }
 
@@ -86,6 +50,39 @@
     const s = getSlides().find(x => x.dataset.slideId === id);
     if (s && id !== "home") s.remove();
   }
+
+  // --- menu metric (X affianco al drawer)
+  function syncMenuWidthVar() {
+    const w = menuDrawer.getBoundingClientRect().width || 0;
+    root.style.setProperty("--menuW", `${Math.round(w)}px`);
+  }
+
+  // --- dots
+  let activeIndex = 0;
+
+  function renderDots() {
+    const slides = getSlides();
+    dotsPill.innerHTML = "";
+    slides.forEach((s, i) => {
+      const d = document.createElement("div");
+      d.className = "dot" + (i === activeIndex ? " isActive" : "");
+      d.dataset.i = String(i);
+      d.title = s.dataset.title || s.dataset.slideId || "";
+      d.addEventListener("click", () => goTo(i, { fromUser: true }));
+      dotsPill.appendChild(d);
+    });
+  }
+
+  function setActiveIndex(i) {
+    const slides = getSlides();
+    activeIndex = clamp(i, 0, slides.length - 1);
+
+    slides.forEach((s, idx) => s.classList.toggle("isActive", idx === activeIndex));
+    Array.from(dotsPill.children).forEach((d, idx) => d.classList.toggle("isActive", idx === activeIndex));
+  }
+
+  // --- track positioning
+  let gapPx = 18;
 
   function computeGap() {
     const cs = getComputedStyle(cardsTrack);
@@ -102,17 +99,8 @@
   }
 
   function applyTrackX(x, withTransition) {
-    cardsTrack.style.transition = withTransition
-      ? "transform .28s cubic-bezier(.2,.8,.2,1)"
-      : "none";
+    cardsTrack.style.transition = withTransition ? "transform .28s cubic-bezier(.2,.8,.2,1)" : "none";
     cardsTrack.style.transform = `translate3d(${x}px,0,0)`;
-  }
-
-  function setActiveIndex(i) {
-    const slides = getSlides();
-    activeIndex = clamp(i, 0, slides.length - 1);
-    slides.forEach((s, idx) => s.classList.toggle("isActive", idx === activeIndex));
-    Array.from(dotsPill.children).forEach((d, idx) => d.classList.toggle("isActive", idx === activeIndex));
   }
 
   function currentSlideId() {
@@ -122,15 +110,20 @@
   function goTo(i, { fromUser=false } = {}) {
     computeGap();
 
-    // evita atterraggio su home con swipe se non richiesto
+    // evita che mentre sei in calendario, lo swipe ti butti sulla home per errore (a meno che tocchi i dot)
+    const slides = getSlides();
     const curId = currentSlideId();
     const homeIndex = getSlideIndexById("home");
-    if (!fromUser && curId !== "home" && homeIndex === 0) i = Math.max(1, i);
+
+    if (!fromUser && curId !== "home" && homeIndex === 0) {
+      i = Math.max(1, i);
+    }
 
     setActiveIndex(i);
     applyTrackX(trackXForIndex(activeIndex), true);
 
-    document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id: currentSlideId() } }));
+    const id = currentSlideId();
+    document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id } }));
   }
 
   function goToSlideId(id, opts={}) {
@@ -138,46 +131,75 @@
     if (idx >= 0) goTo(idx, opts);
   }
 
-  // ===== DOTS =====
-  function renderDots() {
-    const slides = getSlides();
-    dotsPill.innerHTML = "";
-    slides.forEach((s, i) => {
-      const d = document.createElement("div");
-      d.className = "dot" + (i === activeIndex ? " isActive" : "");
-      d.title = s.dataset.title || s.dataset.slideId || "";
-      d.addEventListener("click", () => goTo(i, { fromUser:true }));
-      dotsPill.appendChild(d);
-    });
+  // =========================
+  // ✅ FIX WINDOWS: swipe non deve rubare i click dei bottoni nelle card
+  // =========================
+
+  function isInteractiveTarget(el) {
+    if (!el) return false;
+    // qualunque controllo/input/button/link o elementi “cliccabili” dei moduli
+    return !!el.closest(`
+      button, a, input, textarea, select, label,
+      [role="button"], [data-no-swipe],
+      .ntBtn, .dedBtnWide, .dedSmallBtn, .dedPill,
+      .cinsDay, .cinsTitleBtn, .cinsPickBtn
+    `);
   }
 
-  // ===== SWIPE UNIVERSALE (NO GRAFICA) =====
-  let isDragging = false;
+  let dragArmed = false;   // pointerdown avvenuto, ma non ancora "drag"
+  let isDragging = false;  // drag attivo
   let startX = 0;
   let lastX = 0;
-  let mode = null; // "pointer" | "touch" | "mouse"
-  let pointerId = null;
 
-  function dragStart(x, m, pid=null) {
+  const DRAG_START_THRESHOLD = 8; // px: sotto questa soglia = click, non swipe
+
+  function onPointerDown(e) {
     if (body.classList.contains("isMenuOpen")) return;
-    isDragging = true;
-    startX = lastX = x;
-    mode = m;
-    pointerId = pid;
+
+    // ✅ se clicchi su un bottone/controllo nella card, NON attivare swipe
+    if (isInteractiveTarget(e.target)) return;
+
+    // solo tasto sinistro mouse / touch / pen
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+
+    dragArmed = true;
+    isDragging = false;
+    startX = e.clientX;
+    lastX = startX;
+
+    // niente pointerCapture qui: lo facciamo SOLO quando diventa davvero drag
     cardsTrack.style.transition = "none";
   }
 
-  function dragMove(x) {
-    if (!isDragging) return;
+  function onPointerMove(e) {
+    if (!dragArmed) return;
+
+    const x = e.clientX;
+    const dx = x - startX;
     lastX = x;
 
-    const dx = x - startX;
+    // attiva drag solo dopo soglia (così i click restano click)
+    if (!isDragging) {
+      if (Math.abs(dx) < DRAG_START_THRESHOLD) return;
+      isDragging = true;
+      cardsTrack.setPointerCapture?.(e.pointerId);
+    }
+
     const base = trackXForIndex(activeIndex);
-    applyTrackX(base + dx * 0.55, false);
+    const resistance = 0.55;
+    applyTrackX(base + dx * resistance, false);
   }
 
-  function dragEnd() {
-    if (!isDragging) return;
+  function onPointerUp() {
+    if (!dragArmed) return;
+
+    // se non è mai diventato drag, era un tap: non fare nulla
+    if (!isDragging) {
+      dragArmed = false;
+      return;
+    }
+
+    dragArmed = false;
     isDragging = false;
 
     const slides = getSlides();
@@ -185,79 +207,90 @@
     const threshold = Math.max(60, slideWidth() * 0.18);
 
     let nextIndex = activeIndex;
+
     if (slides.length > 1) {
       if (dx <= -threshold) nextIndex = clamp(activeIndex + 1, 0, slides.length - 1);
-      if (dx >=  threshold) nextIndex = clamp(activeIndex - 1, 0, slides.length - 1);
+      if (dx >= threshold)  nextIndex = clamp(activeIndex - 1, 0, slides.length - 1);
     }
 
-    mode = null;
-    pointerId = null;
-    goTo(nextIndex, { fromUser:false });
+    goTo(nextIndex, { fromUser: false });
   }
 
-  // Pointer
-  cardsViewport.addEventListener("pointerdown", (e) => {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
-    try { cardsViewport.setPointerCapture(e.pointerId); } catch {}
-    dragStart(e.clientX, "pointer", e.pointerId);
-  });
+  // ✅ IMPORTANT: non passive sul pointermove in alcuni browser non serve,
+  // ma lasciamo come prima per non cambiare altro.
+  cardsViewport.addEventListener("pointerdown", onPointerDown, { passive: true });
+  cardsViewport.addEventListener("pointermove", onPointerMove, { passive: true });
+  cardsViewport.addEventListener("pointerup", onPointerUp, { passive: true });
+  cardsViewport.addEventListener("pointercancel", onPointerUp, { passive: true });
 
-  cardsViewport.addEventListener("pointermove", (e) => {
-    if (!isDragging || mode !== "pointer") return;
-    if (pointerId != null && e.pointerId !== pointerId) return;
-    dragMove(e.clientX);
-  });
+  // --- dots drag feedback
+  let dotsDragging = false;
+  let dotsStartX = 0;
 
-  cardsViewport.addEventListener("pointerup", (e) => {
-    if (mode !== "pointer") return;
-    if (pointerId != null && e.pointerId !== pointerId) return;
-    try { cardsViewport.releasePointerCapture(e.pointerId); } catch {}
-    dragEnd();
-  });
-
-  cardsViewport.addEventListener("pointercancel", () => {
-    if (mode === "pointer") dragEnd();
-  });
-
-  // Touch fallback
-  cardsViewport.addEventListener("touchstart", (e) => {
-    if (e.touches && e.touches.length === 1) dragStart(e.touches[0].clientX, "touch");
+  dotsPill.addEventListener("pointerdown", (e) => {
+    dotsDragging = true;
+    dotsStartX = e.clientX;
+    dotsPill.classList.add("isPressing");
+    dotsPill.setPointerCapture?.(e.pointerId);
   }, { passive: true });
 
-  cardsViewport.addEventListener("touchmove", (e) => {
-    if (!isDragging || mode !== "touch") return;
-    if (e.touches && e.touches.length === 1) {
-      e.preventDefault();
-      dragMove(e.touches[0].clientX);
-    }
+  dotsPill.addEventListener("pointermove", (e) => {
+    if (!dotsDragging) return;
+    const slides = getSlides();
+    if (slides.length <= 1) return;
+
+    const dx = e.clientX - dotsStartX;
+    const t = 34;
+    if (dx <= -t) { dotsStartX = e.clientX; goTo(activeIndex + 1, { fromUser:true }); }
+    if (dx >=  t) { dotsStartX = e.clientX; goTo(activeIndex - 1, { fromUser:true }); }
+  }, { passive: true });
+
+  function endDotsDrag() {
+    dotsDragging = false;
+    dotsPill.classList.remove("isPressing");
+  }
+  dotsPill.addEventListener("pointerup", endDotsDrag, { passive: true });
+  dotsPill.addEventListener("pointercancel", endDotsDrag, { passive: true });
+
+  // --- menu open/close
+  function openMenu() {
+    body.classList.add("isMenuOpen");
+    menuDrawer.setAttribute("aria-hidden", "false");
+    menuOverlay.setAttribute("aria-hidden", "false");
+
+    syncMenuWidthVar();
+    requestAnimationFrame(syncMenuWidthVar);
+    setTimeout(syncMenuWidthVar, 280);
+  }
+  function closeMenu() {
+    body.classList.remove("isMenuOpen");
+    menuDrawer.setAttribute("aria-hidden", "true");
+    menuOverlay.setAttribute("aria-hidden", "true");
+    syncMenuWidthVar();
+  }
+
+  menuBtn.addEventListener("click", () => {
+    if (body.classList.contains("isMenuOpen")) closeMenu();
+    else openMenu();
+  });
+  menuCloseBtn.addEventListener("click", closeMenu);
+  menuOverlay.addEventListener("click", () => {
+    if (body.classList.contains("isMenuOpen")) closeMenu();
+  });
+
+  // --- no pinch zoom / no double tap zoom
+  document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
+  document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
+  document.addEventListener("gestureend", (e) => e.preventDefault(), { passive: false });
+
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) e.preventDefault();
+    lastTouchEnd = now;
   }, { passive: false });
 
-  cardsViewport.addEventListener("touchend", () => {
-    if (mode === "touch") dragEnd();
-  }, { passive: true });
-
-  cardsViewport.addEventListener("touchcancel", () => {
-    if (mode === "touch") dragEnd();
-  }, { passive: true });
-
-  // Mouse fallback (solo se browser non gestisce bene pointer)
-  cardsViewport.addEventListener("mousedown", (e) => {
-    if (e.button !== 0) return;
-    // se pointer events sono attivi, di solito arrivano già: evitiamo doppio
-    if (window.PointerEvent) return;
-    dragStart(e.clientX, "mouse");
-  });
-
-  window.addEventListener("mousemove", (e) => {
-    if (!isDragging || mode !== "mouse") return;
-    dragMove(e.clientX);
-  });
-
-  window.addEventListener("mouseup", () => {
-    if (mode === "mouse") dragEnd();
-  });
-
-  // ===== EVENTI MENU → CARD =====
+  // --- public API
   function openCalendarInsert() {
     ensureSlide({ id: "calInsert", title: "Calendario" });
     renderDots();
@@ -295,6 +328,7 @@
       setActiveIndex(activeIndex);
       computeGap();
       applyTrackX(trackXForIndex(activeIndex), false);
+      document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id: currentSlideId() } }));
     } else {
       activeIndex = clamp(activeIndex, 0, slides.length - 1);
       setActiveIndex(activeIndex);
@@ -303,13 +337,13 @@
     }
   }
 
+  // events used by menu.js
   document.addEventListener("nettotrack:openCalendarInsert", openCalendarInsert);
   document.addEventListener("nettotrack:openCalendarView", openCalendarView);
   document.addEventListener("nettotrack:closeCalendarInsert", () => closeSlide("calInsert"));
   document.addEventListener("nettotrack:closeCalendarView", () => closeSlide("calView"));
   document.addEventListener("nettotrack:closeDayEditor", () => closeSlide("dayEditor", "calInsert"));
 
-  // ===== API PUBBLICA =====
   window.NettoTrackUI = {
     ensureSlide,
     goToSlideId,
@@ -320,12 +354,11 @@
     getActiveSlideId: currentSlideId
   };
 
-  // ===== INIT =====
+  // init
   computeGap();
   setActiveIndex(0);
   renderDots();
   applyTrackX(trackXForIndex(0), false);
-  syncMenuWidthVar();
 
   window.addEventListener("resize", () => {
     computeGap();
@@ -333,4 +366,5 @@
     syncMenuWidthVar();
   });
 
+  syncMenuWidthVar();
 })();
