@@ -8,6 +8,7 @@
 
   function mountIfNeeded() {
     if (mounted) return;
+
     const mount = document.getElementById("calViewMount");
     if (!mount) return;
 
@@ -54,10 +55,27 @@
     return `${dd}/${mm}`;
   }
 
+  function buildDetailsFromShifts(shifts) {
+    if (!Array.isArray(shifts) || !shifts.length) return "";
+    const parts = shifts.map(s => {
+      const flags = [];
+      if (s?.flags?.straordinario) flags.push("STR");
+      if (s?.flags?.festivo) flags.push("FEST");
+      if (s?.flags?.domenicale) flags.push("DOM");
+
+      const f = flags.length ? ` (${flags.join(",")})` : "";
+      const from = s?.from || "--:--";
+      const to   = s?.to   || "--:--";
+      return `${from}–${to}${f}`;
+    });
+    return parts.join(" · ");
+  }
+
   function renderWeek() {
     const mount = document.getElementById("calViewMount");
     if (!mount) return;
 
+    // titolo settimana
     const title = mount.querySelector("#cviewTitle");
     const end = new Date(weekStart);
     end.setDate(end.getDate() + 6);
@@ -66,16 +84,16 @@
     const grid = mount.querySelector("#cviewGrid");
     grid.innerHTML = "";
 
-    const { y:ty, m:tm, d:td } = todayParts();
+    const t = todayParts();
 
-    for (let i=0; i<7; i++) {
+    for (let i = 0; i < 7; i++) {
       const day = new Date(weekStart);
       day.setDate(day.getDate() + i);
 
-      const y = day.getFullYear();
-      const m = day.getMonth();
-      const d = day.getDate();
-      const key = dateKey(y, m, d);
+      const yy = day.getFullYear();
+      const mm = day.getMonth();
+      const dd = day.getDate();
+      const key = dateKey(yy, mm, dd);
 
       const data = loadDay(key);
       const totals = data ? dayTotals(data) : { baseHours:0, extraHours:0, hasBase:false, hasExtra:false };
@@ -88,14 +106,18 @@
 
       const left = document.createElement("div");
       left.className = "cviewLeftTxt";
+
       const dn = document.createElement("div");
       dn.className = "cviewDayName";
       dn.textContent = DAYS[i];
-      const dd = document.createElement("div");
-      dd.className = "cviewDayDate";
-      dd.textContent = `${fmtDM(day)}${(y===ty && m===tm && d===td) ? " · Oggi" : ""}`;
+
+      const ddate = document.createElement("div");
+      ddate.className = "cviewDayDate";
+      const isToday = (yy === t.y && mm === t.m && dd === t.d);
+      ddate.textContent = `${fmtDM(day)}${isToday ? " · Oggi" : ""}`;
+
       left.appendChild(dn);
-      left.appendChild(dd);
+      left.appendChild(ddate);
 
       const badges = document.createElement("div");
       badges.className = "cviewBadges";
@@ -118,22 +140,12 @@
 
       const details = document.createElement("div");
       details.className = "cviewDetails";
-
-      if (data?.shifts?.length) {
-        const parts = data.shifts.map(s => {
-          const flags = [];
-          if (s?.flags?.straordinario) flags.push("STR");
-          if (s?.flags?.festivo) flags.push("FEST");
-          if (s?.flags?.domenicale) flags.push("DOM");
-          const f = flags.length ? ` (${flags.join(",")})` : "";
-          return `${s.from || "--:--"}–${s.to || "--:--"}${f}`;
-        });
-        details.textContent = parts.join(" · ");
-      }
+      details.textContent = data ? buildDetailsFromShifts(data.shifts) : "";
 
       row.appendChild(head);
       row.appendChild(details);
 
+      // espansione dettagli SOLO se ci sono dati
       if (data) {
         row.addEventListener("click", () => {
           row.classList.toggle("isOpen");
@@ -144,12 +156,14 @@
     }
   }
 
+  // quando apri la card agenda
   document.addEventListener("nettotrack:calendarViewOpened", () => {
     mountIfNeeded();
     weekStart = startOfWeek(new Date());
     renderWeek();
   });
 
+  // aggiornamento live quando cambiano dati
   document.addEventListener("nettotrack:dataChanged", () => {
     if (mounted) renderWeek();
   });
