@@ -1,5 +1,5 @@
 /* =========================
-   Calendar Insert (month grid)
+   Calendar Insert (Month Grid)
    ========================= */
 
 .cinsRoot{
@@ -12,7 +12,7 @@
   position: relative;
 }
 
-/* Header: frecce a sinistra, titolo centro, X a destra */
+/* Header */
 .cinsHeader{
   display:grid;
   grid-template-columns: auto 1fr auto;
@@ -23,10 +23,9 @@
 .cinsLeft{
   display:flex;
   gap: 8px;
-  align-items:center;
 }
 
-/* Bottoni iOS-like (stesso stile del close menu) */
+/* Buttons */
 .ntBtn{
   width: 38px;
   height: 38px;
@@ -36,33 +35,21 @@
   color: var(--text);
   font-weight: 900;
   font-size: 16px;
-  line-height: 1;
-  transition: transform .12s ease, filter .12s ease;
 }
-.ntBtn:active{ transform: scale(.96); filter: brightness(1.08); }
-.ntBtn.isDisabled{ opacity:.35; pointer-events:none; }
+.ntBtn:active{ transform: scale(.96); }
 
+/* Title */
 .cinsTitleBtn{
   border:none;
   background:transparent;
   color: var(--text);
   font-weight: 1000;
-  letter-spacing: .2px;
-  font-size: clamp(14px, 3.6vw, 17px);
-  padding: 10px 10px;
+  font-size: 16px;
+  padding: 8px;
   border-radius: 14px;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
-  text-align:center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.cinsTitleBtn:active{
-  transform: scale(.96);
-  filter: brightness(1.08);
-  background: rgba(255,255,255,.10);
 }
 
+/* Body */
 .cinsBody{
   flex:1;
   min-height:0;
@@ -71,12 +58,11 @@
   gap: 10px;
 }
 
-/* Weekdays row */
+/* Weekdays */
 .cinsWeekdays{
   display:grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 8px;
-  padding: 0 6px;
 }
 .cinsWeekdays div{
   text-align:center;
@@ -85,84 +71,94 @@
   color: var(--muted);
 }
 
-/* Month grid – deve contenere sempre 6 righe */
+/* Grid */
 .cinsGrid{
   flex:1;
   min-height:0;
   display:grid;
-  grid-template-columns: repeat(7, minmax(0,1fr));
-  grid-template-rows: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
   gap: 8px;
-  padding: 6px;
 }
 
-/* day cell button (container) */
+/* =========================
+   DAY CELL (QUADRATO)
+   ========================= */
+
 .cinsDay{
-  border: none;
-  background: transparent;
-  border-radius: 18px;
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.14);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
   display:flex;
   align-items:center;
   justify-content:center;
-  position: relative;
-  min-width: 0;
-  padding: 0;
+  font-weight: 900;
+  color: var(--text);
   transition: transform .12s ease, filter .12s ease;
 }
-.cinsDay:active{ transform: scale(.985); filter: brightness(1.08); }
+.cinsDay:active{
+  transform: scale(.97);
+  filter: brightness(1.08);
+}
 
 .cinsDay.isOff{
-  opacity: .28;
-  pointer-events: none;
+  opacity:.28;
+  pointer-events:none;
 }
 
-/* QUADRATO dentro */
-.cinsCircle{
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1.5px solid rgba(255,255,255,.22);
-  background: rgba(255,255,255,.04);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight: 1000;
+/* Numero giorno */
+.cinsDayNum{
   font-variant-numeric: tabular-nums;
-  color: var(--text);
+  z-index: 2;
 }
 
-/* OGGI: evidenzia soft con gradiente VERTICALE sul bordo */
-.cinsDay.isToday .cinsCircle{
-  border: 1.5px solid transparent;
+/* =========================
+   TODAY (soft, verticale)
+   ========================= */
+
+.cinsDay.isToday{
+  border-color: transparent;
   background:
-    linear-gradient(rgba(255,255,255,.06), rgba(255,255,255,.06)) padding-box,
-    linear-gradient(180deg, var(--accent2), var(--accent1), var(--accent3)) border-box;
-  box-shadow:
-    0 10px 26px rgba(0,0,0,.32),
-    0 0 0 6px rgba(42,233,255,.10),
-    0 0 0 10px rgba(124,92,255,.08);
-  filter: saturate(1.12);
+    linear-gradient(
+      180deg,
+      rgba(42,233,255,.22),
+      rgba(124,92,255,.12),
+      rgba(255,79,216,.10)
+    );
 }
 
-/* dots (base / extra) sotto */
+/* =========================
+   DOTS (ore)
+   ========================= */
+
 .cinsDots{
   position:absolute;
-  bottom: -9px;
+  bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
   display:flex;
   gap: 6px;
+  z-index: 2;
 }
-.cinsDot{
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  opacity: .95;
-}
-.cinsDot.base{ background: var(--accent2); }
-.cinsDot.extra{ background: var(--accent1); }
-.cinsDot.draft{ opacity: .45; }
 
-/* Picker overlay (mese/anno) */
+.cinsDot{
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.cinsDot.base{ background: var(--accent2); }   /* cyan */
+.cinsDot.extra{ background: var(--accent1); }  /* viola */
+
+/* draft */
+.cinsDot.draft{ opacity:.45; }
+
+/* =========================
+   PICKER OVERLAY
+   ========================= */
+
 .cinsPickerLayer{
   position:absolute;
   inset:0;
@@ -182,59 +178,8 @@
   border-radius: 26px;
   border: 1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.14), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
   backdrop-filter: blur(var(--blur));
   box-shadow: var(--shadow);
   padding: 14px;
-}
-
-.cinsPickerTop{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.cinsPickerTitle{
-  font-weight: 1000;
-  letter-spacing:.2px;
-}
-
-.cinsYearRow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  margin: 8px 0 12px;
-}
-.cinsYearVal{
-  font-weight: 1000;
-  letter-spacing:.2px;
-}
-
-.cinsMonthGrid{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.cinsPickBtn{
-  height: 44px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-  color: var(--text);
-  font-weight: 1000;
-  transition: transform .12s ease, filter .12s ease;
-}
-.cinsPickBtn:active{ transform: scale(.97); filter: brightness(1.08); }
-
-.cinsSwipeHint{
-  margin-top: 10px;
-  text-align:center;
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 850;
 }
