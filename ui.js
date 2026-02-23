@@ -58,14 +58,13 @@
   }
 
   // ============================
-  // ✅ HOME VISIBILITY (MINIMA)
+  // HOME VISIBILITY (MINIMA)
   // ============================
   function setHomeHidden(on) {
     const home = cardsTrack.querySelector('.slide[data-slide-id="home"]');
     if (!home) return;
 
     if (on) {
-      // invisibile e non “sporca”
       home.style.opacity = "0";
       home.style.visibility = "hidden";
       home.style.pointerEvents = "none";
@@ -81,24 +80,28 @@
   }
 
   // ============================
-  // --- dots
+  // DOTS
   // ============================
   let activeIndex = 0;
+
+  function currentSlideId() {
+    return getSlides()[activeIndex]?.dataset.slideId || "home";
+  }
 
   function renderDots() {
     const slides = getSlides();
 
-    // ✅ se home è nascosta (perché ci sono altre card), non disegnare il dot di home
+    // se ci sono altre card oltre home, non disegnare il dot di home
     const showHomeDot = !hasExtraSlides();
     const dotsSlides = showHomeDot ? slides : slides.filter(s => s.dataset.slideId !== "home");
 
     dotsPill.innerHTML = "";
+
     dotsSlides.forEach((s) => {
       const d = document.createElement("div");
       d.className = "dot";
       d.dataset.slideId = s.dataset.slideId;
 
-      // attivo
       if (s.dataset.slideId === currentSlideId()) d.classList.add("isActive");
 
       d.title = s.dataset.title || s.dataset.slideId || "";
@@ -117,12 +120,13 @@
   function setActiveIndex(i) {
     const slides = getSlides();
     activeIndex = clamp(i, 0, slides.length - 1);
-
     slides.forEach((s, idx) => s.classList.toggle("isActive", idx === activeIndex));
     syncActiveDot();
   }
 
-  // --- track positioning
+  // ============================
+  // TRACK POSITIONING
+  // ============================
   let gapPx = 18;
 
   function computeGap() {
@@ -144,18 +148,12 @@
     cardsTrack.style.transform = `translate3d(${x}px,0,0)`;
   }
 
-  function currentSlideId() {
-    return getSlides()[activeIndex]?.dataset.slideId || "home";
-  }
-
   function goTo(i, { fromUser=false } = {}) {
     computeGap();
 
-    // ✅ evita home “di swipe” quando ci sono altre card (COMPORTAMENTO IDENTICO AL TUO)
-    const slides = getSlides();
+    // evita home “di swipe” quando ci sono altre card
     const curId = currentSlideId();
     const homeIndex = getSlideIndexById("home");
-
     if (!fromUser && curId !== "home" && homeIndex === 0) {
       i = Math.max(1, i);
     }
@@ -166,7 +164,7 @@
     const id = currentSlideId();
     document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id } }));
 
-    // ✅ aggiorna dots (senza cambiare grafica)
+    // dots coerenti
     renderDots();
   }
 
@@ -175,17 +173,36 @@
     if (idx >= 0) goTo(idx, opts);
   }
 
-  // --- swipe / drag
+  // ============================
+  // ✅ FIX: NON RUBARE I CLICK AI BOTTONI (Windows)
+  // ============================
+  function isInteractiveTarget(el) {
+    if (!el) return false;
+    return !!el.closest(
+      'button, a, input, textarea, select, label, [role="button"], [data-no-swipe]'
+    );
+  }
+
+  // ============================
+  // SWIPE / DRAG
+  // ============================
   let isDragging = false;
   let startX = 0;
   let lastX = 0;
+  let capturedPointerId = null;
 
   function onPointerDown(e) {
     if (body.classList.contains("isMenuOpen")) return;
+
+    // ✅ se l’utente sta cliccando un bottone dentro la card, NON avviare swipe
+    if (isInteractiveTarget(e.target)) return;
+
     isDragging = true;
     startX = e.clientX;
     lastX = startX;
-    cardsTrack.setPointerCapture?.(e.pointerId);
+    capturedPointerId = e.pointerId;
+
+    try { cardsTrack.setPointerCapture?.(capturedPointerId); } catch {}
     cardsTrack.style.transition = "none";
   }
 
@@ -200,9 +217,15 @@
     applyTrackX(base + dx * resistance, false);
   }
 
-  function onPointerUp() {
+  function endDrag() {
     if (!isDragging) return;
     isDragging = false;
+
+    // release capture (se supportato)
+    try {
+      if (capturedPointerId != null) cardsTrack.releasePointerCapture?.(capturedPointerId);
+    } catch {}
+    capturedPointerId = null;
 
     const slides = getSlides();
     const dx = lastX - startX;
@@ -212,7 +235,7 @@
 
     if (slides.length > 1) {
       if (dx <= -threshold) nextIndex = clamp(activeIndex + 1, 0, slides.length - 1);
-      if (dx >= threshold)  nextIndex = clamp(activeIndex - 1, 0, slides.length - 1);
+      if (dx >=  threshold) nextIndex = clamp(activeIndex - 1, 0, slides.length - 1);
     }
 
     goTo(nextIndex, { fromUser: false });
@@ -220,10 +243,12 @@
 
   cardsViewport.addEventListener("pointerdown", onPointerDown, { passive: true });
   cardsViewport.addEventListener("pointermove", onPointerMove, { passive: true });
-  cardsViewport.addEventListener("pointerup", onPointerUp, { passive: true });
-  cardsViewport.addEventListener("pointercancel", onPointerUp, { passive: true });
+  cardsViewport.addEventListener("pointerup", endDrag, { passive: true });
+  cardsViewport.addEventListener("pointercancel", endDrag, { passive: true });
 
-  // --- dots drag feedback (IDENTICO AL TUO)
+  // ============================
+  // DOTS DRAG FEEDBACK
+  // ============================
   let dotsDragging = false;
   let dotsStartX = 0;
 
@@ -252,7 +277,9 @@
   dotsPill.addEventListener("pointerup", endDotsDrag, { passive: true });
   dotsPill.addEventListener("pointercancel", endDotsDrag, { passive: true });
 
-  // --- menu open/close
+  // ============================
+  // MENU OPEN/CLOSE
+  // ============================
   function openMenu() {
     body.classList.add("isMenuOpen");
     menuDrawer.setAttribute("aria-hidden", "false");
@@ -262,6 +289,7 @@
     requestAnimationFrame(syncMenuWidthVar);
     setTimeout(syncMenuWidthVar, 280);
   }
+
   function closeMenu() {
     body.classList.remove("isMenuOpen");
     menuDrawer.setAttribute("aria-hidden", "true");
@@ -278,7 +306,7 @@
     if (body.classList.contains("isMenuOpen")) closeMenu();
   });
 
-  // --- no pinch zoom / no double tap zoom (IDENTICO AL TUO)
+  // --- no pinch zoom / no double tap zoom
   document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
   document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
   document.addEventListener("gestureend", (e) => e.preventDefault(), { passive: false });
@@ -290,13 +318,12 @@
     lastTouchEnd = now;
   }, { passive: false });
 
-  // --- public API
+  // ============================
+  // PUBLIC API
+  // ============================
   function openCalendarInsert() {
     ensureSlide({ id: "calInsert", title: "Calendario" });
-
-    // ✅ home invisibile quando apri altre card
     setHomeHidden(true);
-
     renderDots();
     goToSlideId("calInsert", { fromUser:true });
     document.dispatchEvent(new Event("nettotrack:calendarInsertOpened"));
@@ -304,10 +331,7 @@
 
   function openCalendarView() {
     ensureSlide({ id: "calView", title: "Agenda" });
-
-    // ✅ home invisibile quando apri altre card
     setHomeHidden(true);
-
     renderDots();
     goToSlideId("calView", { fromUser:true });
     document.dispatchEvent(new Event("nettotrack:calendarViewOpened"));
@@ -315,10 +339,7 @@
 
   function openDayEditor(dateKey) {
     ensureSlide({ id: "dayEditor", title: "Turni" });
-
-    // ✅ home invisibile quando apri altre card
     setHomeHidden(true);
-
     renderDots();
     goToSlideId("dayEditor", { fromUser:true });
     document.dispatchEvent(new CustomEvent("nettotrack:dayEditorOpened", { detail: { dateKey } }));
@@ -331,20 +352,16 @@
     removeSlide(id);
 
     const slides = getSlides();
-
-    // ✅ se non ci sono più card oltre home, home torna visibile
     const anyExtra = slides.some(s => s.dataset.slideId !== "home");
     setHomeHidden(anyExtra);
 
     renderDots();
-
     if (!slides.length) return;
 
     if (wasActive) {
       const fb = getSlideIndexById(fallbackId);
       activeIndex = clamp(fb >= 0 ? fb : 0, 0, slides.length - 1);
 
-      // se fallback è home ma home è nascosta, vai alla prima card “vera”
       if (anyExtra && currentSlideId() === "home") {
         activeIndex = Math.max(1, activeIndex);
       }
@@ -352,6 +369,7 @@
       setActiveIndex(activeIndex);
       computeGap();
       applyTrackX(trackXForIndex(activeIndex), false);
+
       document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id: currentSlideId() } }));
     } else {
       activeIndex = clamp(activeIndex, 0, slides.length - 1);
@@ -360,7 +378,6 @@
       applyTrackX(trackXForIndex(activeIndex), false);
     }
 
-    // ✅ assicurati dots coerenti dopo chiusura
     renderDots();
   }
 
@@ -384,19 +401,14 @@
   // init
   computeGap();
   setActiveIndex(0);
-
-  // ✅ all’avvio: home visibile + dots corretti
   setHomeHidden(false);
   renderDots();
-
   applyTrackX(trackXForIndex(0), false);
 
   window.addEventListener("resize", () => {
     computeGap();
     applyTrackX(trackXForIndex(activeIndex), false);
     syncMenuWidthVar();
-
-    // ✅ ridisegna dots su resize (Safari a volte impazzisce)
     renderDots();
   });
 
