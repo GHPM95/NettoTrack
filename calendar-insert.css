@@ -96,17 +96,23 @@
   padding: 6px;
 }
 
-/* day cell button */
+/* =========================
+   ✅ Day cell = IL QUADRATO UNICO (bottone)
+   ========================= */
+
 .cinsDay{
   border: 1px solid rgba(255,255,255,.14);
   background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
   border-radius: 18px;
+
   display:flex;
   align-items:center;
   justify-content:center;
-  padding: clamp(6px, 1.2vh, 10px);
+
+  padding: 0; /* importantissimo: evita “pill” dentro pill */
   position: relative;
   min-width: 0;
+
   transition: transform .12s ease, filter .12s ease;
 }
 .cinsDay:active{ transform: scale(.98); filter: brightness(1.07); }
@@ -116,72 +122,53 @@
   pointer-events: none;
 }
 
-/* square/circle inside (manteniamo il nome per compatibilità) */
-.cinsCircle,
-.cinsSquare{
-  width: min(40px, 10vw);
-  height: min(40px, 10vw);
-  max-width: 44px;
-  max-height: 44px;
+/* =========================
+   ✅ Contenitore numero (INVISIBILE) – niente bordi, niente shape
+   Serve solo a centrare il numero.
+   ========================= */
 
-  /* se vuoi “quadrato”, questo è il punto: */
-  border-radius: 14px;
+.cinsCircle{
+  width: 100%;
+  height: 100%;
+  min-height: 0;
 
-  border: 2px solid rgba(255,255,255,.18);
   display:flex;
   align-items:center;
   justify-content:center;
+
+  border: none;
+  background: transparent;
+
   font-weight: 1000;
   font-variant-numeric: tabular-nums;
   color: var(--text);
-  background: transparent; /* interno trasparente */
-  position: relative;
+
+  /* numero leggermente più “pieno” come in screenshot */
+  font-size: 18px;
+  letter-spacing: .2px;
 }
 
 /* =========================
-   ✅ TODAY (giorno corrente) – PIÙ VISIBILE + GRADIENT INVERTITO
-   - Gradient verticale
-   - Colori invertiti rispetto allo “switch”
-   - Effetto soft (glow leggero + ring interno)
+   ✅ TODAY: più visibile + gradient verticale invertito (come switch al contrario)
+   - applicato al QUADRATO (cinsDay), non alla cinsCircle
    ========================= */
 
 .cinsDay.isToday{
-  /* leggerissimo boost, senza cambiare layout */
-  filter: brightness(1.02);
-}
-
-.cinsDay.isToday .cinsCircle,
-.cinsDay.isToday .cinsSquare{
-  transform: scale(1.06);
-
-  /* bordino più pulito */
   border: 2px solid transparent;
 
-  /* Gradient INVERTITO (pink → purple → cyan) e VERTICALE */
+  /* Gradient INVERTITO e VERTICALE: rosa → viola → cyan */
   background:
-    linear-gradient(rgba(0,0,0,.14), rgba(0,0,0,.14)) padding-box,
+    linear-gradient(rgba(255,255,255,.08), rgba(255,255,255,.04)) padding-box,
     linear-gradient(180deg, var(--accent3), var(--accent1), var(--accent2)) border-box;
 
-  /* maggiore visibilità soft */
   box-shadow:
-    0 10px 24px rgba(0,0,0,.30),
+    0 14px 34px rgba(0,0,0,.35),
     0 0 0 6px rgba(255,255,255,.06) inset;
 }
 
-.cinsDay.isToday .cinsCircle::after,
-.cinsDay.isToday .cinsSquare::after{
-  content:"";
-  position:absolute;
-  inset: 6px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.14);
-  pointer-events:none;
-}
-
-.cinsDay.isToday .cinsCircle,
-.cinsDay.isToday .cinsSquare{
+.cinsDay.isToday .cinsCircle{
   /* numero più leggibile sopra il gradient */
-  text-shadow: 0 2px 10px rgba(0,0,0,.35);
+  text-shadow: 0 2px 12px rgba(0,0,0,.35);
 }
 
 /* dots (base / extra) sotto */
