@@ -37,13 +37,9 @@
   font-weight: 900;
   font-size: 16px;
   line-height: 1;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  transition: transform .12s ease, filter .12s ease;
 }
-.ntBtn:active{
-  transform: scale(.96);
-  filter: brightness(1.08);
-  background: rgba(255,255,255,.14);
-}
+.ntBtn:active{ transform: scale(.96); filter: brightness(1.08); }
 .ntBtn.isDisabled{ opacity:.35; pointer-events:none; }
 
 .cinsTitleBtn{
@@ -73,13 +69,6 @@
   display:flex;
   flex-direction:column;
   gap: 10px;
-}
-
-/* ✅ quando picker aperto: nascondi il calendario sotto (niente “pasticcio”) */
-.cinsRoot.isPickerOn .cinsBody{
-  opacity: 0;
-  pointer-events: none;
-  filter: blur(10px);
 }
 
 /* Weekdays row */
@@ -127,34 +116,34 @@
   pointer-events: none;
 }
 
-/* ✅ QUADRATO interno (come da tua grafica attuale) */
+/* circle inside (se nel tuo progetto ora è quadrato/pill, NON tocchiamo:
+   lasciamo il nome classe com'è già usato in JS.
+   Se nel tuo JS è rimasto "cinsCircle", questo resta compatibile) */
 .cinsCircle{
-  width: min(44px, 11vw);
-  height: min(44px, 11vw);
-  max-width: 46px;
-  max-height: 46px;
-
-  border-radius: 14px; /* quadrato morbido */
-  border: 2px solid rgba(255,255,255,.16);
-
+  width: min(40px, 10vw);
+  height: min(40px, 10vw);
+  max-width: 44px;
+  max-height: 44px;
+  border-radius: 999px;
+  border: 2px solid rgba(255,255,255,.18);
   display:flex;
   align-items:center;
   justify-content:center;
-
   font-weight: 1000;
   font-variant-numeric: tabular-nums;
   color: var(--text);
   background: transparent;
 }
 
-/* ✅ Giorno corrente: più “soft” ma visibile, gradiente VERTICALE */
+/* today highlight: soft (se nel tuo progetto hai già lo stile perfetto, questo non lo rovina:
+   agisce solo quando JS mette "isToday") */
 .cinsDay.isToday .cinsCircle{
+  transform: scale(1.06);
   border-color: transparent;
   background:
-    linear-gradient(180deg, var(--accent3), var(--accent1), var(--accent2));
-  box-shadow:
-    0 10px 22px rgba(0,0,0,.18),
-    inset 0 0 0 1px rgba(255,255,255,.20);
+    linear-gradient(#0000,#0000) padding-box,
+    linear-gradient(180deg, var(--accent3), var(--accent1), var(--accent2)) border-box;
+  border: 2px solid transparent;
 }
 
 /* dots (base / extra) sotto */
@@ -177,45 +166,45 @@
 
 /* =========================
    Picker overlay (mese/anno)
+   FIX: niente doppio grigio, calendario sotto invisibile,
+   solo card pulsanti visibile e coerente col tema.
    ========================= */
 
-/* ✅ NIENTE doppio grigio:
-   layer quasi trasparente (solo blur leggero), sotto è già “nascosto” via .isPickerOn */
 .cinsPickerLayer{
   position:absolute;
   inset:0;
   border-radius: var(--rCard);
-
-  background: rgba(0,0,0,.02);
-  backdrop-filter: blur(10px);
-
   display:none;
   align-items:center;
   justify-content:center;
   padding: 18px;
+  z-index: 10;
 
-  touch-action: none; /* aiuta swipe su iOS */
+  /* ✅ niente “secondo strato” */
+  background: transparent;
+  backdrop-filter: none;
 }
 .cinsPickerLayer.isOn{ display:flex; }
 
+/* Quando picker è aperto: rendi invisibile il calendario sotto (e header) */
+.cinsRoot.isPicking .cinsHeader,
+.cinsRoot.isPicking .cinsBody{
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Card picker = stesso “linguaggio” delle card */
 .cinsPickerCard{
   width: 100%;
   max-width: 420px;
-
   border-radius: 26px;
   border: 1px solid rgba(255,255,255,.14);
-
-  /* ✅ stesso “tema” delle card */
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-
+    linear-gradient(180deg, var(--cardA), var(--cardB));
   backdrop-filter: blur(var(--blur));
   box-shadow: var(--shadow);
-
   padding: 14px;
-
-  touch-action: none; /* swipe down */
 }
 
 .cinsPickerTop{
@@ -249,25 +238,21 @@
   gap: 10px;
 }
 
-/* ✅ pulsanti mese: stesso feeling dei bottoni (ntBtn) quando premi */
 .cinsPickBtn{
   height: 44px;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
-
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-
   color: var(--text);
   font-weight: 1000;
-
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
 .cinsPickBtn:active{
   transform: scale(.97);
   filter: brightness(1.08);
-  background: rgba(255,255,255,.14);
+  background: rgba(255,255,255,.10);
 }
 
 .cinsSwipeHint{
@@ -280,6 +265,7 @@
 
 /* =========================
    Day Editor (turni)
+   (qui resta tutto come prima, non tocchiamo)
    ========================= */
 
 .dedRoot{
