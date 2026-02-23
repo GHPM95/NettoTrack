@@ -1,11 +1,11 @@
 (() => {
-
   const $ = (sel, root=document) => root.querySelector(sel);
+
   const body = document.body;
   const root = document.documentElement;
 
   /* =====================================================
-     MENU
+     MENU (INDIPENDENTE)
      ===================================================== */
 
   const menuBtn      = $("#menuBtn");
@@ -24,6 +24,8 @@
     menuDrawer?.setAttribute("aria-hidden", "false");
     menuOverlay?.setAttribute("aria-hidden", "false");
     syncMenuWidthVar();
+    requestAnimationFrame(syncMenuWidthVar);
+    setTimeout(syncMenuWidthVar, 260);
     document.dispatchEvent(new Event("nettotrack:refreshMenu"));
   }
 
@@ -31,6 +33,7 @@
     body.classList.remove("isMenuOpen");
     menuDrawer?.setAttribute("aria-hidden", "true");
     menuOverlay?.setAttribute("aria-hidden", "true");
+    syncMenuWidthVar();
   }
 
   menuBtn?.addEventListener("click", () => {
@@ -40,23 +43,26 @@
   menuOverlay?.addEventListener("click", closeMenu);
 
   /* =====================================================
-     CARDS
+     CARDS / SLIDER
      ===================================================== */
 
   const cardsViewport = $("#cardsViewport");
   const cardsTrack    = $("#cardsTrack");
   const dotsPill      = $("#dotsPill");
 
-  const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+  if (!cardsViewport || !cardsTrack || !dotsPill) return;
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
   let activeIndex = 0;
   let gapPx = 18;
 
-  function getSlides(){
+  function getSlides() {
     return Array.from(cardsTrack.querySelectorAll(".slide"));
   }
 
-  function getSlideIndexById(id){
-    return getSlides().findIndex(s=>s.dataset.slideId===id);
+  function getSlideIndexById(id) {
+    return getSlides().findIndex(s => s.dataset.slideId === id);
   }
 
   function ensureSlide({ id, title }) {
@@ -83,85 +89,258 @@
     return art;
   }
 
-  function removeSlide(id){
-    const s = getSlides().find(x=>x.dataset.slideId===id);
-    if (s && id!=="home") s.remove();
+  function removeSlide(id) {
+    const s = getSlides().find(x => x.dataset.slideId === id);
+    if (s && id !== "home") s.remove();
   }
 
-  function computeGap(){
+  function computeGap() {
     const cs = getComputedStyle(cardsTrack);
-    const g = parseFloat(cs.columnGap||cs.gap||"18");
-    if(!Number.isNaN(g)) gapPx=g;
+    const g = parseFloat(cs.columnGap || cs.gap || "18");
+    if (!Number.isNaN(g)) gapPx = g;
   }
 
-  function slideWidth(){
+  function slideWidth() {
     return cardsViewport.getBoundingClientRect().width;
   }
 
-  function trackXForIndex(i){
-    return -(i*(slideWidth()+gapPx));
+  function trackXForIndex(i) {
+    return -(i * (slideWidth() + gapPx));
   }
 
-  function applyTrackX(x,anim=true){
-    cardsTrack.style.transition = anim
+  function applyTrackX(x, withTransition) {
+    cardsTrack.style.transition = withTransition
       ? "transform .28s cubic-bezier(.2,.8,.2,1)"
       : "none";
     cardsTrack.style.transform = `translate3d(${x}px,0,0)`;
   }
 
-  function setActiveIndex(i){
-    const slides=getSlides();
-    activeIndex=clamp(i,0,slides.length-1);
-    slides.forEach((s,idx)=>s.classList.toggle("isActive",idx===activeIndex));
-    Array.from(dotsPill.children).forEach((d,idx)=>
-      d.classList.toggle("isActive",idx===activeIndex)
-    );
+  function setActiveIndex(i) {
+    const slides = getSlides();
+    activeIndex = clamp(i, 0, slides.length - 1);
+
+    slides.forEach((s, idx) => s.classList.toggle("isActive", idx === activeIndex));
+    Array.from(dotsPill.children).forEach((d, idx) => d.classList.toggle("isActive", idx === activeIndex));
   }
 
-  function goTo(i){
+  function currentSlideId() {
+    return getSlides()[activeIndex]?.dataset.slideId || "home";
+  }
+
+  function goTo(i, { fromUser=false } = {}) {
     computeGap();
+    const slides = getSlides();
+
+    // protezione: quando sei in una card diversa da home, lo swipe non deve “atterrare” su home per sbaglio
+    const curId = currentSlideId();
+    const homeIndex = getSlideIndexById("home");
+    if (!fromUser && curId !== "home" && homeIndex === 0) {
+      i = Math.max(1, i);
+    }
+
     setActiveIndex(i);
-    applyTrackX(trackXForIndex(activeIndex),true);
+    applyTrackX(trackXForIndex(activeIndex), true);
+
+    document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id: currentSlideId() } }));
   }
 
-  function renderDots(){
-    dotsPill.innerHTML="";
-    getSlides().forEach((s,i)=>{
-      const d=document.createElement("div");
-      d.className="dot"+(i===activeIndex?" isActive":"");
-      d.addEventListener("click",()=>goTo(i));
+  function goToSlideId(id, opts={}) {
+    const idx = getSlideIndexById(id);
+    if (idx >= 0) goTo(idx, opts);
+  }
+
+  /* =====================================================
+     DOTS
+     ===================================================== */
+
+  function renderDots() {
+    const slides = getSlides();
+    dotsPill.innerHTML = "";
+    slides.forEach((s, i) => {
+      const d = document.createElement("div");
+      d.className = "dot" + (i === activeIndex ? " isActive" : "");
+      d.dataset.i = String(i);
+      d.title = s.dataset.title || s.dataset.slideId || "";
+      d.addEventListener("click", () => goTo(i, { fromUser: true }));
       dotsPill.appendChild(d);
     });
   }
 
   /* =====================================================
-     EVENTI MENU → CARD
+     SWIPE / DRAG (COMPLETO, NO BLOCCO)
      ===================================================== */
 
-  document.addEventListener("nettotrack:openCalendarInsert", () => {
-    ensureSlide({ id:"calInsert", title:"Calendario" });
-    goTo(getSlideIndexById("calInsert"));
-    document.dispatchEvent(new Event("nettotrack:calendarInsertOpened"));
+  let isDragging = false;
+  let startX = 0;
+  let lastX = 0;
+  let dragPointerId = null;
+
+  function onPointerDown(e) {
+    if (body.classList.contains("isMenuOpen")) return;
+
+    isDragging = true;
+    dragPointerId = e.pointerId;
+    startX = e.clientX;
+    lastX = startX;
+
+    // pointer capture = evita blocchi quando il puntatore esce dal viewport
+    try { cardsViewport.setPointerCapture(dragPointerId); } catch {}
+
+    cardsTrack.style.transition = "none";
+  }
+
+  function onPointerMove(e) {
+    if (!isDragging || e.pointerId !== dragPointerId) return;
+
+    const x = e.clientX;
+    const dx = x - startX;
+    lastX = x;
+
+    const base = trackXForIndex(activeIndex);
+    const resistance = 0.55;
+    applyTrackX(base + dx * resistance, false);
+  }
+
+  function onPointerUp(e) {
+    if (!isDragging || (dragPointerId != null && e.pointerId !== dragPointerId)) return;
+
+    isDragging = false;
+
+    try { cardsViewport.releasePointerCapture(dragPointerId); } catch {}
+    dragPointerId = null;
+
+    const slides = getSlides();
+    const dx = lastX - startX;
+    const threshold = Math.max(60, slideWidth() * 0.18);
+
+    let nextIndex = activeIndex;
+
+    if (slides.length > 1) {
+      if (dx <= -threshold) nextIndex = clamp(activeIndex + 1, 0, slides.length - 1);
+      if (dx >=  threshold) nextIndex = clamp(activeIndex - 1, 0, slides.length - 1);
+    }
+
+    goTo(nextIndex, { fromUser: false });
+  }
+
+  cardsViewport.addEventListener("pointerdown", onPointerDown);
+  cardsViewport.addEventListener("pointermove", onPointerMove);
+  cardsViewport.addEventListener("pointerup", onPointerUp);
+  cardsViewport.addEventListener("pointercancel", onPointerUp);
+
+  // fallback: se per qualche motivo perdiamo l’up (alcuni browser), chiudiamo drag comunque
+  window.addEventListener("pointerup", (e) => {
+    if (isDragging) onPointerUp(e);
   });
 
-  document.addEventListener("nettotrack:openCalendarView", () => {
-    ensureSlide({ id:"calView", title:"Agenda" });
-    goTo(getSlideIndexById("calView"));
-    document.dispatchEvent(new Event("nettotrack:calendarViewOpened"));
+  /* =====================================================
+     DOTS DRAG (feedback)
+     ===================================================== */
+
+  let dotsDragging = false;
+  let dotsStartX = 0;
+  let dotsPointerId = null;
+
+  dotsPill.addEventListener("pointerdown", (e) => {
+    dotsDragging = true;
+    dotsPointerId = e.pointerId;
+    dotsStartX = e.clientX;
+    dotsPill.classList.add("isPressing");
+    try { dotsPill.setPointerCapture(dotsPointerId); } catch {}
   });
+
+  dotsPill.addEventListener("pointermove", (e) => {
+    if (!dotsDragging || e.pointerId !== dotsPointerId) return;
+
+    const slides = getSlides();
+    if (slides.length <= 1) return;
+
+    const dx = e.clientX - dotsStartX;
+    const t = 34;
+    if (dx <= -t) { dotsStartX = e.clientX; goTo(activeIndex + 1, { fromUser:true }); }
+    if (dx >=  t) { dotsStartX = e.clientX; goTo(activeIndex - 1, { fromUser:true }); }
+  });
+
+  function endDotsDrag(e) {
+    if (!dotsDragging || (dotsPointerId != null && e && e.pointerId !== dotsPointerId)) return;
+    dotsDragging = false;
+    dotsPill.classList.remove("isPressing");
+    try { dotsPill.releasePointerCapture(dotsPointerId); } catch {}
+    dotsPointerId = null;
+  }
+
+  dotsPill.addEventListener("pointerup", endDotsDrag);
+  dotsPill.addEventListener("pointercancel", endDotsDrag);
+  window.addEventListener("pointerup", endDotsDrag);
+
+  /* =====================================================
+     EVENTI DAL MENU → APERTURA CARD
+     ===================================================== */
+
+  function openCalendarInsert() {
+    ensureSlide({ id: "calInsert", title: "Calendario" });
+    renderDots();
+    goToSlideId("calInsert", { fromUser: true });
+    document.dispatchEvent(new Event("nettotrack:calendarInsertOpened"));
+  }
+
+  function openCalendarView() {
+    ensureSlide({ id: "calView", title: "Agenda" });
+    renderDots();
+    goToSlideId("calView", { fromUser: true });
+    document.dispatchEvent(new Event("nettotrack:calendarViewOpened"));
+  }
+
+  function openDayEditor(dateKey) {
+    ensureSlide({ id: "dayEditor", title: "Turni" });
+    renderDots();
+    goToSlideId("dayEditor", { fromUser: true });
+    document.dispatchEvent(new CustomEvent("nettotrack:dayEditorOpened", { detail: { dateKey } }));
+  }
+
+  function closeSlide(id, fallbackId="home") {
+    const idx = getSlideIndexById(id);
+    const wasActive = idx === activeIndex;
+
+    removeSlide(id);
+    renderDots();
+
+    const slides = getSlides();
+    if (!slides.length) return;
+
+    if (wasActive) {
+      const fb = getSlideIndexById(fallbackId);
+      activeIndex = clamp(fb >= 0 ? fb : 0, 0, slides.length - 1);
+      setActiveIndex(activeIndex);
+      computeGap();
+      applyTrackX(trackXForIndex(activeIndex), false);
+      document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id: currentSlideId() } }));
+    } else {
+      activeIndex = clamp(activeIndex, 0, slides.length - 1);
+      setActiveIndex(activeIndex);
+      computeGap();
+      applyTrackX(trackXForIndex(activeIndex), false);
+    }
+  }
+
+  document.addEventListener("nettotrack:openCalendarInsert", openCalendarInsert);
+  document.addEventListener("nettotrack:openCalendarView", openCalendarView);
+  document.addEventListener("nettotrack:closeCalendarInsert", () => closeSlide("calInsert"));
+  document.addEventListener("nettotrack:closeCalendarView", () => closeSlide("calView"));
+  document.addEventListener("nettotrack:closeDayEditor", () => closeSlide("dayEditor", "calInsert"));
 
   /* =====================================================
      API PUBBLICA
      ===================================================== */
 
   window.NettoTrackUI = {
-    openDayEditor:(key)=>{
-      ensureSlide({ id:"dayEditor", title:"Turni" });
-      goTo(getSlideIndexById("dayEditor"));
-      document.dispatchEvent(
-        new CustomEvent("nettotrack:dayEditorOpened",{ detail:{ dateKey:key } })
-      );
-    }
+    ensureSlide,
+    goToSlideId,
+    openCalendarInsert,
+    openCalendarView,
+    openDayEditor,
+    closeSlide,
+    getActiveSlideId: currentSlideId
   };
 
   /* =====================================================
@@ -169,8 +348,15 @@
      ===================================================== */
 
   computeGap();
+  setActiveIndex(0);
   renderDots();
-  applyTrackX(0,false);
+  applyTrackX(trackXForIndex(0), false);
   syncMenuWidthVar();
+
+  window.addEventListener("resize", () => {
+    computeGap();
+    applyTrackX(trackXForIndex(activeIndex), false);
+    syncMenuWidthVar();
+  });
 
 })();
