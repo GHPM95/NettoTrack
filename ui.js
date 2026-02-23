@@ -1,3 +1,5 @@
+document.addEventListener("DOMContentLoaded", () => {
+
 (() => {
   const $ = (sel, root=document) => root.querySelector(sel);
 
@@ -110,7 +112,6 @@
   function goTo(i, { fromUser=false } = {}) {
     computeGap();
 
-    // evita che swipe atterri su home per errore mentre sei in altre card
     const slides = getSlides();
     const curId = currentSlideId();
     const homeIndex = getSlideIndexById("home");
@@ -217,6 +218,8 @@
     syncMenuWidthVar();
     requestAnimationFrame(syncMenuWidthVar);
     setTimeout(syncMenuWidthVar, 280);
+
+    document.dispatchEvent(new Event("nettotrack:refreshMenu"));
   }
   function closeMenu() {
     body.classList.remove("isMenuOpen");
@@ -324,3 +327,5 @@
 
   syncMenuWidthVar();
 })();
+
+});
