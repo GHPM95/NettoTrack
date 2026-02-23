@@ -51,7 +51,7 @@
         </div>
       </section>
 
-      <!-- DOTS (sempre fuori dalla card, centrati sotto) -->
+      <!-- DOTS -->
       <div class="dotsWrap" id="dotsWrap" aria-label="Navigazione cards">
         <div class="dotsPill" id="dotsPill"></div>
       </div>
@@ -67,19 +67,15 @@
   <div class="menuOverlay" id="menuOverlay" aria-hidden="true"></div>
   <aside class="menuDrawer" id="menuDrawer" aria-hidden="true"></aside>
 
-  <!-- X (chiude menu) -->
+  <!-- X -->
   <button class="menuCloseBtn" id="menuCloseBtn" aria-label="Chiudi menu" type="button">×</button>
 
-  <!-- JS: UNA SOLA VOLTA, ordine pulito -->
-  <script src="ui.js"></script>
-  <script src="menu.js"></script>
-
-  <!-- Core condiviso PRIMA dei moduli -->
-  <script src="calendar-core.js"></script>
-
-  <!-- Moduli -->
-  <script src="calendar-insert.js"></script>
-  <script src="day-editor.js"></script>
-  <script src="calendar-view.js"></script>
+  <!-- JS (defer = robusto su GitHub / PC / iPhone) -->
+  <script src="ui.js" defer></script>
+  <script src="menu.js" defer></script>
+  <script src="calendar-core.js" defer></script>
+  <script src="calendar-insert.js" defer></script>
+  <script src="day-editor.js" defer></script>
+  <script src="calendar-view.js" defer></script>
 </body>
 </html>
