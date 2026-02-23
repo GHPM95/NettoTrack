@@ -7,27 +7,24 @@
 
   --shadow: 0 22px 70px rgba(0,0,0,.55);
 
-  --accent1: #7C5CFF; /* viola */
-  --accent2: #2AE9FF; /* celeste */
-  --accent3: #FF4FD8; /* rosa */
+  --accent1: #7C5CFF;
+  --accent2: #2AE9FF;
+  --accent3: #FF4FD8;
   --accent4: #FFB84A;
 
   --rCard: 28px;
   --blur: 18px;
 
-  /* Safe area */
   --sat: env(safe-area-inset-top);
   --sab: env(safe-area-inset-bottom);
   --sal: env(safe-area-inset-left);
   --sar: env(safe-area-inset-right);
 
-  /* Layout sizes */
   --topH: 64px;
   --bottomH: 92px;
   --dotsH: 44px;
   --sidePad: 16px;
 
-  /* MENU metrics */
   --xSize: 44px;
   --xGap: 12px;
   --xPadRight: 14px;
@@ -56,23 +53,16 @@ body{
     linear-gradient(180deg, #050716, #070a18 55%, #050716);
 }
 
-/* selezione testo consentita solo nei campi input */
 input, textarea, [contenteditable="true"]{
   -webkit-user-select: text;
   user-select: text;
 }
-
-/* evita zoom iOS su focus */
 input, textarea, select{ font-size:16px; }
 
-/* evita scroll orizzontali ovunque */
-body, .appRoot, .stage, .cardInner{
-  overflow-x: hidden;
-}
+body, .appRoot, .stage, .cardInner{ overflow-x: hidden; }
 
-/* ---------- Background FX ---------- */
+/* ===== Background FX ===== */
 .bgFX{ position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-
 .blob{
   position:absolute; width: 560px; height: 560px; filter: blur(40px);
   opacity: .85; border-radius: 50%; mix-blend-mode: screen;
@@ -111,7 +101,7 @@ body, .appRoot, .stage, .cardInner{
   opacity:.10; transform: rotate(8deg);
 }
 
-/* ---------- App Root ---------- */
+/* ===== App Root ===== */
 .appRoot{
   position: relative;
   z-index: 1;
@@ -121,7 +111,7 @@ body, .appRoot, .stage, .cardInner{
   padding-right: var(--sar);
 }
 
-/* ---------- Top bar ---------- */
+/* ===== Top bar ===== */
 .topBar{
   height: calc(var(--topH) + var(--sat));
   padding: calc(10px + var(--sat)) var(--sidePad) 10px;
@@ -142,7 +132,6 @@ body, .appRoot, .stage, .cardInner{
 .brandSub{ margin-top: 3px; font-size: 12px; color: var(--muted); font-weight: 800; letter-spacing: .15px; }
 .topRightSpacer{ width: var(--xSize); height: var(--xSize); }
 
-/* menu button: cliccabile ma senza bordi */
 .menuBtn{
   width: var(--xSize);
   height: var(--xSize);
@@ -160,7 +149,7 @@ body, .appRoot, .stage, .cardInner{
   background: rgba(255,255,255,.10);
 }
 
-/* ---------- Stage ---------- */
+/* ===== Stage ===== */
 .stage{
   height: calc(100% - (var(--topH) + var(--sat)) - (var(--bottomH) + var(--sab)));
   display:flex;
@@ -171,7 +160,6 @@ body, .appRoot, .stage, .cardInner{
   gap: 12px;
 }
 
-/* viewport: NESSUN bordo visibile */
 .cardsViewport{
   width: 100%;
   max-width: 520px;
@@ -180,7 +168,6 @@ body, .appRoot, .stage, .cardInner{
   border: none;
   background: transparent;
 
-  /* ✅ fondamentale per swipe fluido su iOS/trackpad */
   touch-action: pan-y;
 }
 
@@ -190,7 +177,6 @@ body, .appRoot, .stage, .cardInner{
   transform: translate3d(0,0,0);
   will-change: transform;
 
-  /* ✅ fondamentale per swipe fluido su iOS/trackpad */
   touch-action: pan-y;
 }
 
@@ -217,14 +203,13 @@ body, .appRoot, .stage, .cardInner{
   min-height: 0;
 }
 
-/* mount area */
 .cardMount{
   width:100%;
   height:100%;
   min-height:0;
 }
 
-/* ---------- Dots (FUORI dalla card) ---------- */
+/* ===== Dots ===== */
 .dotsWrap{
   height: var(--dotsH);
   display:flex;
@@ -261,7 +246,7 @@ body, .appRoot, .stage, .cardInner{
 }
 .dotsPill.isPressing .dot{ transform: scale(1.12); }
 
-/* ---------- Bottom bar placeholder ---------- */
+/* ===== Bottom bar ===== */
 .bottomBar{
   position: absolute;
   left: var(--sal);
@@ -286,13 +271,16 @@ body, .appRoot, .stage, .cardInner{
   box-shadow: 0 18px 60px rgba(0,0,0,.30);
 }
 
-/* ---------- Menu Drawer ---------- */
+/* ===== Menu ===== */
 .menuOverlay{
   position: fixed;
   inset: 0;
   z-index: 30;
-  background: transparent;
+  background: rgba(0,0,0,.22);
+  backdrop-filter: blur(10px);
+  opacity: 0;
   pointer-events: none;
+  transition: opacity .18s ease;
 }
 
 .menuDrawer{
@@ -312,7 +300,6 @@ body, .appRoot, .stage, .cardInner{
   padding-bottom: var(--sab);
   padding-left: var(--sal);
 
-  /* senza arrotondamento su top/left/bottom come da richiesta */
   border-radius: 0 var(--rCard) var(--rCard) 0;
   border: 1px solid rgba(255,255,255,.14);
   border-left: none;
@@ -356,9 +343,9 @@ body, .appRoot, .stage, .cardInner{
   filter: brightness(1.08);
 }
 
-/* Menu aperto */
+/* menu aperto */
 body.isMenuOpen .menuDrawer{ transform: translateX(0); }
-body.isMenuOpen .menuOverlay{ pointer-events: auto; }
+body.isMenuOpen .menuOverlay{ opacity: 1; pointer-events: auto; }
 body.isMenuOpen .menuCloseBtn{ opacity: 1; pointer-events: auto; }
 
 /* quando menu aperto: nascondi tutto il resto */
