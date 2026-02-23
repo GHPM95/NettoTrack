@@ -2,22 +2,21 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#3b2b6a" />
 
   <title>NettoTrack</title>
 
-  <link rel="stylesheet" href="ui.css" />
-  <link rel="stylesheet" href="calendar-insert.css" />
-  <link rel="stylesheet" href="calendar-view.css" />
-  <link rel="stylesheet" href="day-editor.css" />
+  <!-- CSS (cache-bust) -->
+  <link rel="stylesheet" href="./ui.css?v=20260223-1" />
+  <link rel="stylesheet" href="./calendar-insert.css?v=20260223-1" />
+  <link rel="stylesheet" href="./calendar-view.css?v=20260223-1" />
+  <link rel="stylesheet" href="./day-editor.css?v=20260223-1" />
 </head>
 
 <body>
-  <!-- SFONDO (blob / aurora) -->
   <div class="bgFX" aria-hidden="true">
     <div class="blob b1"></div>
     <div class="blob b2"></div>
@@ -26,7 +25,6 @@
   </div>
 
   <div class="appRoot" id="appRoot">
-    <!-- TOP BAR -->
     <header class="topBar" id="topBar">
       <button class="menuBtn" id="menuBtn" aria-label="Apri menu" type="button">≡</button>
 
@@ -38,44 +36,35 @@
       <div class="topRightSpacer"></div>
     </header>
 
-    <!-- AREA CENTRALE: CARD + DOTS -->
     <main class="stage" id="stage">
       <section class="cardsViewport" id="cardsViewport" aria-label="Cards">
         <div class="cardsTrack" id="cardsTrack">
-          <!-- HOME (sempre esiste) -->
           <article class="card slide isActive" data-slide-id="home" data-title="Home" aria-label="Home">
-            <div class="cardInner" id="homeMount">
-              <!-- volutamente vuoto -->
-            </div>
+            <div class="cardInner" id="homeMount"></div>
           </article>
         </div>
       </section>
 
-      <!-- DOTS -->
       <div class="dotsWrap" id="dotsWrap" aria-label="Navigazione cards">
         <div class="dotsPill" id="dotsPill"></div>
       </div>
     </main>
 
-    <!-- TASK BAR INFERIORE (placeholder) -->
     <footer class="bottomBar" id="bottomBar" aria-label="Barra inferiore">
       <div class="bottomBarGlass"></div>
     </footer>
   </div>
 
-  <!-- MENU DRAWER -->
   <div class="menuOverlay" id="menuOverlay" aria-hidden="true"></div>
   <aside class="menuDrawer" id="menuDrawer" aria-hidden="true"></aside>
-
-  <!-- X -->
   <button class="menuCloseBtn" id="menuCloseBtn" aria-label="Chiudi menu" type="button">×</button>
 
-  <!-- JS (defer = robusto su GitHub / PC / iPhone) -->
-  <script src="ui.js" defer></script>
-  <script src="menu.js" defer></script>
-  <script src="calendar-core.js" defer></script>
-  <script src="calendar-insert.js" defer></script>
-  <script src="day-editor.js" defer></script>
-  <script src="calendar-view.js" defer></script>
+  <!-- JS (cache-bust) -->
+  <script src="./ui.js?v=20260223-1"></script>
+  <script src="./menu.js?v=20260223-1"></script>
+  <script src="./calendar-core.js?v=20260223-1"></script>
+  <script src="./calendar-insert.js?v=20260223-1"></script>
+  <script src="./day-editor.js?v=20260223-1"></script>
+  <script src="./calendar-view.js?v=20260223-1"></script>
 </body>
 </html>
