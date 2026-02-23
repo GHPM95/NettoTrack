@@ -175,7 +175,11 @@ body, .appRoot, .stage, .cardInner{
   width: 100%;
   max-width: 520px;
   position: relative;
-  overflow: visible;
+
+  /* ✅ FIX: nasconde le card fuori dalla viewport (home non “rimane” a sinistra) */
+  overflow: hidden;
+  border-radius: var(--rCard);
+
   border: none;
   background: transparent;
 
@@ -188,6 +192,9 @@ body, .appRoot, .stage, .cardInner{
   gap: 18px;
   transform: translate3d(0,0,0);
   will-change: transform;
+
+  /* ✅ evita “sbavature” ai bordi durante transizioni/drag */
+  contain: paint;
 
   /* swipe */
   touch-action: pan-y;
@@ -204,15 +211,6 @@ body, .appRoot, .stage, .cardInner{
   box-shadow: var(--shadow);
   height: clamp(460px, 58vh, 620px);
   overflow: hidden;
-
-  /* ✅ FIX: di default “spenta”, poi solo .isActive si vede */
-  opacity: 0;
-  pointer-events: none;
-}
-
-.card.isActive{
-  opacity: 1;
-  pointer-events: auto;
 }
 
 .cardInner{
@@ -299,11 +297,8 @@ body, .appRoot, .stage, .cardInner{
   position: fixed;
   inset: 0;
   z-index: 30;
-  background: rgba(0,0,0,.22);
-  backdrop-filter: blur(10px);
-  opacity: 0;
+  background: transparent;
   pointer-events: none;
-  transition: opacity .18s ease;
 }
 
 .menuDrawer{
@@ -323,6 +318,7 @@ body, .appRoot, .stage, .cardInner{
   padding-bottom: var(--sab);
   padding-left: var(--sal);
 
+  /* senza arrotondamento su top/left/bottom come da richiesta */
   border-radius: 0 var(--rCard) var(--rCard) 0;
   border: 1px solid rgba(255,255,255,.14);
   border-left: none;
@@ -368,7 +364,7 @@ body, .appRoot, .stage, .cardInner{
 
 /* Menu aperto */
 body.isMenuOpen .menuDrawer{ transform: translateX(0); }
-body.isMenuOpen .menuOverlay{ opacity: 1; pointer-events: auto; }
+body.isMenuOpen .menuOverlay{ pointer-events: auto; }
 body.isMenuOpen .menuCloseBtn{ opacity: 1; pointer-events: auto; }
 
 /* quando menu aperto: nascondi tutto il resto */
