@@ -6,16 +6,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const body = document.body;
   const root = document.documentElement;
 
-  const menuBtn = $("#menuBtn");
-  const menuDrawer = $("#menuDrawer");
-  const menuOverlay = $("#menuOverlay");
-  const menuCloseBtn = $("#menuCloseBtn");
-
-  const cardsViewport = $("#cardsViewport");
-  const cardsTrack = $("#cardsTrack");
-  const dotsPill = $("#dotsPill");
-
+  // helper
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+  // DOM refs (inizializzate in init quando sono disponibili)
+  let menuBtn, menuDrawer, menuOverlay, menuCloseBtn;
+  let cardsViewport, cardsTrack, dotsPill;
+
+  // --- state
+  let activeIndex = 0;
+  let gapPx = 18;
 
   function getSlides() {
     return Array.from(cardsTrack.querySelectorAll(".slide"));
@@ -55,13 +55,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- menu metric (X affianco al drawer)
   function syncMenuWidthVar() {
+    if (!menuDrawer) return;
     const w = menuDrawer.getBoundingClientRect().width || 0;
     root.style.setProperty("--menuW", `${Math.round(w)}px`);
   }
 
   // --- dots
-  let activeIndex = 0;
-
   function renderDots() {
     const slides = getSlides();
     dotsPill.innerHTML = "";
@@ -84,8 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- track positioning
-  let gapPx = 18;
-
   function computeGap() {
     const cs = getComputedStyle(cardsTrack);
     const g = parseFloat(cs.columnGap || cs.gap || "18");
@@ -112,6 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function goTo(i, { fromUser=false } = {}) {
     computeGap();
 
+    // evita “caduta su home” involontaria quando non sei in home
     const slides = getSlides();
     const curId = currentSlideId();
     const homeIndex = getSlideIndexById("home");
@@ -175,79 +173,57 @@ document.addEventListener("DOMContentLoaded", () => {
     goTo(nextIndex, { fromUser: false });
   }
 
-  cardsViewport.addEventListener("pointerdown", onPointerDown, { passive: true });
-  cardsViewport.addEventListener("pointermove", onPointerMove, { passive: true });
-  cardsViewport.addEventListener("pointerup", onPointerUp, { passive: true });
-  cardsViewport.addEventListener("pointercancel", onPointerUp, { passive: true });
-
   // --- dots drag feedback
   let dotsDragging = false;
   let dotsStartX = 0;
 
-  dotsPill.addEventListener("pointerdown", (e) => {
-    dotsDragging = true;
-    dotsStartX = e.clientX;
-    dotsPill.classList.add("isPressing");
-    dotsPill.setPointerCapture?.(e.pointerId);
-  }, { passive: true });
+  function bindDotsDrag() {
+    dotsPill.addEventListener("pointerdown", (e) => {
+      dotsDragging = true;
+      dotsStartX = e.clientX;
+      dotsPill.classList.add("isPressing");
+      dotsPill.setPointerCapture?.(e.pointerId);
+    }, { passive: true });
 
-  dotsPill.addEventListener("pointermove", (e) => {
-    if (!dotsDragging) return;
-    const slides = getSlides();
-    if (slides.length <= 1) return;
+    dotsPill.addEventListener("pointermove", (e) => {
+      if (!dotsDragging) return;
+      const slides = getSlides();
+      if (slides.length <= 1) return;
 
-    const dx = e.clientX - dotsStartX;
-    const t = 34;
-    if (dx <= -t) { dotsStartX = e.clientX; goTo(activeIndex + 1, { fromUser:true }); }
-    if (dx >=  t) { dotsStartX = e.clientX; goTo(activeIndex - 1, { fromUser:true }); }
-  }, { passive: true });
+      const dx = e.clientX - dotsStartX;
+      const t = 34;
+      if (dx <= -t) { dotsStartX = e.clientX; goTo(activeIndex + 1, { fromUser:true }); }
+      if (dx >=  t) { dotsStartX = e.clientX; goTo(activeIndex - 1, { fromUser:true }); }
+    }, { passive: true });
 
-  function endDotsDrag() {
-    dotsDragging = false;
-    dotsPill.classList.remove("isPressing");
+    function endDotsDrag() {
+      dotsDragging = false;
+      dotsPill.classList.remove("isPressing");
+    }
+    dotsPill.addEventListener("pointerup", endDotsDrag, { passive: true });
+    dotsPill.addEventListener("pointercancel", endDotsDrag, { passive: true });
   }
-  dotsPill.addEventListener("pointerup", endDotsDrag, { passive: true });
-  dotsPill.addEventListener("pointercancel", endDotsDrag, { passive: true });
 
   // --- menu open/close
   function openMenu() {
     body.classList.add("isMenuOpen");
-    menuDrawer.setAttribute("aria-hidden", "false");
-    menuOverlay.setAttribute("aria-hidden", "false");
+    menuDrawer?.setAttribute("aria-hidden", "false");
+    menuOverlay?.setAttribute("aria-hidden", "false");
 
     syncMenuWidthVar();
     requestAnimationFrame(syncMenuWidthVar);
     setTimeout(syncMenuWidthVar, 280);
 
+    // forza render contenuto menu
     document.dispatchEvent(new Event("nettotrack:refreshMenu"));
   }
+
   function closeMenu() {
     body.classList.remove("isMenuOpen");
-    menuDrawer.setAttribute("aria-hidden", "true");
-    menuOverlay.setAttribute("aria-hidden", "true");
+    menuDrawer?.setAttribute("aria-hidden", "true");
+    menuOverlay?.setAttribute("aria-hidden", "true");
     syncMenuWidthVar();
   }
-
-  menuBtn.addEventListener("click", () => {
-    if (body.classList.contains("isMenuOpen")) closeMenu();
-    else openMenu();
-  });
-  menuCloseBtn.addEventListener("click", closeMenu);
-  menuOverlay.addEventListener("click", () => {
-    if (body.classList.contains("isMenuOpen")) closeMenu();
-  });
-
-  // --- no pinch zoom / no double tap zoom
-  document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
-  document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
-  document.addEventListener("gestureend", (e) => e.preventDefault(), { passive: false });
-
-  let lastTouchEnd = 0;
-  document.addEventListener("touchend", (e) => {
-    const now = Date.now();
-    if (now - lastTouchEnd <= 300) e.preventDefault();
-    lastTouchEnd = now;
-  }, { passive: false });
 
   // --- public API
   function openCalendarInsert() {
@@ -296,36 +272,88 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // events used by menu.js
-  document.addEventListener("nettotrack:openCalendarInsert", openCalendarInsert);
-  document.addEventListener("nettotrack:openCalendarView", openCalendarView);
-  document.addEventListener("nettotrack:closeCalendarInsert", () => closeSlide("calInsert"));
-  document.addEventListener("nettotrack:closeCalendarView", () => closeSlide("calView"));
-  document.addEventListener("nettotrack:closeDayEditor", () => closeSlide("dayEditor", "calInsert"));
+  // --- prevent zoom
+  document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
+  document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
+  document.addEventListener("gestureend", (e) => e.preventDefault(), { passive: false });
 
-  window.NettoTrackUI = {
-    ensureSlide,
-    goToSlideId,
-    openCalendarInsert,
-    openCalendarView,
-    openDayEditor,
-    closeSlide,
-    getActiveSlideId: currentSlideId
-  };
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) e.preventDefault();
+    lastTouchEnd = now;
+  }, { passive: false });
 
-  // init
-  computeGap();
-  setActiveIndex(0);
-  renderDots();
-  applyTrackX(trackXForIndex(0), false);
+  // --- init (ROBUSTO)
+  function init() {
+    // prende gli elementi SOLO quando esistono davvero
+    menuBtn = $("#menuBtn");
+    menuDrawer = $("#menuDrawer");
+    menuOverlay = $("#menuOverlay");
+    menuCloseBtn = $("#menuCloseBtn");
 
-  window.addEventListener("resize", () => {
+    cardsViewport = $("#cardsViewport");
+    cardsTrack = $("#cardsTrack");
+    dotsPill = $("#dotsPill");
+
+    // se manca anche solo uno degli elementi critici, riprova il frame dopo
+    if (!menuBtn || !menuDrawer || !menuOverlay || !menuCloseBtn || !cardsViewport || !cardsTrack || !dotsPill) {
+      requestAnimationFrame(init);
+      return;
+    }
+
+    // swipe handlers
+    cardsViewport.addEventListener("pointerdown", onPointerDown, { passive: true });
+    cardsViewport.addEventListener("pointermove", onPointerMove, { passive: true });
+    cardsViewport.addEventListener("pointerup", onPointerUp, { passive: true });
+    cardsViewport.addEventListener("pointercancel", onPointerUp, { passive: true });
+
+    // dots drag
+    bindDotsDrag();
+
+    // menu handlers
+    menuBtn.addEventListener("click", () => {
+      if (body.classList.contains("isMenuOpen")) closeMenu();
+      else openMenu();
+    });
+    menuCloseBtn.addEventListener("click", closeMenu);
+    menuOverlay.addEventListener("click", () => {
+      if (body.classList.contains("isMenuOpen")) closeMenu();
+    });
+
+    // events used by menu.js
+    document.addEventListener("nettotrack:openCalendarInsert", openCalendarInsert);
+    document.addEventListener("nettotrack:openCalendarView", openCalendarView);
+    document.addEventListener("nettotrack:closeCalendarInsert", () => closeSlide("calInsert"));
+    document.addEventListener("nettotrack:closeCalendarView", () => closeSlide("calView"));
+    document.addEventListener("nettotrack:closeDayEditor", () => closeSlide("dayEditor", "calInsert"));
+
+    window.NettoTrackUI = {
+      ensureSlide,
+      goToSlideId,
+      openCalendarInsert,
+      openCalendarView,
+      openDayEditor,
+      closeSlide,
+      getActiveSlideId: currentSlideId
+    };
+
+    // init UI
     computeGap();
-    applyTrackX(trackXForIndex(activeIndex), false);
-    syncMenuWidthVar();
-  });
+    setActiveIndex(0);
+    renderDots();
+    applyTrackX(trackXForIndex(0), false);
 
-  syncMenuWidthVar();
+    window.addEventListener("resize", () => {
+      computeGap();
+      applyTrackX(trackXForIndex(activeIndex), false);
+      syncMenuWidthVar();
+    });
+
+    syncMenuWidthVar();
+  }
+
+  init();
 })();
 
 });
