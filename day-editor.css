@@ -1,5 +1,5 @@
 /* =========================
-   Day Editor (turni) — separato
+   Day Editor (Turni)
    ========================= */
 
 .dedRoot{
@@ -11,6 +11,7 @@
   min-height:0;
 }
 
+/* Header */
 .dedHeader{
   display:grid;
   grid-template-columns: 1fr auto;
@@ -20,21 +21,23 @@
 
 .dedTitle{
   font-weight: 1000;
+  font-size: 16px;
   letter-spacing:.2px;
-  font-size: clamp(14px, 3.6vw, 17px);
   white-space: nowrap;
   overflow:hidden;
   text-overflow: ellipsis;
 }
 
+/* Body */
 .dedBody{
   flex:1;
   min-height:0;
-  overflow:auto;            /* ✅ solo verticale */
-  overflow-x:hidden;        /* ✅ mai orizzontale */
+  overflow-y:auto;
+  overflow-x:hidden;
   padding-right: 2px;
 }
 
+/* Labels */
 .dedLabel{
   display:block;
   font-size: 12px;
@@ -43,36 +46,43 @@
   margin: 10px 0 6px;
 }
 
-.dedInput, .dedTextArea{
+/* Inputs */
+.dedInput,
+.dedTextArea{
   width:100%;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(120% 160% at 30% 0%, rgba(255,255,255,.10), transparent 60%),
-    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
   color: var(--text);
   font-weight: 900;
   outline:none;
+}
+
+.dedInput{
+  height: 46px;
   padding: 0 12px;
 }
-.dedInput{ height: 46px; }
+
 .dedTextArea{
   padding: 10px 12px;
   min-height: 90px;
   resize: none;
 }
 
+/* Grid rows */
 .dedRow2{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
+/* Shift box */
 .dedShiftBox{
-  width: 100%;
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,.14);
-  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
   padding: 12px;
   margin-top: 10px;
 }
@@ -88,18 +98,40 @@
   font-weight: 1000;
 }
 
+/* Buttons */
+.dedSmallBtn,
+.dedBtnWide{
+  border:none;
+  background: rgba(255,255,255,.10);
+  color: var(--text);
+  font-weight: 1000;
+  transition: transform .12s ease, filter .12s ease;
+}
+
 .dedSmallBtn{
   width: 38px;
   height: 38px;
   border-radius: 14px;
-  border:none;
-  background: rgba(255,255,255,.10);
-  color: var(--text);
-  font-weight: 900;
-  transition: transform .12s ease, filter .12s ease;
 }
-.dedSmallBtn:active{ transform: scale(.96); filter: brightness(1.08); }
 
+.dedBtnWide{
+  height: 46px;
+  border-radius: 16px;
+  width:100%;
+}
+
+.dedSmallBtn:active,
+.dedBtnWide:active{
+  transform: scale(.96);
+  filter: brightness(1.08);
+}
+
+.dedBtnWide.isDisabled{
+  opacity:.35;
+  pointer-events:none;
+}
+
+/* Pills */
 .dedPillsRow{
   display:flex;
   flex-wrap:wrap;
@@ -114,26 +146,25 @@
   padding: 10px 12px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,.14);
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-  color: var(--text);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
   font-weight: 950;
-  transition: transform .12s ease, filter .12s ease;
 }
-.dedPill:active{ transform: scale(.97); filter: brightness(1.08); }
-.dedPill input{ display:none; }
 
 .dedPill.isOn{
   border-color: rgba(42,233,255,.24);
   background:
-    radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.14), transparent 55%),
-    linear-gradient(180deg, rgba(124,92,255,.14), rgba(255,79,216,.08));
+    linear-gradient(180deg, rgba(42,233,255,.14), rgba(124,92,255,.10));
 }
 
 .dedPill.isDisabled{
-  opacity: .35;
+  opacity:.35;
   pointer-events:none;
 }
 
+.dedPill input{ display:none; }
+
+/* Footer */
 .dedFooter{
   display:flex;
   gap: 10px;
@@ -141,24 +172,7 @@
   align-items:center;
 }
 
-.dedBtnWide{
-  flex:1;
-  height: 46px;
-  border-radius: 16px;
-  border:none;
-  background: rgba(255,255,255,.10);
-  color: var(--text);
-  font-weight: 1000;
-  letter-spacing:.15px;
-  transition: transform .12s ease, filter .12s ease;
-}
-.dedBtnWide:active{ transform: scale(.97); filter: brightness(1.08); }
-
-.dedBtnWide.isDisabled{
-  opacity:.35;
-  pointer-events:none;
-}
-
+/* Hint */
 .dedHint{
   margin-top: 8px;
   color: var(--muted);
