@@ -1,11 +1,11 @@
 (() => {
-  const $ = (sel, root=document) => root.querySelector(sel);
+  const $ = (sel, root = document) => root.querySelector(sel);
 
   const body = document.body;
   const root = document.documentElement;
 
   /* =====================================================
-     MENU (INDIPENDENTE)
+     MENU
      ===================================================== */
 
   const menuBtn      = $("#menuBtn");
@@ -83,8 +83,8 @@
 
     inner.appendChild(mount);
     art.appendChild(inner);
-    cardsTrack.appendChild(art);
 
+    cardsTrack.appendChild(art);
     renderDots();
     return art;
   }
@@ -127,13 +127,14 @@
     return getSlides()[activeIndex]?.dataset.slideId || "home";
   }
 
-  function goTo(i, { fromUser=false } = {}) {
+  function goTo(i, { fromUser = false } = {}) {
     computeGap();
-    const slides = getSlides();
 
-    // protezione: quando sei in una card diversa da home, lo swipe non deve “atterrare” su home per sbaglio
+    const slides = getSlides();
     const curId = currentSlideId();
     const homeIndex = getSlideIndexById("home");
+
+    // protezione: quando sei in una card diversa da home, lo swipe non deve “atterrare” su home per errore
     if (!fromUser && curId !== "home" && homeIndex === 0) {
       i = Math.max(1, i);
     }
@@ -144,7 +145,7 @@
     document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id: currentSlideId() } }));
   }
 
-  function goToSlideId(id, opts={}) {
+  function goToSlideId(id, opts = {}) {
     const idx = getSlideIndexById(id);
     if (idx >= 0) goTo(idx, opts);
   }
@@ -159,7 +160,6 @@
     slides.forEach((s, i) => {
       const d = document.createElement("div");
       d.className = "dot" + (i === activeIndex ? " isActive" : "");
-      d.dataset.i = String(i);
       d.title = s.dataset.title || s.dataset.slideId || "";
       d.addEventListener("click", () => goTo(i, { fromUser: true }));
       dotsPill.appendChild(d);
@@ -167,47 +167,41 @@
   }
 
   /* =====================================================
-     SWIPE / DRAG (COMPLETO, NO BLOCCO)
+     SWIPE UNIVERSALE (Pointer + Touch + Mouse)
      ===================================================== */
 
   let isDragging = false;
   let startX = 0;
   let lastX = 0;
-  let dragPointerId = null;
+  let activePointerId = null;
 
-  function onPointerDown(e) {
+  function dragStart(clientX, pointerId = null) {
     if (body.classList.contains("isMenuOpen")) return;
 
     isDragging = true;
-    dragPointerId = e.pointerId;
-    startX = e.clientX;
-    lastX = startX;
-
-    // pointer capture = evita blocchi quando il puntatore esce dal viewport
-    try { cardsViewport.setPointerCapture(dragPointerId); } catch {}
+    startX = clientX;
+    lastX = clientX;
+    activePointerId = pointerId;
 
     cardsTrack.style.transition = "none";
   }
 
-  function onPointerMove(e) {
-    if (!isDragging || e.pointerId !== dragPointerId) return;
+  function dragMove(clientX) {
+    if (!isDragging) return;
 
-    const x = e.clientX;
-    const dx = x - startX;
-    lastX = x;
+    const dx = clientX - startX;
+    lastX = clientX;
 
     const base = trackXForIndex(activeIndex);
     const resistance = 0.55;
     applyTrackX(base + dx * resistance, false);
   }
 
-  function onPointerUp(e) {
-    if (!isDragging || (dragPointerId != null && e.pointerId !== dragPointerId)) return;
+  function dragEnd() {
+    if (!isDragging) return;
 
     isDragging = false;
-
-    try { cardsViewport.releasePointerCapture(dragPointerId); } catch {}
-    dragPointerId = null;
+    activePointerId = null;
 
     const slides = getSlides();
     const dx = lastX - startX;
@@ -223,55 +217,64 @@
     goTo(nextIndex, { fromUser: false });
   }
 
-  cardsViewport.addEventListener("pointerdown", onPointerDown);
-  cardsViewport.addEventListener("pointermove", onPointerMove);
-  cardsViewport.addEventListener("pointerup", onPointerUp);
-  cardsViewport.addEventListener("pointercancel", onPointerUp);
+  // Pointer events (se disponibili)
+  cardsViewport.addEventListener("pointerdown", (e) => {
+    // solo tasto sinistro o touch/pen
+    if (e.pointerType === "mouse" && e.button !== 0) return;
 
-  // fallback: se per qualche motivo perdiamo l’up (alcuni browser), chiudiamo drag comunque
-  window.addEventListener("pointerup", (e) => {
-    if (isDragging) onPointerUp(e);
+    try { cardsViewport.setPointerCapture(e.pointerId); } catch {}
+    dragStart(e.clientX, e.pointerId);
   });
 
-  /* =====================================================
-     DOTS DRAG (feedback)
-     ===================================================== */
-
-  let dotsDragging = false;
-  let dotsStartX = 0;
-  let dotsPointerId = null;
-
-  dotsPill.addEventListener("pointerdown", (e) => {
-    dotsDragging = true;
-    dotsPointerId = e.pointerId;
-    dotsStartX = e.clientX;
-    dotsPill.classList.add("isPressing");
-    try { dotsPill.setPointerCapture(dotsPointerId); } catch {}
+  cardsViewport.addEventListener("pointermove", (e) => {
+    if (!isDragging) return;
+    if (activePointerId != null && e.pointerId !== activePointerId) return;
+    dragMove(e.clientX);
   });
 
-  dotsPill.addEventListener("pointermove", (e) => {
-    if (!dotsDragging || e.pointerId !== dotsPointerId) return;
-
-    const slides = getSlides();
-    if (slides.length <= 1) return;
-
-    const dx = e.clientX - dotsStartX;
-    const t = 34;
-    if (dx <= -t) { dotsStartX = e.clientX; goTo(activeIndex + 1, { fromUser:true }); }
-    if (dx >=  t) { dotsStartX = e.clientX; goTo(activeIndex - 1, { fromUser:true }); }
+  cardsViewport.addEventListener("pointerup", (e) => {
+    if (activePointerId != null && e.pointerId !== activePointerId) return;
+    try { cardsViewport.releasePointerCapture(e.pointerId); } catch {}
+    dragEnd();
   });
 
-  function endDotsDrag(e) {
-    if (!dotsDragging || (dotsPointerId != null && e && e.pointerId !== dotsPointerId)) return;
-    dotsDragging = false;
-    dotsPill.classList.remove("isPressing");
-    try { dotsPill.releasePointerCapture(dotsPointerId); } catch {}
-    dotsPointerId = null;
-  }
+  cardsViewport.addEventListener("pointercancel", () => dragEnd());
 
-  dotsPill.addEventListener("pointerup", endDotsDrag);
-  dotsPill.addEventListener("pointercancel", endDotsDrag);
-  window.addEventListener("pointerup", endDotsDrag);
+  // Touch fallback (iPhone) — IMPORTANT: passive:false per permettere preventDefault
+  cardsViewport.addEventListener("touchstart", (e) => {
+    if (e.touches && e.touches.length === 1) {
+      dragStart(e.touches[0].clientX, "touch");
+    }
+  }, { passive: true });
+
+  cardsViewport.addEventListener("touchmove", (e) => {
+    if (!isDragging) return;
+    if (e.touches && e.touches.length === 1) {
+      // blocca lo scroll orizzontale del browser
+      e.preventDefault();
+      dragMove(e.touches[0].clientX);
+    }
+  }, { passive: false });
+
+  cardsViewport.addEventListener("touchend", () => dragEnd(), { passive: true });
+  cardsViewport.addEventListener("touchcancel", () => dragEnd(), { passive: true });
+
+  // Mouse fallback (PC) — per ambienti che non gestiscono bene pointer events
+  cardsViewport.addEventListener("mousedown", (e) => {
+    if (e.button !== 0) return;
+    dragStart(e.clientX, "mouse");
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    if (activePointerId !== "mouse") return;
+    dragMove(e.clientX);
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (activePointerId !== "mouse") return;
+    dragEnd();
+  });
 
   /* =====================================================
      EVENTI DAL MENU → APERTURA CARD
@@ -298,7 +301,7 @@
     document.dispatchEvent(new CustomEvent("nettotrack:dayEditorOpened", { detail: { dateKey } }));
   }
 
-  function closeSlide(id, fallbackId="home") {
+  function closeSlide(id, fallbackId = "home") {
     const idx = getSlideIndexById(id);
     const wasActive = idx === activeIndex;
 
@@ -314,7 +317,6 @@
       setActiveIndex(activeIndex);
       computeGap();
       applyTrackX(trackXForIndex(activeIndex), false);
-      document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id: currentSlideId() } }));
     } else {
       activeIndex = clamp(activeIndex, 0, slides.length - 1);
       setActiveIndex(activeIndex);
