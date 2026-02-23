@@ -1,4 +1,3 @@
-document.addEventListener("DOMContentLoaded", () => {
 (() => {
 
   const $ = (sel, root=document) => root.querySelector(sel);
@@ -6,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const root = document.documentElement;
 
   /* =====================================================
-     MENU (INDIPENDENTE)
+     MENU
      ===================================================== */
 
   const menuBtn      = $("#menuBtn");
@@ -41,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   menuOverlay?.addEventListener("click", closeMenu);
 
   /* =====================================================
-     CARDS / SLIDER
+     CARDS
      ===================================================== */
 
   const cardsViewport = $("#cardsViewport");
@@ -123,108 +122,45 @@ document.addEventListener("DOMContentLoaded", () => {
     computeGap();
     setActiveIndex(i);
     applyTrackX(trackXForIndex(activeIndex),true);
-    document.dispatchEvent(
-      new CustomEvent("nettotrack:slideChanged",{
-        detail:{ id:getSlides()[activeIndex]?.dataset.slideId }
-      })
-    );
   }
-
-  /* =====================================================
-     DOTS
-     ===================================================== */
 
   function renderDots(){
     dotsPill.innerHTML="";
     getSlides().forEach((s,i)=>{
       const d=document.createElement("div");
       d.className="dot"+(i===activeIndex?" isActive":"");
-      d.title=s.dataset.title||s.dataset.slideId;
       d.addEventListener("click",()=>goTo(i));
       dotsPill.appendChild(d);
     });
   }
 
   /* =====================================================
-     SWIPE
+     EVENTI MENU → CARD
      ===================================================== */
 
-  let dragging=false,startX=0,lastX=0;
-
-  cardsViewport.addEventListener("pointerdown",e=>{
-    if(body.classList.contains("isMenuOpen"))return;
-    dragging=true;
-    startX=lastX=e.clientX;
-    cardsTrack.style.transition="none";
-  });
-
-  cardsViewport.addEventListener("pointermove",e=>{
-    if(!dragging)return;
-    const dx=e.clientX-startX;
-    applyTrackX(trackXForIndex(activeIndex)+dx*0.55,false);
-    lastX=e.clientX;
-  });
-
-  function endDrag(){
-    if(!dragging)return;
-    dragging=false;
-    const dx=lastX-startX;
-    const t=Math.max(60,slideWidth()*0.18);
-    let next=activeIndex;
-    if(dx<=-t)next++;
-    if(dx>= t)next--;
-    goTo(next);
-  }
-
-  cardsViewport.addEventListener("pointerup",endDrag);
-  cardsViewport.addEventListener("pointercancel",endDrag);
-
-  /* =====================================================
-     🔑 EVENTI DAL MENU (FIX MANCANTE)
-     ===================================================== */
-
-  function openCalendarInsert(){
+  document.addEventListener("nettotrack:openCalendarInsert", () => {
     ensureSlide({ id:"calInsert", title:"Calendario" });
     goTo(getSlideIndexById("calInsert"));
     document.dispatchEvent(new Event("nettotrack:calendarInsertOpened"));
-  }
+  });
 
-  function openCalendarView(){
+  document.addEventListener("nettotrack:openCalendarView", () => {
     ensureSlide({ id:"calView", title:"Agenda" });
     goTo(getSlideIndexById("calView"));
     document.dispatchEvent(new Event("nettotrack:calendarViewOpened"));
-  }
-
-  document.addEventListener("nettotrack:openCalendarInsert", openCalendarInsert);
-  document.addEventListener("nettotrack:openCalendarView", openCalendarView);
-  document.addEventListener("nettotrack:closeCalendarInsert", ()=>removeSlide("calInsert"));
-  document.addEventListener("nettotrack:closeCalendarView", ()=>removeSlide("calView"));
+  });
 
   /* =====================================================
      API PUBBLICA
      ===================================================== */
 
   window.NettoTrackUI = {
-    ensureSlide,
-    goToSlideId:(id)=>{
-      const i=getSlideIndexById(id);
-      if(i>=0)goTo(i);
-    },
     openDayEditor:(key)=>{
       ensureSlide({ id:"dayEditor", title:"Turni" });
       goTo(getSlideIndexById("dayEditor"));
       document.dispatchEvent(
         new CustomEvent("nettotrack:dayEditorOpened",{ detail:{ dateKey:key } })
       );
-    },
-    closeSlide:(id,fallback="home")=>{
-      const was=getSlides()[activeIndex]?.dataset.slideId===id;
-      removeSlide(id);
-      renderDots();
-      if(was){
-        const fb=getSlideIndexById(fallback);
-        goTo(fb>=0?fb:0);
-      }
     }
   };
 
@@ -235,12 +171,6 @@ document.addEventListener("DOMContentLoaded", () => {
   computeGap();
   renderDots();
   applyTrackX(0,false);
-
-  window.addEventListener("resize",()=>{
-    computeGap();
-    applyTrackX(trackXForIndex(activeIndex),false);
-    syncMenuWidthVar();
-  });
+  syncMenuWidthVar();
 
 })();
-});
