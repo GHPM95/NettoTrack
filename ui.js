@@ -15,15 +15,8 @@
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-  // --------------------------
-  // Slides helpers
-  // --------------------------
   function getSlides() {
     return Array.from(cardsTrack.querySelectorAll(".slide"));
-  }
-
-  function getSlideById(id) {
-    return getSlides().find(s => s.dataset.slideId === id) || null;
   }
 
   function getSlideIndexById(id) {
@@ -31,8 +24,8 @@
   }
 
   function ensureSlide({ id, title }) {
-    const existing = getSlideById(id);
-    if (existing) return existing;
+    const idx = getSlideIndexById(id);
+    if (idx >= 0) return getSlides()[idx];
 
     const art = document.createElement("article");
     art.className = "card slide";
@@ -54,117 +47,70 @@
   }
 
   function removeSlide(id) {
-    const s = getSlideById(id);
+    const s = getSlides().find(x => x.dataset.slideId === id);
     if (s && id !== "home") s.remove();
   }
 
-  // --------------------------
-  // Menu metric (X affianco drawer)
-  // --------------------------
+  // --- menu metric (X affianco al drawer)
   function syncMenuWidthVar() {
     const w = menuDrawer.getBoundingClientRect().width || 0;
     root.style.setProperty("--menuW", `${Math.round(w)}px`);
   }
 
-  // --------------------------
-  // iOS repaint helper (generico)
-  // --------------------------
-  function forceRepaint() {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        try {
-          cardsViewport.style.transform = "translateZ(0)";
-          // eslint-disable-next-line no-unused-expressions
-          cardsViewport.offsetHeight;
-          cardsViewport.style.transform = "";
-        } catch {}
-      });
-    });
-  }
-
-  // --------------------------
-  // Home visibility logic
-  // --------------------------
-  let homeHidden = false;
-
+  // ============================
+  // ✅ HOME VISIBILITY (MINIMA)
+  // ============================
   function setHomeHidden(on) {
-    const home = getSlideById("home");
-    homeHidden = !!on;
-
+    const home = cardsTrack.querySelector('.slide[data-slide-id="home"]');
     if (!home) return;
 
-    if (homeHidden) {
-      // invisibile, non cliccabile, non “sporca” visivamente
+    if (on) {
+      // invisibile e non “sporca”
       home.style.opacity = "0";
-      home.style.pointerEvents = "none";
       home.style.visibility = "hidden";
+      home.style.pointerEvents = "none";
     } else {
       home.style.opacity = "";
-      home.style.pointerEvents = "";
       home.style.visibility = "";
+      home.style.pointerEvents = "";
     }
   }
 
-  function updateHomeVisibility() {
-    const slides = getSlides();
-    const shouldHide = slides.some(s => s.dataset.slideId !== "home");
-
-    setHomeHidden(shouldHide);
-
-    // Se home è nascosta e per caso sei su home, spostati sulla prima non-home
-    if (homeHidden && currentSlideId() === "home") {
-      const firstNonHome = slides.find(s => s.dataset.slideId !== "home");
-      if (firstNonHome) {
-        const idx = getSlideIndexById(firstNonHome.dataset.slideId);
-        if (idx >= 0) {
-          activeIndex = idx;
-          setActiveIndex(activeIndex);
-          computeGap();
-          applyTrackX(trackXForIndex(activeIndex), false);
-        }
-      }
-    }
+  function hasExtraSlides() {
+    return getSlides().some(s => s.dataset.slideId !== "home");
   }
 
-  // --------------------------
-  // Dots
-  // --------------------------
+  // ============================
+  // --- dots
+  // ============================
   let activeIndex = 0;
 
-  function visibleSlidesForDots() {
-    const slides = getSlides();
-    // quando home è nascosta, non mostriamo il suo dot (evita “dot fantasma”)
-    return homeHidden ? slides.filter(s => s.dataset.slideId !== "home") : slides;
-  }
-
   function renderDots() {
-    const slides = visibleSlidesForDots();
-    dotsPill.innerHTML = "";
+    const slides = getSlides();
 
-    slides.forEach((s) => {
+    // ✅ se home è nascosta (perché ci sono altre card), non disegnare il dot di home
+    const showHomeDot = !hasExtraSlides();
+    const dotsSlides = showHomeDot ? slides : slides.filter(s => s.dataset.slideId !== "home");
+
+    dotsPill.innerHTML = "";
+    dotsSlides.forEach((s) => {
       const d = document.createElement("div");
       d.className = "dot";
-      d.dataset.id = s.dataset.slideId || "";
+      d.dataset.slideId = s.dataset.slideId;
+
+      // attivo
+      if (s.dataset.slideId === currentSlideId()) d.classList.add("isActive");
 
       d.title = s.dataset.title || s.dataset.slideId || "";
-
-      d.addEventListener("click", () => {
-        // click dot = vai a quella slide
-        const id = d.dataset.id;
-        if (id) goToSlideId(id, { fromUser: true });
-      });
-
+      d.addEventListener("click", () => goToSlideId(s.dataset.slideId, { fromUser: true }));
       dotsPill.appendChild(d);
     });
-
-    // aggiorna “attivo” dopo render
-    syncDotsActive();
   }
 
-  function syncDotsActive() {
+  function syncActiveDot() {
     const id = currentSlideId();
-    Array.from(dotsPill.children).forEach(dot => {
-      dot.classList.toggle("isActive", dot.dataset.id === id);
+    Array.from(dotsPill.children).forEach((d) => {
+      d.classList.toggle("isActive", d.dataset.slideId === id);
     });
   }
 
@@ -173,12 +119,10 @@
     activeIndex = clamp(i, 0, slides.length - 1);
 
     slides.forEach((s, idx) => s.classList.toggle("isActive", idx === activeIndex));
-    syncDotsActive();
+    syncActiveDot();
   }
 
-  // --------------------------
-  // Track positioning
-  // --------------------------
+  // --- track positioning
   let gapPx = 18;
 
   function computeGap() {
@@ -207,15 +151,13 @@
   function goTo(i, { fromUser=false } = {}) {
     computeGap();
 
-    // quando home è nascosta, non permettere di atterrare su home
-    if (homeHidden) {
-      const slides = getSlides();
-      const homeIdx = getSlideIndexById("home");
-      if (homeIdx === i) {
-        // vai alla prima non-home
-        const firstNonHome = slides.find(s => s.dataset.slideId !== "home");
-        i = firstNonHome ? getSlideIndexById(firstNonHome.dataset.slideId) : i;
-      }
+    // ✅ evita home “di swipe” quando ci sono altre card (COMPORTAMENTO IDENTICO AL TUO)
+    const slides = getSlides();
+    const curId = currentSlideId();
+    const homeIndex = getSlideIndexById("home");
+
+    if (!fromUser && curId !== "home" && homeIndex === 0) {
+      i = Math.max(1, i);
     }
 
     setActiveIndex(i);
@@ -224,7 +166,8 @@
     const id = currentSlideId();
     document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id } }));
 
-    forceRepaint();
+    // ✅ aggiorna dots (senza cambiare grafica)
+    renderDots();
   }
 
   function goToSlideId(id, opts={}) {
@@ -232,9 +175,7 @@
     if (idx >= 0) goTo(idx, opts);
   }
 
-  // --------------------------
-  // Swipe / drag
-  // --------------------------
+  // --- swipe / drag
   let isDragging = false;
   let startX = 0;
   let lastX = 0;
@@ -274,12 +215,6 @@
       if (dx >= threshold)  nextIndex = clamp(activeIndex - 1, 0, slides.length - 1);
     }
 
-    // Se home è nascosta, impedisci swipe su home
-    if (homeHidden && slides[nextIndex]?.dataset?.slideId === "home") {
-      // rimani dove sei
-      nextIndex = activeIndex;
-    }
-
     goTo(nextIndex, { fromUser: false });
   }
 
@@ -288,9 +223,7 @@
   cardsViewport.addEventListener("pointerup", onPointerUp, { passive: true });
   cardsViewport.addEventListener("pointercancel", onPointerUp, { passive: true });
 
-  // --------------------------
-  // Dots drag feedback (opzionale, resta)
-  // --------------------------
+  // --- dots drag feedback (IDENTICO AL TUO)
   let dotsDragging = false;
   let dotsStartX = 0;
 
@@ -303,30 +236,13 @@
 
   dotsPill.addEventListener("pointermove", (e) => {
     if (!dotsDragging) return;
-
-    const allSlides = getSlides();
-    const curId = currentSlideId();
-
-    // costruisci una lista di slide “navigabili” (se homeHidden, escludi home)
-    const nav = homeHidden ? allSlides.filter(s => s.dataset.slideId !== "home") : allSlides;
-    if (nav.length <= 1) return;
-
-    const curNavIndex = nav.findIndex(s => s.dataset.slideId === curId);
-    if (curNavIndex < 0) return;
+    const slides = getSlides();
+    if (slides.length <= 1) return;
 
     const dx = e.clientX - dotsStartX;
     const t = 34;
-
-    if (dx <= -t) {
-      dotsStartX = e.clientX;
-      const next = clamp(curNavIndex + 1, 0, nav.length - 1);
-      goToSlideId(nav[next].dataset.slideId, { fromUser: true });
-    }
-    if (dx >= t) {
-      dotsStartX = e.clientX;
-      const prev = clamp(curNavIndex - 1, 0, nav.length - 1);
-      goToSlideId(nav[prev].dataset.slideId, { fromUser: true });
-    }
+    if (dx <= -t) { dotsStartX = e.clientX; goTo(activeIndex + 1, { fromUser:true }); }
+    if (dx >=  t) { dotsStartX = e.clientX; goTo(activeIndex - 1, { fromUser:true }); }
   }, { passive: true });
 
   function endDotsDrag() {
@@ -336,9 +252,7 @@
   dotsPill.addEventListener("pointerup", endDotsDrag, { passive: true });
   dotsPill.addEventListener("pointercancel", endDotsDrag, { passive: true });
 
-  // --------------------------
-  // Menu open/close
-  // --------------------------
+  // --- menu open/close
   function openMenu() {
     body.classList.add("isMenuOpen");
     menuDrawer.setAttribute("aria-hidden", "false");
@@ -348,7 +262,6 @@
     requestAnimationFrame(syncMenuWidthVar);
     setTimeout(syncMenuWidthVar, 280);
   }
-
   function closeMenu() {
     body.classList.remove("isMenuOpen");
     menuDrawer.setAttribute("aria-hidden", "true");
@@ -365,9 +278,7 @@
     if (body.classList.contains("isMenuOpen")) closeMenu();
   });
 
-  // --------------------------
-  // No pinch zoom / no double tap zoom
-  // --------------------------
+  // --- no pinch zoom / no double tap zoom (IDENTICO AL TUO)
   document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
   document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
   document.addEventListener("gestureend", (e) => e.preventDefault(), { passive: false });
@@ -379,34 +290,38 @@
     lastTouchEnd = now;
   }, { passive: false });
 
-  // --------------------------
-  // Public API
-  // --------------------------
+  // --- public API
   function openCalendarInsert() {
     ensureSlide({ id: "calInsert", title: "Calendario" });
-    updateHomeVisibility();
+
+    // ✅ home invisibile quando apri altre card
+    setHomeHidden(true);
+
     renderDots();
     goToSlideId("calInsert", { fromUser:true });
     document.dispatchEvent(new Event("nettotrack:calendarInsertOpened"));
-    forceRepaint();
   }
 
   function openCalendarView() {
     ensureSlide({ id: "calView", title: "Agenda" });
-    updateHomeVisibility();
+
+    // ✅ home invisibile quando apri altre card
+    setHomeHidden(true);
+
     renderDots();
     goToSlideId("calView", { fromUser:true });
     document.dispatchEvent(new Event("nettotrack:calendarViewOpened"));
-    forceRepaint();
   }
 
   function openDayEditor(dateKey) {
     ensureSlide({ id: "dayEditor", title: "Turni" });
-    updateHomeVisibility();
+
+    // ✅ home invisibile quando apri altre card
+    setHomeHidden(true);
+
     renderDots();
     goToSlideId("dayEditor", { fromUser:true });
     document.dispatchEvent(new CustomEvent("nettotrack:dayEditorOpened", { detail: { dateKey } }));
-    forceRepaint();
   }
 
   function closeSlide(id, fallbackId="home") {
@@ -415,29 +330,28 @@
 
     removeSlide(id);
 
-    // dopo remove, aggiorna visibilità home (se restano slide non-home, home resta nascosta)
-    updateHomeVisibility();
+    const slides = getSlides();
+
+    // ✅ se non ci sono più card oltre home, home torna visibile
+    const anyExtra = slides.some(s => s.dataset.slideId !== "home");
+    setHomeHidden(anyExtra);
 
     renderDots();
 
-    const slides = getSlides();
     if (!slides.length) return;
 
     if (wasActive) {
-      // fallback: se home è nascosta, fallback deve essere la prima non-home (se esiste)
-      let targetId = fallbackId;
+      const fb = getSlideIndexById(fallbackId);
+      activeIndex = clamp(fb >= 0 ? fb : 0, 0, slides.length - 1);
 
-      if (homeHidden && targetId === "home") {
-        const firstNonHome = slides.find(s => s.dataset.slideId !== "home");
-        targetId = firstNonHome ? firstNonHome.dataset.slideId : "home";
+      // se fallback è home ma home è nascosta, vai alla prima card “vera”
+      if (anyExtra && currentSlideId() === "home") {
+        activeIndex = Math.max(1, activeIndex);
       }
 
-      const fb = getSlideIndexById(targetId);
-      activeIndex = clamp(fb >= 0 ? fb : 0, 0, slides.length - 1);
       setActiveIndex(activeIndex);
       computeGap();
       applyTrackX(trackXForIndex(activeIndex), false);
-
       document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id: currentSlideId() } }));
     } else {
       activeIndex = clamp(activeIndex, 0, slides.length - 1);
@@ -446,17 +360,8 @@
       applyTrackX(trackXForIndex(activeIndex), false);
     }
 
-    // se ora resta SOLO home -> rendila visibile e riallinea su home
-    if (!slides.some(s => s.dataset.slideId !== "home")) {
-      setHomeHidden(false);
-      activeIndex = 0;
-      setActiveIndex(0);
-      computeGap();
-      applyTrackX(trackXForIndex(0), false);
-      renderDots();
-    }
-
-    forceRepaint();
+    // ✅ assicurati dots coerenti dopo chiusura
+    renderDots();
   }
 
   // events used by menu.js
@@ -476,14 +381,12 @@
     getActiveSlideId: currentSlideId
   };
 
-  // --------------------------
-  // Init
-  // --------------------------
+  // init
   computeGap();
   setActiveIndex(0);
 
-  // visibilità home + dots
-  updateHomeVisibility();
+  // ✅ all’avvio: home visibile + dots corretti
+  setHomeHidden(false);
   renderDots();
 
   applyTrackX(trackXForIndex(0), false);
@@ -492,26 +395,9 @@
     computeGap();
     applyTrackX(trackXForIndex(activeIndex), false);
     syncMenuWidthVar();
-    forceRepaint();
-  });
 
-  // Safari iOS: ritorno da cache
-  window.addEventListener("pageshow", () => {
-    computeGap();
-    updateHomeVisibility();
+    // ✅ ridisegna dots su resize (Safari a volte impazzisce)
     renderDots();
-    applyTrackX(trackXForIndex(activeIndex), false);
-    forceRepaint();
-  });
-
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) {
-      computeGap();
-      updateHomeVisibility();
-      renderDots();
-      applyTrackX(trackXForIndex(activeIndex), false);
-      forceRepaint();
-    }
   });
 
   syncMenuWidthVar();
