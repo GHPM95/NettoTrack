@@ -83,63 +83,53 @@
       });
     });
 
-    // ✅ swipe down to close picker (pointer + touch, funziona davvero su iOS)
-    const layer = mount.querySelector("#cinsPickerLayer");
-    const card  = mount.querySelector("#cinsPickerCard");
-
-    const SWIPE_CLOSE_PX = 55;
-
-    let dragging = false;
-    let startY = 0;
-
-    function startDrag(y0) {
-      dragging = true;
-      startY = y0;
-    }
-    function moveDrag(yNow) {
-      if (!dragging) return;
-      const dy = yNow - startY;
-      if (dy > SWIPE_CLOSE_PX) {
-        dragging = false;
-        openPicker(false);
-      }
-    }
-    function endDrag() { dragging = false; }
-
-    // Pointer
-    function onPointerDown(e) {
-      startDrag(e.clientY);
-      try { layer.setPointerCapture?.(e.pointerId); } catch {}
-    }
-    function onPointerMove(e) { moveDrag(e.clientY); }
-    function onPointerUp() { endDrag(); }
-
-    layer.addEventListener("pointerdown", onPointerDown, { passive:true });
-    layer.addEventListener("pointermove", onPointerMove, { passive:true });
-    layer.addEventListener("pointerup", onPointerUp, { passive:true });
-    layer.addEventListener("pointercancel", onPointerUp, { passive:true });
-
-    // Touch fallback (Safari)
-    function onTouchStart(e) {
-      if (!e.touches || !e.touches[0]) return;
-      startDrag(e.touches[0].clientY);
-    }
-    function onTouchMove(e) {
-      if (!e.touches || !e.touches[0]) return;
-      moveDrag(e.touches[0].clientY);
-    }
-    function onTouchEnd() { endDrag(); }
-
-    layer.addEventListener("touchstart", onTouchStart, { passive:true });
-    layer.addEventListener("touchmove", onTouchMove, { passive:true });
-    layer.addEventListener("touchend", onTouchEnd, { passive:true });
-    layer.addEventListener("touchcancel", onTouchEnd, { passive:true });
-
-    // Evita che i tocchi dentro la card “escano” e facciano cose strane
-    card.addEventListener("click", (e) => e.stopPropagation());
+    // ✅ swipe down to close picker (funziona davvero: layer + card)
+    setupPickerSwipe();
 
     mounted = true;
     renderMonth();
+  }
+
+  function setupPickerSwipe() {
+    const mount = document.getElementById("calInsertMount");
+    if (!mount) return;
+
+    const layer = mount.querySelector("#cinsPickerLayer");
+    const card  = mount.querySelector("#cinsPickerCard");
+
+    let down = false;
+    let y0 = 0;
+
+    const start = (clientY) => { down = true; y0 = clientY; };
+    const move = (clientY) => {
+      if (!down) return;
+      const dy = clientY - y0;
+      if (dy > 60) { down = false; openPicker(false); }
+    };
+    const end = () => { down = false; };
+
+    // Pointer events
+    const onPD = (e) => { start(e.clientY); (e.currentTarget).setPointerCapture?.(e.pointerId); };
+    const onPM = (e) => { move(e.clientY); };
+    const onPU = () => { end(); };
+
+    [layer, card].forEach(el => {
+      el.addEventListener("pointerdown", onPD, { passive:true });
+      el.addEventListener("pointermove", onPM, { passive:true });
+      el.addEventListener("pointerup", onPU, { passive:true });
+      el.addEventListener("pointercancel", onPU, { passive:true });
+
+      // Touch fallback (iOS safe)
+      el.addEventListener("touchstart", (e) => { start(e.touches[0].clientY); }, { passive:true });
+      el.addEventListener("touchmove",  (e) => { move(e.touches[0].clientY); }, { passive:true });
+      el.addEventListener("touchend",   end, { passive:true });
+      el.addEventListener("touchcancel",end, { passive:true });
+    });
+
+    // click fuori dalla card -> chiudi
+    layer.addEventListener("click", (e) => {
+      if (e.target === layer) openPicker(false);
+    });
   }
 
   function stepMonth(delta) {
@@ -156,11 +146,11 @@
     const root = mount.querySelector("#cinsRoot");
     const layer = mount.querySelector("#cinsPickerLayer");
 
-    // ✅ classe per “nascondere” calendario sotto
-    root.classList.toggle("isPickerOn", !!on);
-
     layer.classList.toggle("isOn", !!on);
     layer.setAttribute("aria-hidden", on ? "false" : "true");
+
+    // ✅ quando picker aperto: nascondi header+calendar sotto (niente “pasticcio”)
+    root.classList.toggle("isPicking", !!on);
 
     if (on) renderPicker();
   }
@@ -204,12 +194,11 @@
         const isToday = (y === ty && m === tm && dayNum === td);
         if (isToday) btn.classList.add("isToday");
 
-        const square = document.createElement("div");
-        square.className = "cinsCircle";
-        square.textContent = String(dayNum);
-        btn.appendChild(square);
+        const circle = document.createElement("div");
+        circle.className = "cinsCircle";
+        circle.textContent = String(dayNum);
+        btn.appendChild(circle);
 
-        // dots logic:
         const hasSaved = !!saved;
         const hasDraft = !!draft && !hasSaved;
 
@@ -244,6 +233,7 @@
             d.className = "cinsDot extra" + (hasDraft ? " draft" : "");
             dots.appendChild(d);
           }
+
           btn.appendChild(dots);
         }
 
@@ -256,7 +246,7 @@
     }
   }
 
-  // --- Day Editor (turni)
+  // --- Day Editor (turni) - NON TOCCATO
   let currentKey = null;
   let editorMounted = false;
 
@@ -332,8 +322,8 @@
     if (digits.length === 3) return `0${digits[0]}:${digits.slice(1)}`;
     if (digits.length >= 4) return `${digits.slice(0,2)}:${digits.slice(2,4)}`;
 
-    const m = /^(\d{1,2}):(\d{1,2})$/.exec(s);
-    if (m) return `${pad2(m[1])}:${pad2(m[2])}`;
+    const mm = /^(\d{1,2}):(\d{1,2})$/.exec(s);
+    if (mm) return `${pad2(mm[1])}:${pad2(mm[2])}`;
 
     return "";
   }
@@ -489,8 +479,8 @@
         });
       });
 
-      const [yy, mm, dd] = key.split("-").map(Number);
-      const sunday = isSunday(yy, mm-1, dd);
+      const [yy, mm2, dd] = key.split("-").map(Number);
+      const sunday = isSunday(yy, mm2-1, dd);
       const domPill = box.querySelector(`.dedPill[data-flag="domenicale"]`);
       if (!sunday) {
         domPill.classList.add("isDisabled");
@@ -581,6 +571,7 @@
     const t = todayParts();
     y = t.y; m = t.m;
     renderMonth();
+    openPicker(false); // ✅ sicurezza: se riapri la card, picker parte chiuso
   });
 
   document.addEventListener("nettotrack:dayEditorOpened", (e) => {
