@@ -58,13 +58,14 @@
   }
 
   // ============================
-  // HOME VISIBILITY (MINIMA)
+  // ✅ HOME VISIBILITY (MINIMA)
   // ============================
   function setHomeHidden(on) {
     const home = cardsTrack.querySelector('.slide[data-slide-id="home"]');
     if (!home) return;
 
     if (on) {
+      // invisibile e non “sporca”
       home.style.opacity = "0";
       home.style.visibility = "hidden";
       home.style.pointerEvents = "none";
@@ -80,46 +81,28 @@
   }
 
   // ============================
-  // DOTS (Safari iOS fix)
+  // --- dots
   // ============================
-  let rafDots = 0;
-
-  function scheduleDotsSync() {
-    if (rafDots) cancelAnimationFrame(rafDots);
-
-    // Safari iOS: a volte non ridisegna se tocchi visibility + transform nello stesso tick
-    // Forziamo un micro reflow e ridisegniamo al frame successivo.
-    // (Non cambia grafica, è solo un “refresh”.)
-    void dotsPill?.offsetWidth;
-
-    rafDots = requestAnimationFrame(() => {
-      rafDots = 0;
-      renderDots();
-      syncActiveDot();
-    });
-  }
-
   let activeIndex = 0;
 
   function renderDots() {
     const slides = getSlides();
 
-    // Se esistono altre card oltre home, non disegnare il dot di home
+    // ✅ se home è nascosta (perché ci sono altre card), non disegnare il dot di home
     const showHomeDot = !hasExtraSlides();
     const dotsSlides = showHomeDot ? slides : slides.filter(s => s.dataset.slideId !== "home");
 
     dotsPill.innerHTML = "";
-
     dotsSlides.forEach((s) => {
       const d = document.createElement("div");
       d.className = "dot";
       d.dataset.slideId = s.dataset.slideId;
 
+      // attivo
       if (s.dataset.slideId === currentSlideId()) d.classList.add("isActive");
 
       d.title = s.dataset.title || s.dataset.slideId || "";
       d.addEventListener("click", () => goToSlideId(s.dataset.slideId, { fromUser: true }));
-
       dotsPill.appendChild(d);
     });
   }
@@ -168,9 +151,11 @@
   function goTo(i, { fromUser=false } = {}) {
     computeGap();
 
-    // evita home “di swipe” quando ci sono altre card
+    // ✅ evita home “di swipe” quando ci sono altre card (COMPORTAMENTO IDENTICO AL TUO)
+    const slides = getSlides();
     const curId = currentSlideId();
     const homeIndex = getSlideIndexById("home");
+
     if (!fromUser && curId !== "home" && homeIndex === 0) {
       i = Math.max(1, i);
     }
@@ -181,8 +166,8 @@
     const id = currentSlideId();
     document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id } }));
 
-    // ✅ refresh dots (con fix iOS)
-    scheduleDotsSync();
+    // ✅ aggiorna dots (senza cambiare grafica)
+    renderDots();
   }
 
   function goToSlideId(id, opts={}) {
@@ -238,7 +223,7 @@
   cardsViewport.addEventListener("pointerup", onPointerUp, { passive: true });
   cardsViewport.addEventListener("pointercancel", onPointerUp, { passive: true });
 
-  // --- dots drag feedback
+  // --- dots drag feedback (IDENTICO AL TUO)
   let dotsDragging = false;
   let dotsStartX = 0;
 
@@ -277,7 +262,6 @@
     requestAnimationFrame(syncMenuWidthVar);
     setTimeout(syncMenuWidthVar, 280);
   }
-
   function closeMenu() {
     body.classList.remove("isMenuOpen");
     menuDrawer.setAttribute("aria-hidden", "true");
@@ -294,7 +278,7 @@
     if (body.classList.contains("isMenuOpen")) closeMenu();
   });
 
-  // --- no pinch zoom / no double tap zoom
+  // --- no pinch zoom / no double tap zoom (IDENTICO AL TUO)
   document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
   document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
   document.addEventListener("gestureend", (e) => e.preventDefault(), { passive: false });
@@ -309,24 +293,33 @@
   // --- public API
   function openCalendarInsert() {
     ensureSlide({ id: "calInsert", title: "Calendario" });
+
+    // ✅ home invisibile quando apri altre card
     setHomeHidden(true);
-    scheduleDotsSync();
+
+    renderDots();
     goToSlideId("calInsert", { fromUser:true });
     document.dispatchEvent(new Event("nettotrack:calendarInsertOpened"));
   }
 
   function openCalendarView() {
     ensureSlide({ id: "calView", title: "Agenda" });
+
+    // ✅ home invisibile quando apri altre card
     setHomeHidden(true);
-    scheduleDotsSync();
+
+    renderDots();
     goToSlideId("calView", { fromUser:true });
     document.dispatchEvent(new Event("nettotrack:calendarViewOpened"));
   }
 
   function openDayEditor(dateKey) {
     ensureSlide({ id: "dayEditor", title: "Turni" });
+
+    // ✅ home invisibile quando apri altre card
     setHomeHidden(true);
-    scheduleDotsSync();
+
+    renderDots();
     goToSlideId("dayEditor", { fromUser:true });
     document.dispatchEvent(new CustomEvent("nettotrack:dayEditorOpened", { detail: { dateKey } }));
   }
@@ -338,10 +331,12 @@
     removeSlide(id);
 
     const slides = getSlides();
-    const anyExtra = slides.some(s => s.dataset.slideId !== "home");
 
-    // se non ci sono più card oltre home, home torna visibile
+    // ✅ se non ci sono più card oltre home, home torna visibile
+    const anyExtra = slides.some(s => s.dataset.slideId !== "home");
     setHomeHidden(anyExtra);
+
+    renderDots();
 
     if (!slides.length) return;
 
@@ -350,14 +345,13 @@
       activeIndex = clamp(fb >= 0 ? fb : 0, 0, slides.length - 1);
 
       // se fallback è home ma home è nascosta, vai alla prima card “vera”
-      if (anyExtra && (slides[activeIndex]?.dataset.slideId === "home")) {
+      if (anyExtra && currentSlideId() === "home") {
         activeIndex = Math.max(1, activeIndex);
       }
 
       setActiveIndex(activeIndex);
       computeGap();
       applyTrackX(trackXForIndex(activeIndex), false);
-
       document.dispatchEvent(new CustomEvent("nettotrack:slideChanged", { detail: { id: currentSlideId() } }));
     } else {
       activeIndex = clamp(activeIndex, 0, slides.length - 1);
@@ -366,8 +360,8 @@
       applyTrackX(trackXForIndex(activeIndex), false);
     }
 
-    // ✅ refresh dots (con fix iOS)
-    scheduleDotsSync();
+    // ✅ assicurati dots coerenti dopo chiusura
+    renderDots();
   }
 
   // events used by menu.js
@@ -391,8 +385,9 @@
   computeGap();
   setActiveIndex(0);
 
+  // ✅ all’avvio: home visibile + dots corretti
   setHomeHidden(false);
-  scheduleDotsSync();
+  renderDots();
 
   applyTrackX(trackXForIndex(0), false);
 
@@ -400,7 +395,9 @@
     computeGap();
     applyTrackX(trackXForIndex(activeIndex), false);
     syncMenuWidthVar();
-    scheduleDotsSync(); // Safari a volte “perde” il repaint
+
+    // ✅ ridisegna dots su resize (Safari a volte impazzisce)
+    renderDots();
   });
 
   syncMenuWidthVar();
