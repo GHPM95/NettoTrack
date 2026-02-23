@@ -1,0 +1,168 @@
+/* =========================
+   Day Editor (turni) — separato
+   ========================= */
+
+.dedRoot{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+  min-height:0;
+}
+
+.dedHeader{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  align-items:center;
+  gap: 10px;
+}
+
+.dedTitle{
+  font-weight: 1000;
+  letter-spacing:.2px;
+  font-size: clamp(14px, 3.6vw, 17px);
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+
+.dedBody{
+  flex:1;
+  min-height:0;
+  overflow:auto;            /* ✅ solo verticale */
+  overflow-x:hidden;        /* ✅ mai orizzontale */
+  padding-right: 2px;
+}
+
+.dedLabel{
+  display:block;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--muted);
+  margin: 10px 0 6px;
+}
+
+.dedInput, .dedTextArea{
+  width:100%;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  background:
+    radial-gradient(120% 160% at 30% 0%, rgba(255,255,255,.10), transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
+  color: var(--text);
+  font-weight: 900;
+  outline:none;
+  padding: 0 12px;
+}
+.dedInput{ height: 46px; }
+.dedTextArea{
+  padding: 10px 12px;
+  min-height: 90px;
+  resize: none;
+}
+
+.dedRow2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dedShiftBox{
+  width: 100%;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+  padding: 12px;
+  margin-top: 10px;
+}
+
+.dedShiftTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+}
+
+.dedShiftName{
+  font-weight: 1000;
+}
+
+.dedSmallBtn{
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  border:none;
+  background: rgba(255,255,255,.10);
+  color: var(--text);
+  font-weight: 900;
+  transition: transform .12s ease, filter .12s ease;
+}
+.dedSmallBtn:active{ transform: scale(.96); filter: brightness(1.08); }
+
+.dedPillsRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.dedPill{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+  color: var(--text);
+  font-weight: 950;
+  transition: transform .12s ease, filter .12s ease;
+}
+.dedPill:active{ transform: scale(.97); filter: brightness(1.08); }
+.dedPill input{ display:none; }
+
+.dedPill.isOn{
+  border-color: rgba(42,233,255,.24);
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.14), transparent 55%),
+    linear-gradient(180deg, rgba(124,92,255,.14), rgba(255,79,216,.08));
+}
+
+.dedPill.isDisabled{
+  opacity: .35;
+  pointer-events:none;
+}
+
+.dedFooter{
+  display:flex;
+  gap: 10px;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.dedBtnWide{
+  flex:1;
+  height: 46px;
+  border-radius: 16px;
+  border:none;
+  background: rgba(255,255,255,.10);
+  color: var(--text);
+  font-weight: 1000;
+  letter-spacing:.15px;
+  transition: transform .12s ease, filter .12s ease;
+}
+.dedBtnWide:active{ transform: scale(.97); filter: brightness(1.08); }
+
+.dedBtnWide.isDisabled{
+  opacity:.35;
+  pointer-events:none;
+}
+
+.dedHint{
+  margin-top: 8px;
+  color: var(--muted);
+  font-weight: 850;
+  font-size: 12px;
+  line-height: 1.35;
+}
