@@ -1,3 +1,5 @@
+document.addEventListener("DOMContentLoaded", () => {
+
 (() => {
   const $ = (sel, root=document) => root.querySelector(sel);
   const menuDrawer = $("#menuDrawer");
@@ -77,7 +79,7 @@
 
     $("#mCalInsert", menuDrawer)?.addEventListener("click", () => {
       document.dispatchEvent(new Event("nettotrack:openCalendarInsert"));
-      $("#menuBtn")?.click();
+      $("#menuBtn")?.click(); // chiudi menu
     });
 
     $("#mCalView", menuDrawer)?.addEventListener("click", () => {
@@ -91,3 +93,5 @@
 
   document.addEventListener("nettotrack:refreshMenu", renderMenu);
 })();
+
+});
