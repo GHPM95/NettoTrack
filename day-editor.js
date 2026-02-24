@@ -154,12 +154,12 @@
           <button class="deClose" type="button" aria-label="Chiudi">×</button>
         </div>
 
-        <div class="deShifts" id="deShifts"></div>
-
-        <div class="deActions">
-          <button class="deAddShift" id="deAddShift" type="button">+ Aggiungi turno</button>
-        </div>
-      </div>
+        <div class="deContent">
+  <div class="deShifts" id="deShifts"></div>
+  <div class="deActions">
+    <button class="deAddShift" id="deAddShift" type="button">+ Aggiungi turno</button>
+  </div>
+</div>
     `;
 
     // close
