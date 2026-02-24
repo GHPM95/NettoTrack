@@ -1,6 +1,5 @@
 /* =========================
    calendar-insert.css - NettoTrack
-   (fix: quadrati, layout dentro card, picker full-card, no doppio strato)
    ========================= */
 
 :root{
@@ -9,7 +8,7 @@
   --cinsRadius: 24px;
 
   --cinsBtnR: 16px;       /* < > X */
-  --cinsDayR: 18px;       /* giorni: QUADRATI arrotondati (non cerchi) */
+  --cinsDayR: 18px;       /* giorni: QUADRATI arrotondati */
 
   --cinsGlassA: rgba(255,255,255,.11);
   --cinsGlassB: rgba(255,255,255,.06);
@@ -25,7 +24,6 @@
   --cinsPink: #FF4FD8;
 }
 
-/* root del modulo */
 .cinsRoot{
   position: relative;
   width: 100%;
@@ -37,12 +35,18 @@
   color: var(--cinsText);
 }
 
-/* header */
+/* ✅ HEADER: < > vicine a sinistra | titolo | X */
 .cinsHeader{
   display: grid;
-  grid-template-columns: 44px 1fr 44px 44px;
+  grid-template-columns: auto 1fr 44px;
   align-items: center;
   gap: 10px;
+}
+
+.cinsNavLeft{
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .cinsIconBtn,
@@ -65,7 +69,6 @@
   border-color: rgba(255,255,255,.18);
 }
 
-/* titolo cliccabile */
 .cinsTitleBtn{
   border: 0;
   background: transparent;
@@ -95,7 +98,9 @@
   color: var(--cinsMuted);
 }
 
-/* weekdays */
+/* =========================
+   WEEKDAYS (✅ quadrati)
+   ========================= */
 .cinsWeekdays{
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -104,10 +109,20 @@
 }
 
 .cinsW{
-  text-align: center;
-  font-weight: 800;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  backdrop-filter: blur(12px);
+
+  font-weight: 900;
   font-size: 13px;
-  color: rgba(255,255,255,.65);
+  color: rgba(255,255,255,.70);
 }
 
 /* grid */
@@ -119,10 +134,7 @@
   align-content: start;
 }
 
-/* cell wrapper (non visivo, serve per stabilità layout) */
-.cinsCell{
-  width: 100%;
-}
+.cinsCell{ width: 100%; }
 
 /* day button: QUADRATO */
 .cinsDay{
@@ -151,13 +163,12 @@
   overflow: hidden;
 }
 
-/* celle vuote */
 .cinsDay.isEmpty{
   opacity: .25;
   pointer-events: none;
 }
 
-/* TODAY: più visibile + gradiente VERTICALE (come puntini magici) */
+/* ✅ TODAY “come prima”: pill verticale (non overlay pieno) */
 .cinsDay.isToday{
   border-color: rgba(255,255,255,.22);
   box-shadow: 0 10px 26px rgba(0,0,0,.22);
@@ -166,14 +177,17 @@
 .cinsDay.isToday::before{
   content:"";
   position:absolute;
-  inset: 8px;
-  border-radius: calc(var(--cinsDayR) - 6px);
-  background: linear-gradient(180deg, var(--cinsCyan), var(--cinsViolet), var(--cinsPink));
-  opacity: .28;
-  filter: blur(0px);
+  top: 10px;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--cinsPink), var(--cinsViolet), var(--cinsCyan));
+  opacity: .95;
+  filter: saturate(1.05);
 }
 
-/* Selected */
 .cinsDay.isSelected{
   border-color: rgba(255,255,255,.28);
 }
@@ -201,10 +215,7 @@
 }
 
 /* =========================
-   PICKER (mese/anno)
-   - niente doppio grigiore
-   - overlay grande quanto la card
-   - sotto invisibile
+   PICKER (mese/anno) - invariato
    ========================= */
 
 .cinsPickerLayer{
@@ -212,8 +223,6 @@
   inset: 0;
   display: none;
   z-index: 50;
-
-  /* 🔑 niente “secondo strato” scuro */
   background: transparent;
 }
 
@@ -221,7 +230,6 @@
   display: block;
 }
 
-/* card picker: grande quanto la card */
 .cinsPickerCard{
   position: absolute;
   inset: 0;
@@ -238,7 +246,6 @@
   flex-direction: column;
   gap: 14px;
 
-  /* swipe down */
   touch-action: pan-y;
 }
 
@@ -267,7 +274,6 @@
   font-size: clamp(20px, 4vw, 30px);
 }
 
-/* months grid */
 .cinsMonthGrid{
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -298,7 +304,6 @@
   font-weight: 800;
 }
 
-/* quando picker aperto: nascondo tutto il calendario sotto (NO pasticcio visivo) */
 .cinsRoot.isPickerOn .cinsHeader,
 .cinsRoot.isPickerOn .cinsHint,
 .cinsRoot.isPickerOn .cinsWeekdays,
