@@ -26,7 +26,6 @@
   align-items:center;
 }
 
-/* Bottoni */
 .ntBtn{
   width: 38px;
   height: 38px;
@@ -40,7 +39,6 @@
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
 .ntBtn:active{ transform: scale(.96); filter: brightness(1.08); background: rgba(255,255,255,.14); }
-.ntBtn.isDisabled{ opacity:.35; pointer-events:none; }
 
 .cinsTitleBtn{
   border:none;
@@ -71,27 +69,31 @@
   gap: 10px;
 }
 
-/* Weekdays row (✅ quadrati) */
+/* Weekdays: ✅ DIV statici, QUADRATI */
 .cinsWeekdays{
   display:grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0,1fr));
   gap: 8px;
   padding: 0 6px;
 }
+
 .cinsW{
-  aspect-ratio: 1 / 1;
+  width: 100%;
+  aspect-ratio: 1 / 1;          /* ✅ QUADRATO */
   display:flex;
   align-items:center;
   justify-content:center;
-  border-radius: 16px;               /* ✅ quadrato */
+  border-radius: 16px !important;/* ✅ non tondo */
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.05);
   font-size: 12px;
   font-weight: 900;
   color: var(--muted);
+  user-select:none;
+  pointer-events:none;          /* ✅ non cliccabile */
 }
 
-/* Month grid */
+/* grid */
 .cinsGrid{
   flex:1;
   min-height:0;
@@ -102,19 +104,20 @@
   padding: 6px;
 }
 
-/* day cell button (✅ quadrati) */
+/* giorni: ✅ QUADRATI veri */
 .cinsDay{
+  width: 100%;
+  aspect-ratio: 1 / 1;          /* ✅ QUADRATO */
+  border-radius: 18px !important;
   border: 1px solid rgba(255,255,255,.14);
   background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-  border-radius: 18px;               /* ✅ quadrato */
   display:flex;
   align-items:center;
   justify-content:center;
   position: relative;
   min-width: 0;
-  aspect-ratio: 1 / 1;               /* ✅ blocca forma */
+  overflow:hidden;              /* today overlay */
   transition: transform .12s ease, filter .12s ease, background .12s ease;
-  overflow: hidden;                  /* per today */
 }
 .cinsDay:active{ transform: scale(.98); filter: brightness(1.07); background: rgba(255,255,255,.10); }
 
@@ -123,7 +126,6 @@
   pointer-events: none;
 }
 
-/* numero */
 .cinsNum{
   font-weight: 1000;
   font-variant-numeric: tabular-nums;
@@ -132,7 +134,7 @@
   z-index: 2;
 }
 
-/* ✅ TODAY: pill verticale “magica” (soft) */
+/* today: pill verticale */
 .cinsDay.isToday{
   border-color: rgba(255,255,255,.18);
 }
@@ -149,7 +151,7 @@
   z-index: 1;
 }
 
-/* dots (base/extra) */
+/* dots */
 .cinsDots{
   position:absolute;
   bottom: 7px;
@@ -164,15 +166,15 @@
   border-radius: 50%;
   opacity: .95;
 }
-.cinsDot.base{ background: var(--accent2); } /* cyan */
-.cinsDot.extra{ background: var(--accent1); } /* viola */
+.cinsDot.base{ background: var(--accent2); }
+.cinsDot.extra{ background: var(--accent1); }
 
-/* Picker overlay */
+/* picker */
 .cinsPickerLayer{
   position:absolute;
   inset:0;
   border-radius: var(--rCard);
-  background: rgba(0,0,0,.18);        /* ✅ 1 solo layer */
+  background: rgba(0,0,0,.18);
   backdrop-filter: blur(10px);
   display:none;
   align-items:center;
@@ -181,7 +183,6 @@
 }
 .cinsPickerLayer.isOn{ display:flex; }
 
-/* ✅ quando picker aperto, nascondi sotto (niente pasticcio) */
 .cinsRoot.isPickerOn .cinsHeader,
 .cinsRoot.isPickerOn .cinsBody{
   visibility: hidden;
@@ -254,3 +255,7 @@
   color: var(--muted);
   font-weight: 850;
 }
+
+/* ✅ HARD LOCK EXTRA: se qualche CSS globale tonda tutto */
+.cinsRoot .cinsGrid .cinsDay{ border-radius: 18px !important; }
+.cinsRoot .cinsWeekdays .cinsW{ border-radius: 16px !important; }
