@@ -22,7 +22,7 @@
   font-size: 20px;
 }
 
-/* X e - come ntBtn */
+/* X e - come ntBtn (stesso feel dei pulsanti calendario) */
 .deClose,
 .deRemoveShift{
   width: 38px;
@@ -87,10 +87,9 @@
   font-weight: 800;
 }
 .deTextarea::placeholder{ color: rgba(255,255,255,.42); }
-
 .deTextareaSmall{ min-height: 46px; }
 
-/* ✅ Nota turno: stile 1:1 picker card (solo questa) */
+/* ✅ Nota turno: stile 1:1 “picker” (mese/anno) */
 .deTextareaPicker{
   border-radius: var(--rCard);
   border: 1px solid rgba(255,255,255,.14);
@@ -137,7 +136,7 @@
   font-size: 16px;
 }
 
-/* Box orari/pausa = picker card */
+/* ✅ Box orari/pausa = picker card */
 .deGrid{
   display:grid;
   grid-template-columns: 1fr 1fr;
@@ -155,11 +154,7 @@
   margin-top: 6px;
 }
 
-.deField{
-  display:flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.deField{ display:flex; flex-direction: column; gap: 6px; }
 
 .deFieldLbl{
   font-size: 12px;
@@ -189,7 +184,7 @@
 }
 .deSelect{ appearance: none; }
 
-/* ✅ Chips più accesi come puntini intelligenti */
+/* ✅ Chips più accesi come “puntini intelligenti / switch” */
 .deChips{
   display:flex;
   flex-wrap: wrap;
@@ -208,21 +203,17 @@
   letter-spacing: .15px;
   transition: transform .12s ease, filter .12s ease, background .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
-.deChip:active{
-  transform: scale(.98);
-  filter: brightness(1.08);
-}
+.deChip:active{ transform: scale(.98); filter: brightness(1.08); }
 
-/* ON = glow + colori “accent” come puntini */
+/* ON = STESSO gradiente dello switch (accent2 → accent1 → accent3) */
 .deChip.isOn{
-  border-color: rgba(255,255,255,.20);
-  background:
-    radial-gradient(120% 160% at 30% 0%, rgba(42,233,255,.22), transparent 60%),
-    linear-gradient(90deg, rgba(42,233,255,.26), rgba(124,92,255,.22));
+  border-color: rgba(255,255,255,.22);
+  background: linear-gradient(90deg, var(--accent2), var(--accent1), var(--accent3));
   box-shadow:
     0 0 0 1px rgba(255,255,255,.06) inset,
-    0 10px 26px rgba(42,233,255,.10),
-    0 10px 26px rgba(124,92,255,.10);
+    0 14px 34px rgba(42,233,255,.14),
+    0 14px 34px rgba(124,92,255,.12),
+    0 14px 34px rgba(255,79,216,.10);
 }
 
 /* nota turno */
