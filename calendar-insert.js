@@ -1,434 +1,341 @@
-/* =========================================================
-   calendar-insert.js
-   Card "Inserisci dati" / Calendario (selezione giorno)
-   - Giorni quadrati (senza .cinsCircle = niente doppio contorno)
-   - Puntini base/extra: restano gestiti con .cinsDots/.cinsDot
-   - Picker mese/anno: mantiene logica esistente
-   ========================================================= */
-
+/* =========================
+   calendar-insert.js - NettoTrack
+   Month grid + month/year picker
+   ========================= */
 (() => {
-  "use strict";
+  const $ = (sel, root=document) => root.querySelector(sel);
 
-  // Evita doppie inizializzazioni (hot reload / script doppio)
-  if (window.__NettoTrack_CalendarInsert_Init) return;
-  window.__NettoTrack_CalendarInsert_Init = true;
+  const MONTHS_IT = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
+  const WEEK_IT = ["L","M","M","G","V","S","D"];
 
-  // Helpers
-  const $ = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  // storage keys used elsewhere (keep stable)
+  const STORAGE_KEY = "nettotrack_days_v1";
 
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function dateKeyFromYMD(y,m,d){ return `${pad2(d)}/${pad2(m+1)}/${y}`; }
 
-  // --- Stato interno
-  let rootEl = null;
-  let store = null;
+  function loadDB(){
+    try{
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    }catch{
+      return {};
+    }
+  }
 
-  // mese/anno correnti per render
-  let viewYear = null;
-  let viewMonth = null; // 0..11
+  function hasBaseExtraForDate(db, dateKey){
+    const entry = db?.[dateKey];
+    if (!entry) return { base:false, extra:false };
 
-  // selezione (giorno cliccato)
-  let selectedY = null;
-  let selectedM = null;
-  let selectedD = null;
+    // support multiple possible shapes (non rompiamo compatibilità)
+    // - entry.shifts[] with tags
+    // - entry.baseHours / entry.extraHours
+    // - entry.flags.base/extra
+    let base = false, extra = false;
 
-  // --------- Template UI (card interna)
-  const TEMPLATE = `
-  <div class="cinsRoot" id="cinsRoot">
-    <div class="cinsHeader">
-      <div class="cinsTitleWrap">
-        <div class="cinsTitle">Inserisci dati</div>
-        <div class="cinsSub">Seleziona un giorno per inserire i dati (gestione dopo).</div>
-      </div>
+    if (Array.isArray(entry.shifts)){
+      for (const s of entry.shifts){
+        if (s?.isExtra || s?.type === "extra" || s?.extra === true) extra = true;
+        if (s?.isBase || s?.type === "base" || s?.base === true) base = true;
 
-      <button class="cinsClose" id="cinsClose" type="button" aria-label="Chiudi">×</button>
-    </div>
-
-    <div class="cinsBody" id="cinsBody">
-      <div class="cinsTopRow">
-        <button class="cinsNavBtn" id="cinsPrev" type="button" aria-label="Mese precedente">‹</button>
-
-        <button class="cinsMonthBtn" id="cinsMonthBtn" type="button" aria-label="Cambia mese e anno">
-          <span class="cinsMonthText" id="cinsMonthText">—</span>
-        </button>
-
-        <button class="cinsNavBtn" id="cinsNext" type="button" aria-label="Mese successivo">›</button>
-      </div>
-
-      <div class="cinsWeek" id="cinsWeek">
-        <div>L</div><div>M</div><div>M</div><div>G</div><div>V</div><div>S</div><div>D</div>
-      </div>
-
-      <div class="cinsGrid" id="cinsGrid"></div>
-
-      <div class="cinsHint" id="cinsHint">Seleziona un giorno per inserire i dati (gestione dopo).</div>
-    </div>
-
-    <!-- Picker Mese/Anno -->
-    <div class="cinsPickerLayer" id="cinsPickerLayer" aria-hidden="true">
-      <div class="cinsPickerCard" id="cinsPickerCard" role="dialog" aria-modal="true" aria-label="Seleziona mese e anno">
-        <div class="cinsPickerHeader">
-          <div class="cinsPickerTitle">Seleziona mese e anno</div>
-          <button class="cinsPickerClose" id="cinsPickerClose" type="button" aria-label="Chiudi">×</button>
-        </div>
-
-        <div class="cinsPickerYearRow">
-          <button class="cinsPickerNav" id="cinsYearPrev" type="button" aria-label="Anno precedente">‹</button>
-          <div class="cinsPickerYear" id="cinsPickerYear">—</div>
-          <button class="cinsPickerNav" id="cinsYearNext" type="button" aria-label="Anno successivo">›</button>
-        </div>
-
-        <div class="cinsMonthsGrid" id="cinsMonthsGrid"></div>
-
-        <div class="cinsPickerHint">Swipe down per chiudere</div>
-      </div>
-    </div>
-  </div>
-  `;
-
-  // --------- API pubblica
-  // mountCalendarInsert(mountEl, options)
-  // options.store -> CalendarCore.getStore()
-  // options.onClose -> callback
-  // options.openDateStr -> "YYYY-MM-DD"
-  window.mountCalendarInsert = function mountCalendarInsert(mountEl, options = {}) {
-    if (!mountEl) return;
-
-    // Se già montata, smonta e rimonta pulito
-    mountEl.innerHTML = "";
-
-    mountEl.innerHTML = TEMPLATE;
-    rootEl = $("#cinsRoot", mountEl);
-
-    store = options.store || (window.CalendarCore ? window.CalendarCore.getStore?.() : null);
-
-    // set data iniziale (oggi o openDateStr)
-    const now = new Date();
-    let startY = now.getFullYear();
-    let startM = now.getMonth();
-
-    if (options.openDateStr && window.CalendarCore?.parseYMD) {
-      const parsed = window.CalendarCore.parseYMD(options.openDateStr);
-      if (parsed) {
-        startY = parsed.y;
-        startM = parsed.m;
+        // fallback: check checkboxes flags stored in shift
+        if (s?.straordinario === true) extra = true;
+        if (s?.mattino || s?.pomeriggio || s?.notte) base = true;
       }
     }
 
-    viewYear = startY;
-    viewMonth = startM;
+    if (typeof entry.baseHours === "number" && entry.baseHours > 0) base = true;
+    if (typeof entry.extraHours === "number" && entry.extraHours > 0) extra = true;
 
-    // bind eventi base
-    bindBaseEvents(mountEl, options);
+    if (entry.flags){
+      if (entry.flags.base === true) base = true;
+      if (entry.flags.extra === true) extra = true;
+    }
 
-    // render iniziale
-    renderMonth(mountEl);
+    return { base, extra };
+  }
 
-    // chiudi menu (se esiste) quando apri card
-    document.body.classList.remove("isMenuOpen");
-  };
+  function buildTemplate(){
+    return `
+      <div class="cinsRoot" id="cinsRoot">
+        <div class="cinsHeader">
+          <div class="cinsNavGroup">
+            <button class="cinsIconBtn" id="cinsPrev" type="button" aria-label="Mese precedente">‹</button>
+            <button class="cinsIconBtn" id="cinsNext" type="button" aria-label="Mese successivo">›</button>
+          </div>
 
-  // Smonta (opzionale)
-  window.unmountCalendarInsert = function unmountCalendarInsert(mountEl) {
+          <div class="cinsTitle" id="cinsTitle" role="button" aria-label="Seleziona mese e anno">
+            <span id="cinsMonthLabel">Febbraio</span> <small id="cinsYearLabel">2026</small>
+          </div>
+
+          <button class="cinsIconBtn" id="cinsCloseCard" type="button" aria-label="Chiudi">×</button>
+        </div>
+
+        <div class="cinsBody" id="cinsBody">
+          <div class="cinsWeekdays" id="cinsWeekdays"></div>
+          <div class="cinsGrid" id="cinsGrid" aria-label="Calendario mese"></div>
+          <div class="cinsHint">Seleziona un giorno per inserire i dati (gestione dopo).</div>
+        </div>
+
+        <!-- Month/Year picker overlay -->
+        <div class="cinsPickerLayer" id="cinsPickerLayer" aria-hidden="true">
+          <div class="cinsPickerCard" id="cinsPickerCard">
+            <div class="cinsPickerTop">
+              <div class="cinsPickerTitle">Seleziona mese e anno</div>
+              <button class="cinsIconBtn" id="cinsPickerClose" type="button" aria-label="Chiudi">×</button>
+            </div>
+
+            <div class="cinsPickerYearRow">
+              <button class="cinsIconBtn" id="cinsYearPrev" type="button" aria-label="Anno precedente">‹</button>
+              <div class="cinsPickerYear" id="cinsPickerYear">2026</div>
+              <button class="cinsIconBtn" id="cinsYearNext" type="button" aria-label="Anno successivo">›</button>
+            </div>
+
+            <div class="cinsMonthGrid" id="cinsMonthGrid" aria-label="Mesi"></div>
+            <div class="cinsPickerHint">Swipe down per chiudere</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function mountCalendarInsert(mountEl){
     if (!mountEl) return;
-    mountEl.innerHTML = "";
-  };
 
-  // --------- Events
-  function bindBaseEvents(mountEl, options) {
-    const closeBtn = $("#cinsClose", mountEl);
+    mountEl.innerHTML = buildTemplate();
+
+    const root = $("#cinsRoot", mountEl);
+    const title = $("#cinsTitle", mountEl);
+    const monthLabel = $("#cinsMonthLabel", mountEl);
+    const yearLabel = $("#cinsYearLabel", mountEl);
+
     const prevBtn = $("#cinsPrev", mountEl);
     const nextBtn = $("#cinsNext", mountEl);
-    const monthBtn = $("#cinsMonthBtn", mountEl);
+    const closeBtn = $("#cinsCloseCard", mountEl);
 
-    closeBtn?.addEventListener("click", () => {
-      if (typeof options.onClose === "function") options.onClose();
-    });
+    const weekdaysEl = $("#cinsWeekdays", mountEl);
+    const gridEl = $("#cinsGrid", mountEl);
 
-    prevBtn?.addEventListener("click", () => {
-      moveMonth(-1);
-      renderMonth(mountEl);
-    });
-
-    nextBtn?.addEventListener("click", () => {
-      moveMonth(+1);
-      renderMonth(mountEl);
-    });
-
-    monthBtn?.addEventListener("click", () => {
-      openPicker(mountEl);
-    });
-
-    // Picker close
     const pickerLayer = $("#cinsPickerLayer", mountEl);
+    const pickerCard = $("#cinsPickerCard", mountEl);
     const pickerClose = $("#cinsPickerClose", mountEl);
+    const yearPrev = $("#cinsYearPrev", mountEl);
+    const yearNext = $("#cinsYearNext", mountEl);
+    const pickerYear = $("#cinsPickerYear", mountEl);
+    const monthGrid = $("#cinsMonthGrid", mountEl);
 
-    pickerClose?.addEventListener("click", () => closePicker(mountEl));
-    pickerLayer?.addEventListener("click", (e) => {
-      if (e.target === pickerLayer) closePicker(mountEl);
-    });
+    // Build weekdays once
+    weekdaysEl.innerHTML = WEEK_IT.map(d => `<div>${d}</div>`).join("");
 
-    // Swipe down per chiudere (pointer)
-    enablePickerSwipeToClose(mountEl);
-  }
+    // State
+    let view = new Date();
+    view.setDate(1);
 
-  function moveMonth(delta) {
-    let y = viewYear;
-    let m = viewMonth + delta;
-    while (m < 0) {
-      y -= 1;
-      m += 12;
-    }
-    while (m > 11) {
-      y += 1;
-      m -= 12;
-    }
-    viewYear = y;
-    viewMonth = m;
-  }
+    let selectedKey = null;
 
-  // --------- Render
-  function renderMonth(mountEl) {
-    if (!window.CalendarCore) return;
+    // Today
+    const now = new Date();
+    const todayKey = dateKeyFromYMD(now.getFullYear(), now.getMonth(), now.getDate());
 
-    // Header (mese/anno)
-    const monthText = $("#cinsMonthText", mountEl);
-    if (monthText) {
-      monthText.textContent = CalendarCore.monthLabel(viewMonth) + " " + viewYear;
+    function monthNameIt(m){
+      // full month in IT for header
+      const full = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+      return full[m] || "";
     }
 
-    const grid = $("#cinsGrid", mountEl);
-    if (!grid) return;
-    grid.innerHTML = "";
+    function setHeader(){
+      monthLabel.textContent = monthNameIt(view.getMonth());
+      yearLabel.textContent = String(view.getFullYear());
+    }
 
-    const todayStr = CalendarCore.todayYMD();
-    const ym = CalendarCore.monthMatrix(viewYear, viewMonth);
+    function openPicker(){
+      root.classList.add("isPickerOn");
+      pickerLayer.setAttribute("aria-hidden", "false");
+      pickerYear.textContent = String(view.getFullYear());
+    }
 
-    // ym è una matrice 6x7 di oggetti: { y,m,d, inMonth, dateStr }
-    ym.forEach((week) => {
-      week.forEach((cell) => {
-        const isValid = !!cell.inMonth;
-        const dayNum = cell.d;
+    function closePicker(){
+      root.classList.remove("isPickerOn");
+      pickerLayer.setAttribute("aria-hidden", "true");
+    }
+
+    function renderMonthButtons(){
+      monthGrid.innerHTML = "";
+      MONTHS_IT.forEach((mName, idx) => {
+        const b = document.createElement("button");
+        b.className = "cinsMonthBtn";
+        b.type = "button";
+        b.textContent = mName;
+        b.addEventListener("click", () => {
+          view.setMonth(idx);
+          closePicker();
+          render();
+        });
+        monthGrid.appendChild(b);
+      });
+    }
+
+    function render(){
+      setHeader();
+
+      const db = loadDB();
+
+      // compute month grid (Mon-first)
+      const y = view.getFullYear();
+      const m = view.getMonth();
+      const first = new Date(y, m, 1);
+
+      // JS: 0=Sun..6=Sat => convert to Mon-first index
+      let startDay = first.getDay(); // 0..6
+      startDay = (startDay + 6) % 7; // Mon=0..Sun=6
+
+      const daysInMonth = new Date(y, m+1, 0).getDate();
+
+      // total cells 6 weeks = 42
+      const total = 42;
+
+      gridEl.innerHTML = "";
+
+      for (let i=0; i<total; i++){
+        const cell = document.createElement("div");
+        cell.className = "cinsCell";
+
+        const dayNum = i - startDay + 1;
 
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "cinsDay" + (isValid ? "" : " isOff");
+        btn.className = "cinsDay";
 
-        if (!isValid) {
-          btn.disabled = true;
-          btn.setAttribute("aria-hidden", "true");
-          grid.appendChild(btn);
-          return;
+        if (dayNum < 1 || dayNum > daysInMonth){
+          btn.classList.add("isEmpty");
+          btn.textContent = "";
+          cell.appendChild(btn);
+          gridEl.appendChild(cell);
+          continue;
         }
 
-        // Numero direttamente nel bottone (giorni "quadrati")
         btn.textContent = String(dayNum);
 
-        btn.dataset.date = cell.dateStr;
-        btn.setAttribute("aria-label", `Giorno ${dayNum}`);
+        const key = dateKeyFromYMD(y, m, dayNum);
 
-        // Stato (base/extra/draft) dal tuo store
-        const entry = readDayEntry(cell.dateStr);
-        const hasBase = !!entry?.baseHours && entry.baseHours > 0;
-        const hasExtra = !!entry?.extraHours && entry.extraHours > 0;
-        const hasDraft = !!entry?.draft;
+        // Today highlight
+        if (key === todayKey) btn.classList.add("isToday");
 
-        // Puntini ore base/extra (sempre presenti: vuoti se non servono,
-        // così il layout resta stabile)
-        const dots = document.createElement("div");
-        dots.className = "cinsDots";
-        if (hasBase) {
-          const d = document.createElement("div");
-          d.className = "cinsDot base" + (hasDraft ? " draft" : "");
-          dots.appendChild(d);
+        // Selected highlight
+        if (selectedKey && key === selectedKey) btn.classList.add("isSelected");
+
+        // base/extra dots
+        const { base, extra } = hasBaseExtraForDate(db, key);
+        if (base){
+          const d = document.createElement("span");
+          d.className = "cinsDot base";
+          btn.appendChild(d);
         }
-        if (hasExtra) {
-          const d = document.createElement("div");
-          d.className = "cinsDot extra" + (hasDraft ? " draft" : "");
-          dots.appendChild(d);
-        }
-        btn.appendChild(dots);
-
-        // Selezionato
-        if (
-          selectedY === cell.y &&
-          selectedM === cell.m &&
-          selectedD === cell.d
-        ) {
-          btn.classList.add("isSelected");
+        if (extra){
+          const d = document.createElement("span");
+          d.className = "cinsDot extra";
+          btn.appendChild(d);
         }
 
-        // Oggi (soft ma visibile)
-        if (cell.dateStr === todayStr) {
-          btn.classList.add("isToday");
-        }
-
-        // Click -> apri day editor (se esiste) e aggiorna hint
         btn.addEventListener("click", () => {
-          selectedY = cell.y;
-          selectedM = cell.m;
-          selectedD = cell.d;
-
-          const hint = $("#cinsHint", mountEl);
-          if (hint) {
-            const dd = String(cell.d).padStart(2, "0");
-            const mm = String(cell.m + 1).padStart(2, "0");
-            hint.textContent = `Selezionato: ${dd}/${mm}/${cell.y}`;
-          }
-
-          // Apri editor giorno se disponibile
-          if (typeof window.mountDayEditor === "function") {
-            window.mountDayEditor(cell.dateStr);
-          }
-
-          // Rerender per evidenziare selezione
-          renderMonth(mountEl);
+          selectedKey = key;
+          // apre editor giorno (se presente)
+          try{
+            document.dispatchEvent(new CustomEvent("nettotrack:openDayEditor", { detail: { dateKey: key } }));
+          }catch{}
+          render();
         });
 
-        grid.appendChild(btn);
-      });
-    });
-  }
-
-  function readDayEntry(dateStr) {
-    // Tenta lettura store in modo compatibile con versioni diverse
-    try {
-      if (store?.getDay) return store.getDay(dateStr);
-      if (store?.days && store.days[dateStr]) return store.days[dateStr];
-      if (window.CalendarCore?.getDay && typeof window.CalendarCore.getDay === "function") {
-        return window.CalendarCore.getDay(dateStr);
+        cell.appendChild(btn);
+        gridEl.appendChild(cell);
       }
-    } catch (e) {}
-    return null;
-  }
+    }
 
-  // --------- Picker mese/anno
-  const MONTHS_SHORT = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
-
-  function openPicker(mountEl) {
-    const layer = $("#cinsPickerLayer", mountEl);
-    const card = $("#cinsPickerCard", mountEl);
-    const yearLabel = $("#cinsPickerYear", mountEl);
-    const monthsGrid = $("#cinsMonthsGrid", mountEl);
-
-    if (!layer || !card || !yearLabel || !monthsGrid) return;
-
-    rootEl?.classList.add("isPickerOn");
-    layer.setAttribute("aria-hidden", "false");
-
-    // Setup UI
-    yearLabel.textContent = String(viewYear);
-
-    // (Re)build months grid
-    monthsGrid.innerHTML = "";
-    MONTHS_SHORT.forEach((label, idx) => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "cinsMonthPickBtn" + (idx === viewMonth ? " isActive" : "");
-      b.textContent = label;
-
-      b.addEventListener("click", () => {
-        viewMonth = idx;
-        closePicker(mountEl);
-        renderMonth(mountEl);
-      });
-
-      monthsGrid.appendChild(b);
+    // Nav
+    prevBtn.addEventListener("click", () => {
+      view.setMonth(view.getMonth()-1);
+      render();
+    });
+    nextBtn.addEventListener("click", () => {
+      view.setMonth(view.getMonth()+1);
+      render();
     });
 
-    // Year controls
-    const yPrev = $("#cinsYearPrev", mountEl);
-    const yNext = $("#cinsYearNext", mountEl);
-    if (yPrev) {
-      yPrev.onclick = () => {
-        viewYear = clamp(viewYear - 1, 1970, 2100);
-        yearLabel.textContent = String(viewYear);
-      };
-    }
-    if (yNext) {
-      yNext.onclick = () => {
-        viewYear = clamp(viewYear + 1, 1970, 2100);
-        yearLabel.textContent = String(viewYear);
-      };
-    }
-  }
+    // Close slide
+    closeBtn.addEventListener("click", () => {
+      document.dispatchEvent(new Event("nettotrack:closeCalendarInsert"));
+    });
 
-  function closePicker(mountEl) {
-    const layer = $("#cinsPickerLayer", mountEl);
-    if (!layer) return;
+    // Open picker
+    title.addEventListener("click", openPicker);
 
-    rootEl?.classList.remove("isPickerOn");
-    layer.setAttribute("aria-hidden", "true");
-  }
+    // Picker controls
+    pickerClose.addEventListener("click", closePicker);
 
-  function enablePickerSwipeToClose(mountEl) {
-    const layer = $("#cinsPickerLayer", mountEl);
-    const card = $("#cinsPickerCard", mountEl);
-    if (!layer || !card) return;
+    yearPrev.addEventListener("click", () => {
+      view.setFullYear(view.getFullYear()-1);
+      pickerYear.textContent = String(view.getFullYear());
+    });
 
-    let startY = 0;
-    let lastY = 0;
-    let active = false;
+    yearNext.addEventListener("click", () => {
+      view.setFullYear(view.getFullYear()+1);
+      pickerYear.textContent = String(view.getFullYear());
+    });
 
-    const onDown = (e) => {
-      // solo se picker visibile
-      if (layer.getAttribute("aria-hidden") === "true") return;
-      active = true;
-      startY = e.clientY;
-      lastY = startY;
-      card.style.transition = "none";
-    };
+    // Tap outside card closes picker
+    pickerLayer.addEventListener("click", (e) => {
+      if (e.target === pickerLayer) closePicker();
+    });
 
-    const onMove = (e) => {
-      if (!active) return;
-      lastY = e.clientY;
-      const dy = Math.max(0, lastY - startY);
+    // ✅ Swipe down to close (works)
+    let tStartY = 0;
+    let tStartX = 0;
+    let isSwiping = false;
 
-      // trascina solo verso il basso
-      card.style.transform = `translateY(${dy}px)`;
-      card.style.opacity = String(1 - dy / 260);
-    };
+    pickerCard.addEventListener("touchstart", (e) => {
+      if (!root.classList.contains("isPickerOn")) return;
+      const t = e.touches[0];
+      tStartY = t.clientY;
+      tStartX = t.clientX;
+      isSwiping = true;
+    }, { passive: true });
 
-    const onUp = () => {
-      if (!active) return;
-      active = false;
-
-      const dy = Math.max(0, lastY - startY);
-
-      // soglia chiusura
-      if (dy > 90) {
-        card.style.transition = "transform .22s ease, opacity .22s ease";
-        card.style.transform = `translateY(${dy + 120}px)`;
-        card.style.opacity = "0";
-        setTimeout(() => {
-          card.style.transition = "";
-          card.style.transform = "";
-          card.style.opacity = "";
-          closePicker(mountEl);
-        }, 220);
-        return;
+    pickerCard.addEventListener("touchmove", (e) => {
+      if (!isSwiping) return;
+      const t = e.touches[0];
+      const dy = t.clientY - tStartY;
+      const dx = t.clientX - tStartX;
+      // se è più orizzontale, non lo consideriamo swipe down
+      if (Math.abs(dx) > 50) isSwiping = false;
+      // niente animazioni qui, solo detection semplice e stabile
+      if (dy > 85 && Math.abs(dx) < 50){
+        isSwiping = false;
+        closePicker();
       }
+    }, { passive: true });
 
-      // ritorno
-      card.style.transition = "transform .22s ease, opacity .22s ease";
-      card.style.transform = "";
-      card.style.opacity = "";
-      setTimeout(() => {
-        card.style.transition = "";
-      }, 240);
-    };
+    pickerCard.addEventListener("touchend", () => {
+      isSwiping = false;
+    }, { passive: true });
 
-    // Pointer events (cross device)
-    card.addEventListener("pointerdown", onDown);
-    card.addEventListener("pointermove", onMove);
-    card.addEventListener("pointerup", onUp);
-    card.addEventListener("pointercancel", onUp);
+    // init picker months
+    renderMonthButtons();
 
-    // anche sul layer (se tocchi fuori)
-    layer.addEventListener("pointerdown", (e) => {
-      if (e.target !== layer) return;
-      // tap fuori = close, swipe fuori non serve
-    });
+    // first render
+    render();
   }
 
+  // =========
+  // Wiring with UI events (DON'T break other files)
+  // =========
+
+  function onOpen(){
+    const mountEl = document.getElementById("calInsertMount");
+    if (!mountEl) return;
+    mountCalendarInsert(mountEl);
+  }
+
+  document.addEventListener("nettotrack:calendarInsertOpened", onOpen);
+
+  // export (optional)
+  window.NettoTrackCalendarInsert = { mount: mountCalendarInsert };
 })();
