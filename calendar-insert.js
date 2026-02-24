@@ -1,325 +1,238 @@
-/* =========================
-   calendar-insert.js
-   NettoTrack — Month grid + month/year picker
-   (FIX: template coerente con calendar-insert.css + weekdays quadrati + dots wrapper + swipe down OK)
-   ========================= */
 (() => {
-  const $ = (sel, root = document) => root.querySelector(sel);
+  const { dateKey, todayParts, isSunday, loadDay, saveDay, removeDay, loadDraft, saveDraft, removeDraft, pad2 } = window.NTCal;
 
-  const MONTHS_FULL = [
-    "Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
-    "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"
-  ];
-  const MONTHS_SHORT = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
-  const WEEK_IT = ["L","M","M","G","V","S","D"];
-
-  const NT = window.NTCal; // calendar-core.js (YYYY-MM-DD + storage per dayKey)
+  const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+  const WDN = ["L","M","M","G","V","S","D"];
 
   let mounted = false;
+  let y = todayParts().y;
+  let m = todayParts().m;
 
-  function isActuallyMounted(mountEl) {
-    return !!(mountEl && mountEl.querySelector(".cinsRoot"));
-  }
+  function mountIfNeeded() {
+    const mount = document.getElementById("calInsertMount");
+    if (!mount) return;
 
-  function buildTemplate() {
-    // Struttura pensata per calendar-insert.css (classi/ID coerenti)
-    return `
+    // ✅ se la slide è stata chiusa e riaperta, il mount torna vuoto: rimonta
+    if (mounted && mount.querySelector("#cinsRoot")) return;
+
+    mount.innerHTML = `
       <div class="cinsRoot" id="cinsRoot">
-        <div class="cinsWrap">
-          <div class="cinsHeader">
-            <div class="cinsNavLeft">
-              <button class="cinsIconBtn" id="cinsPrev" type="button" aria-label="Mese precedente">‹</button>
-              <button class="cinsIconBtn" id="cinsNext" type="button" aria-label="Mese successivo">›</button>
-            </div>
-
-            <button class="cinsTitleBtn" id="cinsTitle" type="button" aria-label="Seleziona mese e anno">
-              <span class="cinsMonth" id="cinsMonthLabel">—</span>
-              <span class="cinsYear" id="cinsYearLabel">—</span>
-            </button>
-
-            <button class="cinsCloseBtn" id="cinsCloseCard" type="button" aria-label="Chiudi">×</button>
+        <div class="cinsHeader">
+          <div class="cinsLeft">
+            <button class="ntBtn" id="cinsPrev" type="button" aria-label="Mese precedente">‹</button>
+            <button class="ntBtn" id="cinsNext" type="button" aria-label="Mese successivo">›</button>
           </div>
 
-          <div class="cinsWeekdays" id="cinsWeekdays"></div>
+          <button class="cinsTitleBtn" id="cinsTitle" type="button" aria-label="Scegli mese e anno"></button>
 
-          <div class="cinsGrid" id="cinsGrid" aria-label="Calendario mese"></div>
-
-          <div class="cinsHint" id="cinsHint"></div>
+          <button class="ntBtn" id="cinsClose" type="button" aria-label="Chiudi">×</button>
         </div>
 
-        <!-- Picker overlay (1 solo layer) -->
-        <div class="cinsPickerOverlay" id="cinsPickerLayer" aria-hidden="true">
-          <div class="cinsPickerShade" aria-hidden="true"></div>
+        <div class="cinsBody">
+          <div class="cinsWeekdays" id="cinsWeekdays"></div>
+          <div class="cinsGrid" id="cinsGrid"></div>
+        </div>
 
-          <div class="cinsPickerCard" id="cinsPickerCard" role="dialog" aria-label="Seleziona mese e anno">
+        <!-- picker overlay -->
+        <div class="cinsPickerLayer" id="cinsPickerLayer" aria-hidden="true">
+          <div class="cinsPickerCard" id="cinsPickerCard">
             <div class="cinsPickerTop">
-              <div></div>
               <div class="cinsPickerTitle">Seleziona mese e anno</div>
-              <button class="cinsCloseBtn" id="cinsPickerClose" type="button" aria-label="Chiudi selezione">×</button>
+              <button class="ntBtn" id="cinsPickerClose" type="button" aria-label="Chiudi selezione">×</button>
             </div>
 
-            <div class="cinsPickerYearRow">
-              <button class="cinsPBtn" id="cinsYearPrev" type="button" aria-label="Anno precedente">‹</button>
-              <div class="cinsPickerYear" id="cinsPickerYear">—</div>
-              <button class="cinsPBtn" id="cinsYearNext" type="button" aria-label="Anno successivo">›</button>
+            <div class="cinsYearRow">
+              <button class="ntBtn" id="cinsYearMinus" type="button" aria-label="Anno precedente">‹</button>
+              <div class="cinsYearVal" id="cinsYearVal"></div>
+              <button class="ntBtn" id="cinsYearPlus" type="button" aria-label="Anno successivo">›</button>
             </div>
 
-            <div class="cinsMonths" id="cinsMonthGrid"></div>
+            <div class="cinsMonthGrid" id="cinsMonthGrid"></div>
 
             <div class="cinsSwipeHint">Swipe down per chiudere</div>
           </div>
         </div>
       </div>
     `;
-  }
 
-  function mountIfNeeded() {
-    const mountEl = document.getElementById("calInsertMount");
-    if (!mountEl) return;
+    // weekdays (✅ ogni cella ha classe cinsW -> CSS quadrati)
+    const wd = mount.querySelector("#cinsWeekdays");
+    wd.innerHTML = WDN.map(x => `<div class="cinsW">${x}</div>`).join("");
 
-    // ✅ se la slide è stata chiusa e riaperta, il mount nuovo è vuoto → rimonta
-    if (mounted && isActuallyMounted(mountEl)) return;
+    // events
+    mount.querySelector("#cinsPrev").addEventListener("click", () => { stepMonth(-1); });
+    mount.querySelector("#cinsNext").addEventListener("click", () => { stepMonth(+1); });
+    mount.querySelector("#cinsClose").addEventListener("click", () => {
+      document.dispatchEvent(new Event("nettotrack:closeCalendarInsert"));
+    });
 
-    mountEl.innerHTML = buildTemplate();
+    mount.querySelector("#cinsTitle").addEventListener("click", () => openPicker(true));
+    mount.querySelector("#cinsPickerClose").addEventListener("click", () => openPicker(false));
 
-    const weekdaysEl = $("#cinsWeekdays", mountEl);
-    weekdaysEl.innerHTML = WEEK_IT.map(d => `<div class="cinsW">${d}</div>`).join("");
+    mount.querySelector("#cinsYearMinus").addEventListener("click", () => { y -= 1; renderPicker(); });
+    mount.querySelector("#cinsYearPlus").addEventListener("click", () => { y += 1; renderPicker(); });
 
-    // mesi picker
-    const monthGrid = $("#cinsMonthGrid", mountEl);
-    monthGrid.innerHTML = MONTHS_SHORT.map((m, idx) =>
-      `<button class="cinsMBtn" type="button" data-m="${idx}">${m}</button>`
-    ).join("");
+    // swipe down to close picker (✅ pointer, funziona anche su desktop)
+    const layer = mount.querySelector("#cinsPickerLayer");
+    const card = mount.querySelector("#cinsPickerCard");
+    let pDown = false;
+    let pY0 = 0;
+    let pX0 = 0;
+
+    // ascolta sul CARD (così lo swipe non “becca” il layer esterno)
+    card.addEventListener("pointerdown", (e) => {
+      pDown = true;
+      pY0 = e.clientY;
+      pX0 = e.clientX;
+      card.setPointerCapture?.(e.pointerId);
+    }, { passive:true });
+
+    card.addEventListener("pointermove", (e) => {
+      if (!pDown) return;
+      const dy = e.clientY - pY0;
+      const dx = e.clientX - pX0;
+      if (dy > 80 && Math.abs(dx) < 60) {
+        pDown = false;
+        openPicker(false);
+      }
+    }, { passive:true });
+
+    card.addEventListener("pointerup", () => { pDown = false; }, { passive:true });
+    card.addEventListener("pointercancel", () => { pDown = false; }, { passive:true });
+
+    // click fuori card chiude
+    layer.addEventListener("click", (e) => {
+      if (e.target === layer) openPicker(false);
+    });
+
+    // month buttons in picker
+    const monthGrid = mount.querySelector("#cinsMonthGrid");
+    monthGrid.innerHTML = MONTHS.map((name, idx) => (
+      `<button class="cinsPickBtn" data-m="${idx}" type="button">${name.slice(0,3)}</button>`
+    )).join("");
+    monthGrid.querySelectorAll("button").forEach(b => {
+      b.addEventListener("click", () => {
+        m = Number(b.dataset.m);
+        openPicker(false);
+        renderMonth();
+      });
+    });
 
     mounted = true;
+    renderMonth();
   }
 
-  // --- state mese corrente
-  let view = new Date();
-  view.setHours(0,0,0,0);
-  view.setDate(1);
-
-  function todayKey() {
-    const t = NT.todayParts();
-    return NT.dateKey(t.y, t.m, t.d); // YYYY-MM-DD
+  function stepMonth(delta) {
+    m += delta;
+    if (m < 0) { m = 11; y -= 1; }
+    if (m > 11) { m = 0; y += 1; }
+    renderMonth();
   }
 
-  function setHeader(mountEl) {
-    $("#cinsMonthLabel", mountEl).textContent = MONTHS_FULL[view.getMonth()];
-    $("#cinsYearLabel", mountEl).textContent = String(view.getFullYear());
+  function openPicker(on) {
+    const mount = document.getElementById("calInsertMount");
+    if (!mount) return;
+    const layer = mount.querySelector("#cinsPickerLayer");
+    layer.classList.toggle("isOn", !!on);
+    layer.setAttribute("aria-hidden", on ? "false" : "true");
+
+    // ✅ classe sul root per nascondere sotto (CSS)
+    mount.querySelector("#cinsRoot")?.classList.toggle("isPickerOn", !!on);
+
+    if (on) renderPicker();
   }
 
-  function openPicker(mountEl) {
-    const root = $("#cinsRoot", mountEl);
-    const layer = $("#cinsPickerLayer", mountEl);
-    root.classList.add("isPickerOn");
-    layer.setAttribute("aria-hidden", "false");
-    $("#cinsPickerYear", mountEl).textContent = String(view.getFullYear());
+  function renderPicker() {
+    const mount = document.getElementById("calInsertMount");
+    if (!mount) return;
+    mount.querySelector("#cinsYearVal").textContent = String(y);
   }
 
-  function closePicker(mountEl) {
-    const root = $("#cinsRoot", mountEl);
-    const layer = $("#cinsPickerLayer", mountEl);
-    root.classList.remove("isPickerOn");
-    layer.setAttribute("aria-hidden", "true");
-  }
+  function renderMonth() {
+    const mount = document.getElementById("calInsertMount");
+    if (!mount) return;
 
-  function computeBaseExtraFromDayObj(dayObj) {
-    // dayObj: struttura salvata da day-editor.js (shifts + flags)
-    let base = false, extra = false;
-    const shifts = Array.isArray(dayObj?.shifts) ? dayObj.shifts : [];
-    for (const s of shifts) {
-      const isExtra = !!(s?.flags?.straordinario || s?.flags?.festivo || s?.flags?.domenicale);
-      if (isExtra) extra = true;
-      else base = true;
-    }
-    return { base, extra };
-  }
+    mount.querySelector("#cinsTitle").textContent = `${MONTHS[m]} ${y}`;
 
-  function render(mountEl) {
-    if (!mountEl) return;
-
-    setHeader(mountEl);
-
-    const gridEl = $("#cinsGrid", mountEl);
-    gridEl.innerHTML = "";
-
-    const y = view.getFullYear();
-    const m = view.getMonth();
+    const grid = mount.querySelector("#cinsGrid");
+    grid.innerHTML = "";
 
     const first = new Date(y, m, 1);
-    let start = first.getDay();          // 0..6 Sun..Sat
-    start = (start + 6) % 7;             // Mon=0..Sun=6
+    const firstDay = first.getDay(); // 0 Sun..6 Sat
+    const offset = (firstDay === 0 ? 6 : firstDay - 1); // Monday-based
 
     const daysInMonth = new Date(y, m + 1, 0).getDate();
-
-    const tKey = todayKey();
+    const { y:ty, m:tm, d:td } = todayParts();
 
     for (let i = 0; i < 42; i++) {
-      const dayNum = i - start + 1;
+      const dayNum = i - offset + 1;
+      const isValid = dayNum >= 1 && dayNum <= daysInMonth;
 
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "cinsDay";
+      btn.className = "cinsDay" + (isValid ? "" : " isOff");
 
-      if (dayNum < 1 || dayNum > daysInMonth) {
-        btn.classList.add("isEmpty");
-        btn.disabled = true;
-        btn.innerHTML = `<span class="cinsNum"></span>`;
-        gridEl.appendChild(btn);
-        continue;
-      }
+      if (isValid) {
+        const key = dateKey(y, m, dayNum);
+        const saved = loadDay(key);
+        const draft = loadDraft(key);
 
-      const key = NT.dateKey(y, m, dayNum);
+        const isToday = (y === ty && m === tm && dayNum === td);
+        if (isToday) btn.classList.add("isToday");
 
-      // numero (in span per z-index corretto con ::after “oggi”)
-      const num = document.createElement("span");
-      num.className = "cinsNum";
-      num.textContent = String(dayNum);
-      btn.appendChild(num);
+        // ✅ NUMERO (niente cerchi)
+        const num = document.createElement("span");
+        num.className = "cinsNum";
+        num.textContent = String(dayNum);
+        btn.appendChild(num);
 
-      if (key === tKey) btn.classList.add("isToday");
+        // dots (base/extra)
+        const model = saved || draft;
+        let hasBase = false;
+        let hasExtra = false;
 
-      // dots: saved ha priorità, altrimenti draft
-      const saved = NT.loadDay(key);
-      const draft = NT.loadDraft(key);
-      const model = saved || draft;
+        if (model?.shifts?.length) {
+          for (const s of model.shifts) {
+            const isExtra = !!(s?.flags?.straordinario || s?.flags?.festivo || s?.flags?.domenicale);
+            if (isExtra) hasExtra = true;
+            else hasBase = true;
+          }
+        }
 
-      if (model) {
-        const { base, extra } = computeBaseExtraFromDayObj(model);
-        if (base || extra) {
+        if (hasBase || hasExtra) {
           const dots = document.createElement("div");
           dots.className = "cinsDots";
-
-          if (base) {
-            const d = document.createElement("span");
+          if (hasBase) {
+            const d = document.createElement("div");
             d.className = "cinsDot base";
             dots.appendChild(d);
           }
-          if (extra) {
-            const d = document.createElement("span");
+          if (hasExtra) {
+            const d = document.createElement("div");
             d.className = "cinsDot extra";
             dots.appendChild(d);
           }
-
           btn.appendChild(dots);
         }
+
+        btn.addEventListener("click", () => {
+          window.NettoTrackUI?.openDayEditor(key);
+        });
       }
 
-      btn.addEventListener("click", () => {
-        // apri editor turni (usa l’API UI che dispatcha l’evento giusto)
-        window.NettoTrackUI?.openDayEditor(key);
-      });
-
-      gridEl.appendChild(btn);
+      grid.appendChild(btn);
     }
   }
 
-  function wireEvents() {
-    const mountEl = document.getElementById("calInsertMount");
-    if (!mountEl) return;
-
-    // header
-    $("#cinsPrev", mountEl).onclick = () => { view.setMonth(view.getMonth() - 1); render(mountEl); };
-    $("#cinsNext", mountEl).onclick = () => { view.setMonth(view.getMonth() + 1); render(mountEl); };
-    $("#cinsCloseCard", mountEl).onclick = () => document.dispatchEvent(new Event("nettotrack:closeCalendarInsert"));
-
-    $("#cinsTitle", mountEl).onclick = () => openPicker(mountEl);
-
-    // picker
-    $("#cinsPickerClose", mountEl).onclick = () => closePicker(mountEl);
-    $("#cinsYearPrev", mountEl).onclick = () => {
-      view.setFullYear(view.getFullYear() - 1);
-      $("#cinsPickerYear", mountEl).textContent = String(view.getFullYear());
-    };
-    $("#cinsYearNext", mountEl).onclick = () => {
-      view.setFullYear(view.getFullYear() + 1);
-      $("#cinsPickerYear", mountEl).textContent = String(view.getFullYear());
-    };
-
-    $("#cinsMonthGrid", mountEl).querySelectorAll("button[data-m]").forEach(b => {
-      b.addEventListener("click", () => {
-        const mm = Number(b.dataset.m);
-        view.setMonth(mm);
-        closePicker(mountEl);
-        render(mountEl);
-      });
-    });
-
-    // click sullo shade per chiudere
-    const layer = $("#cinsPickerLayer", mountEl);
-    layer.addEventListener("click", (e) => {
-      if (e.target === layer || e.target.classList.contains("cinsPickerShade")) closePicker(mountEl);
-    });
-
-    // ✅ swipe down (touch + mouse) sulla pickerCard
-    const card = $("#cinsPickerCard", mountEl);
-    let pDown = false;
-    let x0 = 0, y0 = 0;
-
-    const onDown = (e) => {
-      // solo se picker aperto
-      const root = $("#cinsRoot", mountEl);
-      if (!root.classList.contains("isPickerOn")) return;
-
-      pDown = true;
-      x0 = e.clientX;
-      y0 = e.clientY;
-      card.setPointerCapture?.(e.pointerId);
-    };
-
-    const onMove = (e) => {
-      if (!pDown) return;
-      const dx = e.clientX - x0;
-      const dy = e.clientY - y0;
-
-      // evita “diagonali” grandi
-      if (Math.abs(dx) > 70) { pDown = false; return; }
-
-      if (dy > 90 && Math.abs(dx) < 55) {
-        pDown = false;
-        closePicker(mountEl);
-      }
-    };
-
-    const onUp = () => { pDown = false; };
-
-    card.addEventListener("pointerdown", onDown, { passive: true });
-    card.addEventListener("pointermove", onMove, { passive: true });
-    card.addEventListener("pointerup", onUp, { passive: true });
-    card.addEventListener("pointercancel", onUp, { passive: true });
-  }
-
-  function onOpen() {
+  // --- events
+  document.addEventListener("nettotrack:calendarInsertOpened", () => {
     mountIfNeeded();
-
-    const mountEl = document.getElementById("calInsertMount");
-    if (!mountEl) return;
-
-    // reset su mese corrente
-    const t = NT.todayParts();
-    view = new Date(t.y, t.m, 1);
-    view.setHours(0,0,0,0);
-
-    wireEvents();
-    render(mountEl);
-  }
-
-  // quando apri la card
-  document.addEventListener("nettotrack:calendarInsertOpened", onOpen);
-
-  // se cambiano i dati, aggiorna i dots
-  document.addEventListener("nettotrack:dataChanged", () => {
-    const mountEl = document.getElementById("calInsertMount");
-    if (!mountEl || !isActuallyMounted(mountEl)) return;
-    render(mountEl);
+    const t = todayParts();
+    y = t.y; m = t.m;
+    renderMonth();
   });
 
-  // export (debug)
-  window.NettoTrackCalendarInsert = {
-    remount() {
-      mounted = false;
-      onOpen();
-    }
-  };
+  document.addEventListener("nettotrack:dataChanged", () => {
+    if (mounted) renderMonth();
+  });
 })();
