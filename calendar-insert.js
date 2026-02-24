@@ -1,7 +1,6 @@
 /* =========================
    calendar-insert.js - NettoTrack
    Month grid + month/year picker
-   (fix: template HTML corretto + IDs stabili)
    ========================= */
 
 (() => {
@@ -11,7 +10,6 @@
   const MONTHS_IT_FULL  = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
   const WEEK_IT = ["L","M","M","G","V","S","D"];
 
-  // storage keys used elsewhere (keep stable)
   const STORAGE_KEY = "nettotrack_days_v1";
 
   function pad2(n){ return String(n).padStart(2,"0"); }
@@ -33,7 +31,6 @@
         if (s?.isExtra || s?.type === "extra" || s?.extra === true) extra = true;
         if (s?.isBase  || s?.type === "base"  || s?.base  === true) base  = true;
 
-        // fallback: checkboxes flags stored in shift
         if (s?.straordinario === true) extra = true;
         if (s?.mattino || s?.pomeriggio || s?.notte) base = true;
       }
@@ -51,18 +48,19 @@
   }
 
   function buildTemplate(){
-    // ✅ HTML completo con tutti gli ID che il codice usa
     return `
       <div class="cinsRoot" id="cinsRoot">
         <div class="cinsHeader">
-          <button class="cinsIconBtn" id="cinsPrev" type="button" aria-label="Mese precedente">‹</button>
+          <!-- ✅ < > vicine a sinistra -->
+          <div class="cinsNavLeft" aria-label="Navigazione mese">
+            <button class="cinsIconBtn" id="cinsPrev" type="button" aria-label="Mese precedente">‹</button>
+            <button class="cinsIconBtn" id="cinsNext" type="button" aria-label="Mese successivo">›</button>
+          </div>
 
           <button class="cinsTitleBtn" id="cinsTitle" type="button" aria-label="Seleziona mese e anno">
             <span class="cinsMonth" id="cinsMonthLabel">Febbraio</span>
             <span class="cinsYear" id="cinsYearLabel">2026</span>
           </button>
-
-          <button class="cinsIconBtn" id="cinsNext" type="button" aria-label="Mese successivo">›</button>
 
           <button class="cinsCloseBtn" id="cinsCloseCard" type="button" aria-label="Chiudi">×</button>
         </div>
@@ -120,16 +118,13 @@
     const pickerYear  = $("#cinsPickerYear", mountEl);
     const monthGrid   = $("#cinsMonthGrid", mountEl);
 
-    // Build weekdays once
     weekdaysEl.innerHTML = WEEK_IT.map(d => `<div class="cinsW">${d}</div>`).join("");
 
-    // State
     let view = new Date();
     view.setDate(1);
 
     let selectedKey = null;
 
-    // Today
     const now = new Date();
     const todayKey = dateKeyFromYMD(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -176,13 +171,12 @@
 
       const first = new Date(y, m, 1);
 
-      // JS: 0=Sun..6=Sat => Mon-first index
       let startDay = first.getDay();       // 0..6
       startDay = (startDay + 6) % 7;       // Mon=0..Sun=6
 
       const daysInMonth = new Date(y, m + 1, 0).getDate();
 
-      const total = 42; // 6 weeks
+      const total = 42;
       gridEl.innerHTML = "";
 
       for (let i = 0; i < total; i++){
@@ -207,13 +201,9 @@
         btn.textContent = String(dayNum);
         const key = dateKeyFromYMD(y, m, dayNum);
 
-        // Today highlight
         if (key === todayKey) btn.classList.add("isToday");
-
-        // Selected highlight
         if (selectedKey && key === selectedKey) btn.classList.add("isSelected");
 
-        // base/extra dots
         const { base, extra } = hasBaseExtraForDate(db, key);
         if (base){
           const d = document.createElement("span");
@@ -241,19 +231,15 @@
       }
     }
 
-    // Nav
     prevBtn.addEventListener("click", () => { view.setMonth(view.getMonth() - 1); render(); });
     nextBtn.addEventListener("click", () => { view.setMonth(view.getMonth() + 1); render(); });
 
-    // Close slide
     closeBtn.addEventListener("click", () => {
       document.dispatchEvent(new Event("nettotrack:closeCalendarInsert"));
     });
 
-    // Open picker
     titleBtn.addEventListener("click", openPicker);
 
-    // Picker controls
     pickerClose.addEventListener("click", closePicker);
 
     yearPrev.addEventListener("click", () => {
@@ -266,12 +252,10 @@
       pickerYear.textContent = String(view.getFullYear());
     });
 
-    // Tap outside card closes picker
     pickerLayer.addEventListener("click", (e) => {
       if (e.target === pickerLayer) closePicker();
     });
 
-    // ✅ Swipe down to close (realmente funzionante)
     let tStartY = 0;
     let tStartX = 0;
     let isSwiping = false;
@@ -290,7 +274,6 @@
       const dy = t.clientY - tStartY;
       const dx = t.clientX - tStartX;
 
-      // se è più orizzontale, non lo consideriamo swipe down
       if (Math.abs(dx) > 55) { isSwiping = false; return; }
 
       if (dy > 90 && Math.abs(dx) < 55){
@@ -301,14 +284,10 @@
 
     pickerCard.addEventListener("touchend", () => { isSwiping = false; }, { passive: true });
 
-    // init
     renderMonthButtons();
     render();
   }
 
-  // =========
-  // Wiring with UI events (DON'T break other files)
-  // =========
   function onOpen(){
     const mountEl = document.getElementById("calInsertMount");
     if (!mountEl) return;
@@ -317,6 +296,5 @@
 
   document.addEventListener("nettotrack:calendarInsertOpened", onOpen);
 
-  // export (optional)
   window.NettoTrackCalendarInsert = { mount: mountCalendarInsert };
 })();
