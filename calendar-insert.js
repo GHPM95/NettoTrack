@@ -73,7 +73,86 @@
 
     mount.querySelector("#cinsYearMinus").addEventListener("click", () => { y -= 1; renderPicker(); });
     mount.querySelector("#cinsYearPlus").addEventListener("click", () => { y += 1; renderPicker(); });
+// =========================
+// Swipe down per chiudere picker
+// =========================
+(function enablePickerSwipeDown(){
+  const rootEl = document.querySelector('.cinsRoot');
+  if (!rootEl) return;
 
+  const pickerLayer = rootEl.querySelector('.cinsPickerLayer');
+  const pickerCard  = rootEl.querySelector('.cinsPickerCard');
+  if (!pickerLayer || !pickerCard) return;
+
+  let startY = 0;
+  let lastY = 0;
+  let dragging = false;
+
+  function isPickerOpen(){
+    return pickerLayer.classList.contains('isOn') && rootEl.classList.contains('isPickerOn');
+  }
+
+  // 🔧 Devi avere già una funzione "closePicker()" nel tuo file.
+  // Se si chiama diversamente, rinominala qui.
+  function closePickerSafe(){
+    if (typeof window.closeCinsPicker === 'function') {
+      window.closeCinsPicker();
+      return;
+    }
+    // fallback: chiude via classi (non rompe nulla)
+    pickerLayer.classList.remove('isOn');
+    rootEl.classList.remove('isPickerOn');
+  }
+
+  pickerCard.addEventListener('touchstart', (e) => {
+    if (!isPickerOpen()) return;
+    if (!e.touches || !e.touches.length) return;
+    dragging = true;
+    startY = e.touches[0].clientY;
+    lastY = startY;
+    pickerCard.style.transition = 'none';
+  }, { passive: true });
+
+  pickerCard.addEventListener('touchmove', (e) => {
+    if (!dragging || !isPickerOpen()) return;
+    if (!e.touches || !e.touches.length) return;
+
+    lastY = e.touches[0].clientY;
+    const dy = Math.max(0, lastY - startY); // solo verso il basso
+
+    // piccola traslazione + fade leggero
+    pickerCard.style.transform = `translateY(${dy}px)`;
+    const fade = Math.max(0.55, 1 - dy / 420);
+    pickerCard.style.opacity = String(fade);
+  }, { passive: true });
+
+  pickerCard.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+
+    const dy = Math.max(0, lastY - startY);
+    const shouldClose = dy > 80; // soglia
+
+    pickerCard.style.transition = 'transform .18s ease, opacity .18s ease';
+
+    if (shouldClose) {
+      // reset stile e chiudi
+      pickerCard.style.transform = '';
+      pickerCard.style.opacity = '';
+      closePickerSafe();
+      return;
+    }
+
+    // torna su
+    pickerCard.style.transform = '';
+    pickerCard.style.opacity = '';
+  }, { passive: true });
+
+  // anche clic sul velo scuro chiude (se vuoi tenerlo)
+  pickerLayer.addEventListener('click', (e) => {
+    if (e.target === pickerLayer) closePickerSafe();
+  });
+})();
     // swipe down (pointer) sul pickerCard
     const layer = mount.querySelector("#cinsPickerLayer");
     const card = mount.querySelector("#cinsPickerCard");
@@ -145,6 +224,7 @@
     if (!mount) return;
     mount.querySelector("#cinsYearVal").textContent = String(y);
   }
+  
 
   function computeBaseExtra(model) {
     let hasBase = false;
