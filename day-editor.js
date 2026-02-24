@@ -1,7 +1,5 @@
 /* day-editor.js
    Card "Turni" separata dal calendario (NON tocca calendar-insert.js)
-   Si apre con: window.NettoTrackUI.openDayEditor(dateKey)
-   oppure evento: "nettotrack:dayEditorOpened" { detail: { dateKey } }
 */
 (() => {
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -17,7 +15,6 @@
   function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
 
   function formatDateKeyToIT(dateKey) {
-    // atteso: YYYY-MM-DD
     if (!dateKey || typeof dateKey !== "string" || !dateKey.includes("-")) return dateKey || "";
     const [y, m, d] = dateKey.split("-");
     if (!y || !m || !d) return dateKey;
@@ -27,6 +24,7 @@
   function defaultState(dateKey) {
     return {
       dateKey,
+      // ⛔ nota globale rimossa dall'UI, ma lasciamo compatibilità storage
       note: "",
       shifts: [
         {
@@ -49,13 +47,11 @@
   }
 
   function loadState(dateKey) {
-    // 1) se esiste un core condiviso, prova a leggere da lì
     const core = window.NettoTrackCalendarCore;
     try {
       if (core && typeof core.getDayData === "function") {
         const data = core.getDayData(dateKey);
         if (data && typeof data === "object") {
-          // normalizza nel nostro formato senza rompere nulla
           return {
             dateKey,
             note: String(data.note || ""),
@@ -65,7 +61,6 @@
       }
     } catch (_) {}
 
-    // 2) fallback localStorage (solo per Turni)
     try {
       const raw = localStorage.getItem(STORAGE_PREFIX + dateKey);
       if (!raw) return defaultState(dateKey);
@@ -123,7 +118,6 @@
   function saveNow() {
     if (!currentKey || !state) return;
 
-    // 1) prova a scrivere nel core condiviso (se esiste)
     const core = window.NettoTrackCalendarCore;
     try {
       if (core && typeof core.setDayData === "function") {
@@ -134,7 +128,6 @@
       }
     } catch (_) {}
 
-    // 2) salva anche in localStorage (non rompe nulla, serve come fallback)
     try {
       localStorage.setItem(STORAGE_PREFIX + currentKey, JSON.stringify({
         note: state.note,
@@ -146,11 +139,7 @@
   function ensureMount() {
     const id = `${SLIDE_ID}Mount`;
     mount = document.getElementById(id) || $(`#${id}`);
-    if (!mount) {
-      // se non esiste ancora, la slide potrebbe essere stata appena creata:
-      // riprova a cercare dentro il cardsTrack
-      mount = document.querySelector(`#${id}`);
-    }
+    if (!mount) mount = document.querySelector(`#${id}`);
     return !!mount;
   }
 
@@ -165,11 +154,6 @@
           <button class="deClose" type="button" aria-label="Chiudi">×</button>
         </div>
 
-        <div class="deBlock">
-          <div class="deLabel">Nota (opzionale)</div>
-          <textarea class="deTextarea" id="deNote" placeholder="Scrivi una nota..."></textarea>
-        </div>
-
         <div class="deShifts" id="deShifts"></div>
 
         <div class="deActions">
@@ -178,25 +162,12 @@
       </div>
     `;
 
-    // header close
     $(".deClose", mount)?.addEventListener("click", () => {
       document.dispatchEvent(new Event("nettotrack:closeDayEditor"));
     });
 
-    // note
-    const noteEl = $("#deNote", mount);
-    if (noteEl) {
-      noteEl.value = state.note || "";
-      noteEl.addEventListener("input", () => {
-        state.note = noteEl.value;
-        scheduleSave();
-      });
-    }
-
-    // shifts
     renderShifts();
 
-    // add shift
     $("#deAddShift", mount)?.addEventListener("click", () => {
       state.shifts.push(defaultState(state.dateKey).shifts[0]);
       renderShifts();
@@ -253,21 +224,18 @@
 
           <div class="deBlock deShiftNoteBlock">
             <div class="deLabel">Nota turno (opzionale)</div>
-            <textarea class="deTextarea deTextareaSmall" data-k="note" placeholder="Nota...">${escapeHtml(s.note || "")}</textarea>
+            <textarea class="deTextarea deTextareaSmall deTextareaPicker" data-k="note" placeholder="Nota...">${escapeHtml(s.note || "")}</textarea>
           </div>
         </div>
       `;
     }).join("");
 
-    // bind events per card
     Array.from(host.querySelectorAll(".deShiftCard")).forEach((card) => {
       const idx = Number(card.getAttribute("data-idx"));
       const shift = state.shifts[idx];
 
-      // remove
       card.querySelector(".deRemoveShift")?.addEventListener("click", () => {
         if (state.shifts.length <= 1) {
-          // non lasciare la card vuota: resetta il turno
           state.shifts[0] = defaultState(state.dateKey).shifts[0];
         } else {
           state.shifts.splice(idx, 1);
@@ -276,18 +244,14 @@
         scheduleSave();
       });
 
-      // inputs/selects
       Array.from(card.querySelectorAll("[data-k]")).forEach((el) => {
         const k = el.getAttribute("data-k");
         if (!k) return;
 
         if (el.tagName === "INPUT") {
           el.addEventListener("input", () => {
-            if (k === "pauseMin") {
-              shift.pauseMin = clamp(Number(el.value || 0), 0, 999);
-            } else {
-              shift[k] = el.value;
-            }
+            if (k === "pauseMin") shift.pauseMin = clamp(Number(el.value || 0), 0, 999);
+            else shift[k] = el.value;
             scheduleSave();
           });
         } else if (el.tagName === "SELECT") {
@@ -303,13 +267,13 @@
         }
       });
 
-      // chips
       Array.from(card.querySelectorAll(".deChip")).forEach((chipEl) => {
         chipEl.addEventListener("click", () => {
           const tag = chipEl.getAttribute("data-tag");
           if (!tag) return;
           shift.tags[tag] = !shift.tags[tag];
           chipEl.classList.toggle("isOn", !!shift.tags[tag]);
+          chipEl.setAttribute("aria-pressed", shift.tags[tag] ? "true" : "false");
           scheduleSave();
         });
       });
@@ -335,13 +299,10 @@
     render();
   }
 
-  // Hook: quando la UI apre la card
   document.addEventListener("nettotrack:dayEditorOpened", (e) => {
     const dk = e?.detail?.dateKey;
     open(dk);
   });
 
-  // Se la slide viene creata dopo, al primo open ci pensa l’evento sopra.
-  // In più: se qualcuno chiama direttamente
   window.NettoTrackDayEditor = { open };
 })();
