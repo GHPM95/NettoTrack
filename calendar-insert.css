@@ -69,7 +69,7 @@
   gap: 10px;
 }
 
-/* Weekdays: ✅ DIV statici, QUADRATI */
+/* Weekdays */
 .cinsWeekdays{
   display:grid;
   grid-template-columns: repeat(7, minmax(0,1fr));
@@ -79,18 +79,18 @@
 
 .cinsW{
   width: 100%;
-  aspect-ratio: 1 / 1;          /* ✅ QUADRATO */
+  aspect-ratio: 1 / 1;
   display:flex;
   align-items:center;
   justify-content:center;
-  border-radius: 16px !important;/* ✅ non tondo */
+  border-radius: 999px; /* tondo */
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.05);
   font-size: 12px;
   font-weight: 900;
   color: var(--muted);
   user-select:none;
-  pointer-events:none;          /* ✅ non cliccabile */
+  pointer-events:none;
 }
 
 /* grid */
@@ -104,11 +104,11 @@
   padding: 6px;
 }
 
-/* giorni: ✅ QUADRATI veri */
+/* giorni: TONDI */
 .cinsDay{
   width: 100%;
-  aspect-ratio: 1 / 1;          /* ✅ QUADRATO */
-  border-radius: 18px !important;
+  aspect-ratio: 1 / 1;
+  border-radius: 999px; /* tondo */
   border: 1px solid rgba(255,255,255,.14);
   background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
   display:flex;
@@ -116,7 +116,7 @@
   justify-content:center;
   position: relative;
   min-width: 0;
-  overflow:hidden;              /* today overlay */
+  overflow:hidden;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
 .cinsDay:active{ transform: scale(.98); filter: brightness(1.07); background: rgba(255,255,255,.10); }
@@ -134,20 +134,17 @@
   z-index: 2;
 }
 
-/* today: pill verticale */
+/* TODAY: RIEMPI TUTTO */
 .cinsDay.isToday{
   border-color: rgba(255,255,255,.18);
 }
 .cinsDay.isToday::after{
   content:"";
   position:absolute;
-  top: 8px;
-  bottom: 8px;
-  left: 10px;
-  right: 10px;
-  border-radius: 999px;
+  inset: 0;
+  border-radius: inherit;
   background: linear-gradient(180deg, var(--accent3), var(--accent2));
-  opacity: .85;
+  opacity: .88;
   z-index: 1;
 }
 
@@ -169,40 +166,55 @@
 .cinsDot.base{ background: var(--accent2); }
 .cinsDot.extra{ background: var(--accent1); }
 
-/* picker */
+/* =========================
+   PICKER (mese/anno) - VISUAL COME TABS
+   ========================= */
+
+/* overlay: niente "grigio duro", solo un velo soft + blur */
 .cinsPickerLayer{
   position:absolute;
   inset:0;
   border-radius: var(--rCard);
-  background: rgba(0,0,0,.18);
+  background: rgba(0,0,0,.12);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display:none;
   align-items:center;
   justify-content:center;
-  padding: 18px;
+  padding: 14px;
 }
 .cinsPickerLayer.isOn{ display:flex; }
 
+/* quando picker è on: nascondo calendario sotto (niente pasticcio) */
 .cinsRoot.isPickerOn .cinsHeader,
 .cinsRoot.isPickerOn .cinsBody{
   visibility: hidden;
 }
 
+/* card del picker: stessa “glass card” delle tabs */
 .cinsPickerCard{
   width: 100%;
   height: 100%;
   max-width: 520px;
-  border-radius: 26px;
+
+  border-radius: var(--rCard);
   border: 1px solid rgba(255,255,255,.14);
+
   background:
-    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.14), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.06));
+
   backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
   box-shadow: var(--shadow);
-  padding: 14px;
+
+  padding: 16px;
   display:flex;
   flex-direction: column;
   gap: 12px;
+
+  /* per swipe down */
+  touch-action: none;
 }
 
 .cinsPickerTop{
@@ -222,8 +234,9 @@
   align-items:center;
   justify-content:space-between;
   gap: 10px;
-  margin: 8px 0 12px;
+  margin: 6px 0 10px;
 }
+
 .cinsYearVal{
   font-weight: 1000;
   letter-spacing:.2px;
@@ -237,25 +250,27 @@
   align-content: start;
 }
 
+/* pulsanti mesi: stesso feel dei < > X */
 .cinsPickBtn{
   height: 44px;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+  background: rgba(255,255,255,.10);
   color: var(--text);
   font-weight: 1000;
-  transition: transform .12s ease, filter .12s ease;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
-.cinsPickBtn:active{ transform: scale(.97); filter: brightness(1.08); }
+.cinsPickBtn:active{
+  transform: scale(.97);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.14);
+}
 
+/* hint */
 .cinsSwipeHint{
-  margin-top: 6px;
+  margin-top: 2px;
   text-align:center;
   font-size: 12px;
   color: var(--muted);
   font-weight: 850;
 }
-
-/* ✅ HARD LOCK EXTRA: se qualche CSS globale tonda tutto */
-.cinsRoot .cinsGrid .cinsDay{ border-radius: 18px !important; }
-.cinsRoot .cinsWeekdays .cinsW{ border-radius: 16px !important; }
