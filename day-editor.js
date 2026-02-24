@@ -1,5 +1,7 @@
 /* day-editor.js
    Card "Turni" separata dal calendario (NON tocca calendar-insert.js)
+   Si apre con: window.NettoTrackUI.openDayEditor(dateKey)
+   oppure evento: "nettotrack:dayEditorOpened" { detail: { dateKey } }
 */
 (() => {
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -15,69 +17,15 @@
   function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
 
   function formatDateKeyToIT(dateKey) {
+    // atteso: YYYY-MM-DD
     if (!dateKey || typeof dateKey !== "string" || !dateKey.includes("-")) return dateKey || "";
     const [y, m, d] = dateKey.split("-");
     if (!y || !m || !d) return dateKey;
     return `${d}/${m}/${y}`;
   }
 
-  function defaultState(dateKey) {
+  function defaultShift() {
     return {
-      dateKey,
-      // ⛔ nota globale rimossa dall'UI, ma lasciamo compatibilità storage
-      note: "",
-      shifts: [
-        {
-          from: "08:00",
-          to: "17:00",
-          pauseMin: 0,
-          pausePaid: false,
-          tags: {
-            morning: false,
-            afternoon: false,
-            night: false,
-            overtime: false,
-            holiday: false,
-            sunday: false
-          },
-          note: ""
-        }
-      ]
-    };
-  }
-
-  function loadState(dateKey) {
-    const core = window.NettoTrackCalendarCore;
-    try {
-      if (core && typeof core.getDayData === "function") {
-        const data = core.getDayData(dateKey);
-        if (data && typeof data === "object") {
-          return {
-            dateKey,
-            note: String(data.note || ""),
-            shifts: Array.isArray(data.shifts) && data.shifts.length ? data.shifts.map(normalizeShift) : defaultState(dateKey).shifts
-          };
-        }
-      }
-    } catch (_) {}
-
-    try {
-      const raw = localStorage.getItem(STORAGE_PREFIX + dateKey);
-      if (!raw) return defaultState(dateKey);
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") return defaultState(dateKey);
-      return {
-        dateKey,
-        note: String(parsed.note || ""),
-        shifts: Array.isArray(parsed.shifts) && parsed.shifts.length ? parsed.shifts.map(normalizeShift) : defaultState(dateKey).shifts
-      };
-    } catch (_) {
-      return defaultState(dateKey);
-    }
-  }
-
-  function normalizeShift(s) {
-    const base = {
       from: "08:00",
       to: "17:00",
       pauseMin: 0,
@@ -92,6 +40,20 @@
       },
       note: ""
     };
+  }
+
+  function defaultState(dateKey) {
+    return {
+      dateKey,
+      // Manteniamo note per compatibilità dati pregressi,
+      // ma NON la mostriamo più in UI.
+      note: "",
+      shifts: [ defaultShift() ]
+    };
+  }
+
+  function normalizeShift(s) {
+    const base = defaultShift();
     if (!s || typeof s !== "object") return base;
     return {
       from: typeof s.from === "string" ? s.from : base.from,
@@ -110,6 +72,42 @@
     };
   }
 
+  function loadState(dateKey) {
+    // 1) prova core condiviso
+    const core = window.NettoTrackCalendarCore;
+    try {
+      if (core && typeof core.getDayData === "function") {
+        const data = core.getDayData(dateKey);
+        if (data && typeof data === "object") {
+          return {
+            dateKey,
+            note: String(data.note || ""),
+            shifts: Array.isArray(data.shifts) && data.shifts.length
+              ? data.shifts.map(normalizeShift)
+              : [defaultShift()]
+          };
+        }
+      }
+    } catch (_) {}
+
+    // 2) fallback localStorage
+    try {
+      const raw = localStorage.getItem(STORAGE_PREFIX + dateKey);
+      if (!raw) return defaultState(dateKey);
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return defaultState(dateKey);
+      return {
+        dateKey,
+        note: String(parsed.note || ""),
+        shifts: Array.isArray(parsed.shifts) && parsed.shifts.length
+          ? parsed.shifts.map(normalizeShift)
+          : [defaultShift()]
+      };
+    } catch (_) {
+      return defaultState(dateKey);
+    }
+  }
+
   function scheduleSave() {
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(saveNow, 220);
@@ -118,21 +116,22 @@
   function saveNow() {
     if (!currentKey || !state) return;
 
+    const payload = {
+      note: state.note,    // compatibilità
+      shifts: state.shifts
+    };
+
+    // 1) core condiviso
     const core = window.NettoTrackCalendarCore;
     try {
       if (core && typeof core.setDayData === "function") {
-        core.setDayData(currentKey, {
-          note: state.note,
-          shifts: state.shifts
-        });
+        core.setDayData(currentKey, payload);
       }
     } catch (_) {}
 
+    // 2) localStorage fallback
     try {
-      localStorage.setItem(STORAGE_PREFIX + currentKey, JSON.stringify({
-        note: state.note,
-        shifts: state.shifts
-      }));
+      localStorage.setItem(STORAGE_PREFIX + currentKey, JSON.stringify(payload));
     } catch (_) {}
   }
 
@@ -147,6 +146,7 @@
     if (!ensureMount()) return;
     if (!state) return;
 
+    // ✅ NOTA IN ALTO RIMOSSA: resta solo nota per singolo turno
     mount.innerHTML = `
       <div class="deRoot">
         <div class="deHeader">
@@ -162,14 +162,17 @@
       </div>
     `;
 
+    // close
     $(".deClose", mount)?.addEventListener("click", () => {
       document.dispatchEvent(new Event("nettotrack:closeDayEditor"));
     });
 
+    // shifts
     renderShifts();
 
+    // add shift
     $("#deAddShift", mount)?.addEventListener("click", () => {
-      state.shifts.push(defaultState(state.dateKey).shifts[0]);
+      state.shifts.push(defaultShift());
       renderShifts();
       scheduleSave();
     });
@@ -234,9 +237,10 @@
       const idx = Number(card.getAttribute("data-idx"));
       const shift = state.shifts[idx];
 
+      // remove
       card.querySelector(".deRemoveShift")?.addEventListener("click", () => {
         if (state.shifts.length <= 1) {
-          state.shifts[0] = defaultState(state.dateKey).shifts[0];
+          state.shifts[0] = defaultShift();
         } else {
           state.shifts.splice(idx, 1);
         }
@@ -244,14 +248,18 @@
         scheduleSave();
       });
 
+      // inputs/selects/textarea
       Array.from(card.querySelectorAll("[data-k]")).forEach((el) => {
         const k = el.getAttribute("data-k");
         if (!k) return;
 
         if (el.tagName === "INPUT") {
           el.addEventListener("input", () => {
-            if (k === "pauseMin") shift.pauseMin = clamp(Number(el.value || 0), 0, 999);
-            else shift[k] = el.value;
+            if (k === "pauseMin") {
+              shift.pauseMin = clamp(Number(el.value || 0), 0, 999);
+            } else {
+              shift[k] = el.value;
+            }
             scheduleSave();
           });
         } else if (el.tagName === "SELECT") {
@@ -267,6 +275,7 @@
         }
       });
 
+      // chips
       Array.from(card.querySelectorAll(".deChip")).forEach((chipEl) => {
         chipEl.addEventListener("click", () => {
           const tag = chipEl.getAttribute("data-tag");
