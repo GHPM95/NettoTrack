@@ -317,3 +317,28 @@
   visibility: hidden;
   pointer-events: none;
 }
+/* =========================
+   OVERRIDE DI SICUREZZA (se le classi JS non sono .cinsDay / .cinsW)
+   NON tocca altri moduli: è tutto sotto .cinsRoot
+   ========================= */
+.cinsRoot .cinsWeekdays > *{
+  border-radius: 16px !important;
+}
+
+/* giorni: prende qualsiasi bottone/giorno dentro la griglia */
+.cinsRoot .cinsGrid button,
+.cinsRoot .cinsGrid .day,
+.cinsRoot .cinsGrid .dayBtn,
+.cinsRoot .cinsGrid .calDay,
+.cinsRoot .cinsGrid .cal-day,
+.cinsRoot .cinsGrid [data-day]{
+  border-radius: var(--cinsDayR) !important; /* QUADRATO arrotondato */
+}
+
+/* se esiste il “giorno corrente” con classi diverse, prova a prenderlo */
+.cinsRoot .cinsGrid .isToday,
+.cinsRoot .cinsGrid .today,
+.cinsRoot .cinsGrid [data-today="1"]{
+  border-radius: var(--cinsDayR) !important;
+  overflow: hidden;
+}
