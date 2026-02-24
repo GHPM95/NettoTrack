@@ -81,6 +81,7 @@
   gap: 12px;
 }
 
+/* Card turno */
 .deShiftCard{
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,.12);
@@ -123,10 +124,60 @@
   filter: brightness(1.08);
 }
 
+/* =========================
+   BOX ORARI/PAUSA (FULL "mese/anno vibe")
+   ========================= */
+
 .deGrid{
+  position: relative;
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px 10px;
+
+  /* più aria + stessa “densità” dell’overlay */
+  padding: 14px;
+  border-radius: 26px;
+
+  /* bordo esterno soft */
+  border: 1px solid rgba(255,255,255,.14);
+
+  /* glass più “pulito” e coerente */
+  background:
+    radial-gradient(140% 220% at 20% 0%, rgba(255,255,255,.12), transparent 58%),
+    linear-gradient(180deg, rgba(255,255,255,.095), rgba(255,255,255,.045));
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  /* ombra come pannello overlay */
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.06),
+    0 14px 40px rgba(0,0,0,.24);
+}
+
+/* “cornice” interna come nell’overlay mese/anno */
+.deGrid::before{
+  content:"";
+  position:absolute;
+  inset: 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.08);
+  pointer-events:none;
+}
+
+/* highlight superiore delicato (effetto vetro) */
+.deGrid::after{
+  content:"";
+  position:absolute;
+  left: 12px;
+  right: 12px;
+  top: 12px;
+  height: 44%;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,.09), transparent);
+  pointer-events:none;
+  mix-blend-mode: screen;
+  opacity: .55;
 }
 
 .deField{
@@ -141,22 +192,45 @@
   font-weight: 900;
 }
 
+/* input/select come bottoni overlay (X / < / >) */
 .deInput,
 .deSelect{
   width: 100%;
-  height: 44px;
-  border-radius: 14px;
+  height: 46px;
+  border-radius: 18px;
   border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.10);
+
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.045));
+
   color: rgba(255,255,255,.92);
-  padding: 0 10px;
+  padding: 0 12px;
   font-weight: 900;
   outline: none;
+
+  transition: transform .12s ease, filter .12s ease, border-color .12s ease;
+}
+
+.deInput:focus,
+.deSelect:focus{
+  border-color: rgba(255,255,255,.22);
+  filter: brightness(1.06);
+}
+
+.deInput:active,
+.deSelect:active{
+  transform: scale(.99);
+  filter: brightness(1.06);
 }
 
 .deSelect{
   appearance: none;
 }
+
+/* =========================
+   CHIPS
+   ========================= */
 
 .deChips{
   display:flex;
