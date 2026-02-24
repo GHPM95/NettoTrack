@@ -1,423 +1,383 @@
-/* =========================
-   Calendar Insert (month grid)
-   ========================= */
+/* =========================================================
+   calendar-insert.css
+   Card Inserisci Dati / Calendario
+   - Giorni: bottone singolo (no doppio contorno)
+   - Picker mese/anno: niente doppio strato, calendario sotto invisibile,
+     picker grande quanto la card
+   ========================================================= */
 
+:root{
+  --cinsCell: 56px;     /* base size; si adatta con clamp sotto */
+  --cinsGap: 10px;
+
+  /* colori “puntini” */
+  --cinsBase: #2AE9FF;
+  --cinsExtra: #7C5CFF;
+
+  /* raggio card coerente */
+  --rCard: 28px;
+}
+
+/* ---------- root */
 .cinsRoot{
-  width:100%;
-  height:100%;
-  display:flex;
-  flex-direction:column;
-  gap: 12px;
-  min-height:0;
-  position: relative;
-}
-
-/* Header: frecce a sinistra, titolo centro, X a destra */
-.cinsHeader{
-  display:grid;
-  grid-template-columns: auto 1fr auto;
-  align-items:center;
-  gap: 10px;
-}
-.cinsLeft{
-  display:flex;
-  gap: 8px;
-  align-items:center;
-}
-
-/* Bottoni iOS-like (stesso stile del close menu) */
-.ntBtn{
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  border: none;
-  background: rgba(255,255,255,.10);
-  color: var(--text);
-  font-weight: 900;
-  font-size: 16px;
-  line-height: 1;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
-}
-.ntBtn:active{
-  transform: scale(.96);
-  filter: brightness(1.08);
-  background: rgba(255,255,255,.14);
-}
-.ntBtn.isDisabled{
-  opacity:.35;
-  pointer-events:none;
-}
-
-.cinsTitleBtn{
-  border:none;
-  background:transparent;
-  color: var(--text);
-  font-weight: 1000;
-  letter-spacing: .2px;
-  font-size: clamp(14px, 3.6vw, 17px);
-  padding: 10px 10px;
-  border-radius: 14px;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
-  text-align:center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.cinsTitleBtn:active{
-  transform: scale(.96);
-  filter: brightness(1.08);
-  background: rgba(255,255,255,.10);
-}
-
-.cinsBody{
-  flex:1;
-  min-height:0;
-  display:flex;
-  flex-direction:column;
-  gap: 10px;
-}
-
-/* ✅ quando picker aperto: nascondi il calendario sotto (niente “pasticcio”) */
-.cinsRoot.isPickerOn .cinsBody{
-  opacity: 0;
-  pointer-events: none;
-  filter: blur(10px);
-}
-
-/* Weekdays row */
-.cinsWeekdays{
-  display:grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  padding: 0 6px;
-}
-.cinsWeekdays div{
-  text-align:center;
-  font-size: 12px;
-  font-weight: 900;
-  color: var(--muted);
-}
-
-/* Month grid – deve contenere sempre 6 righe */
-.cinsGrid{
-  flex:1;
-  min-height:0;
-  display:grid;
-  grid-template-columns: repeat(7, minmax(0,1fr));
-  grid-template-rows: repeat(6, minmax(0, 1fr));
-  gap: 8px;
-  padding: 6px;
-}
-
-/* day cell button */
-/* ✅ FIX: niente bordo/sfondo esterno -> niente “doppi cerchi”.
-   Rimane solo il quadrato interno (.cinsCircle) */
-.cinsDay{
-  border: 0;
-  background: transparent;
-  border-radius: 18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding: clamp(6px, 1.2vh, 10px);
-  position: relative;
-  min-width: 0;
-  transition: transform .12s ease, filter .12s ease;
-}
-.cinsDay:active{
-  transform: scale(.98);
-  filter: brightness(1.07);
-}
-.cinsDay.isOff{
-  opacity: .28;
-  pointer-events: none;
-}
-
-/* ✅ QUADRATO interno (come da tua grafica attuale) */
-.cinsCircle{
-  width: min(44px, 11vw);
-  height: min(44px, 11vw);
-  max-width: 46px;
-  max-height: 46px;
-  border-radius: 14px; /* quadrato morbido */
-  border: 2px solid rgba(255,255,255,.16);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight: 1000;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-  background: transparent;
-}
-
-/* ✅ Giorno corrente: più “soft” ma visibile, gradiente VERTICALE */
-.cinsDay.isToday .cinsCircle{
-  border-color: transparent;
-  background: linear-gradient(180deg, var(--accent3), var(--accent1), var(--accent2));
-  box-shadow: 0 10px 22px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.20);
-}
-
-/* dots (base / extra) sotto */
-.cinsDots{
-  position:absolute;
-  bottom: 7px;
-  left: 50%;
-  transform: translateX(-50%);
-  display:flex;
-  gap: 6px;
-}
-.cinsDot{
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  opacity: .95;
-}
-.cinsDot.base{ background: var(--accent2); }
-.cinsDot.extra{ background: var(--accent1); }
-.cinsDot.draft{ opacity: .45; }
-
-/* =========================
-   Picker overlay (mese/anno)
-   ========================= */
-
-/* ✅ NIENTE doppio grigio: layer quasi trasparente (solo blur leggero),
-   sotto è già “nascosto” via .isPickerOn */
-.cinsPickerLayer{
-  position:absolute;
-  inset:0;
-  border-radius: var(--rCard);
-  background: rgba(0,0,0,.02);
-  backdrop-filter: blur(10px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding: 18px;
-  touch-action: none; /* aiuta swipe su iOS */
-}
-.cinsPickerLayer.isOn{ display:flex; }
-
-.cinsPickerCard{
   width: 100%;
-  max-width: 420px;
-  border-radius: 26px;
-  border: 1px solid rgba(255,255,255,.14);
-  /* ✅ stesso “tema” delle card */
-  background:
-    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-  backdrop-filter: blur(var(--blur));
-  box-shadow: var(--shadow);
-  padding: 14px;
-  touch-action: none; /* swipe down */
-}
-.cinsPickerTop{
+  height: 100%;
   display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.cinsPickerTitle{
-  font-weight: 1000;
-  letter-spacing:.2px;
-}
-.cinsYearRow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  margin: 8px 0 12px;
-}
-.cinsYearVal{
-  font-weight: 1000;
-  letter-spacing:.2px;
-}
-.cinsMonthGrid{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  flex-direction: column;
 }
 
-/* ✅ pulsanti mese: stesso feeling dei bottoni (ntBtn) quando premi */
-.cinsPickBtn{
+/* ---------- header */
+.cinsHeader{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 2px 10px;
+}
+
+.cinsTitle{
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+
+.cinsSub{
+  font-size: 13px;
+  opacity: .72;
+  margin-top: 4px;
+}
+
+.cinsClose{
+  width: 44px;
   height: 44px;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
-  background:
-    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-  color: var(--text);
-  font-weight: 1000;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
-}
-.cinsPickBtn:active{
-  transform: scale(.97);
-  filter: brightness(1.08);
-  background: rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  font-size: 26px;
+  line-height: 1;
 }
 
-.cinsSwipeHint{
-  margin-top: 10px;
-  text-align:center;
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 850;
+.cinsClose:active{
+  transform: scale(.98);
+  background: rgba(255,255,255,.10);
 }
 
-/* =========================
-   Day Editor (turni)
-   ========================= */
-
-.dedRoot{
-  width:100%;
-  height:100%;
+/* ---------- body */
+.cinsBody{
+  flex: 1;
   display:flex;
-  flex-direction:column;
-  gap: 12px;
-  min-height:0;
-}
-.dedHeader{
-  display:grid;
-  grid-template-columns: 1fr auto;
-  align-items:center;
+  flex-direction: column;
   gap: 10px;
 }
-.dedTitle{
-  font-weight: 1000;
-  letter-spacing:.2px;
-  font-size: clamp(14px, 3.6vw, 17px);
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
+
+/* quando picker aperto: il calendario sotto deve sparire, non “blur” */
+.cinsRoot.isPickerOn .cinsBody{
+  opacity: 0;
+  pointer-events: none;
 }
-.dedBody{
-  flex:1;
-  min-height:0;
-  overflow:auto;
-  overflow-x:hidden;
-  padding-right: 2px;
+
+/* top row mese */
+.cinsTopRow{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 2px 6px;
 }
-.dedLabel{
-  display:block;
-  font-size: 12px;
+
+.cinsNavBtn{
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.88);
+  font-size: 22px;
   font-weight: 900;
-  color: var(--muted);
-  margin: 10px 0 6px;
 }
-.dedInput, .dedTextArea{
-  width:100%;
-  border-radius: 16px;
+
+.cinsNavBtn:active{
+  transform: scale(.985);
+  background: rgba(255,255,255,.10);
+}
+
+.cinsMonthBtn{
+  flex: 1;
+  height: 54px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+
+.cinsMonthBtn:active{
+  transform: scale(.99);
+  background: rgba(255,255,255,.10);
+}
+
+.cinsMonthText{
+  font-size: 18px;
+}
+
+/* ---------- week labels */
+.cinsWeek{
+  display:grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--cinsGap);
+  padding: 2px 2px 0;
+  opacity: .62;
+  font-weight: 800;
+  text-align:center;
+}
+
+/* ---------- grid */
+.cinsGrid{
+  display:grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--cinsGap);
+  padding: 6px 2px 6px;
+
+  /* sizing responsive: da mobile piccolo a desktop */
+  --cinsCell: clamp(46px, 8.5vw, 60px);
+}
+
+/* Giorno: quadrato rounded, singolo contorno */
+.cinsDay{
+  width: var(--cinsCell);
+  height: var(--cinsCell);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.95);
+  font-weight: 800;
+  letter-spacing: .2px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cinsDay:active{
+  transform: scale(.99);
+  background: rgba(255,255,255,.10);
+}
+
+/* celle fuori mese */
+.cinsDay.isOff{
+  opacity: .18;
+  background: rgba(255,255,255,.02);
+  border-color: rgba(255,255,255,.10);
+}
+
+/* selezionato */
+.cinsDay.isSelected{
+  border-color: rgba(255,255,255,.32);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.18) inset;
+}
+
+/* oggi: più visibile + gradiente verticale invertito (stile switch) */
+.cinsDay.isToday{
+  background: linear-gradient(180deg, rgba(255,79,216,.95), rgba(124,92,255,.90), rgba(42,233,255,.92));
+  border-color: rgba(255,255,255,.28);
+  box-shadow: 0 10px 26px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.20) inset;
+}
+
+/* ---------- dots */
+.cinsDots{
+  position:absolute;
+  left:50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display:flex;
+  gap: 7px;
+  pointer-events:none;
+}
+
+.cinsDot{
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  opacity: .98;
+}
+
+.cinsDot.base{
+  background: var(--cinsBase);
+  box-shadow: 0 0 10px rgba(42,233,255,.35);
+}
+
+.cinsDot.extra{
+  background: var(--cinsExtra);
+  box-shadow: 0 0 10px rgba(124,92,255,.35);
+}
+
+/* opzionale: draft */
+.cinsDot.draft{
+  opacity: .70;
+}
+
+/* ---------- hint */
+.cinsHint{
+  margin-top: auto;
+  padding: 10px 6px 2px;
+  font-size: 13px;
+  opacity: .72;
+}
+
+/* =========================================================
+   Picker mese/anno (dentro la card)
+   ========================================================= */
+
+.cinsPickerLayer{
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+
+  display:flex;
+  align-items: stretch;
+  justify-content: stretch;
+
+  /* NIENTE DOPPIO STRATO */
+  background: transparent;
+  backdrop-filter: none;
+
+  padding: 0;
+  border-radius: var(--rCard);
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+
+  /* swipe down */
+  touch-action: pan-y;
+}
+
+.cinsRoot.isPickerOn .cinsPickerLayer{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cinsPickerCard{
+  height: 100%;
+  width: 100%;
+  border-radius: var(--rCard);
+
   border: 1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(120% 160% at 30% 0%, rgba(255,255,255,.10), transparent 60%),
-    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
-  color: var(--text);
+    radial-gradient(140% 180% at 20% 0%, rgba(255,255,255,.12), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.06));
+
+  backdrop-filter: blur(18px);
+  box-shadow: 0 22px 70px rgba(0,0,0,.55);
+
+  padding: 18px;
+  display:flex;
+  flex-direction: column;
+  gap: 14px;
+
+  /* per swipe-down */
+  will-change: transform, opacity;
+}
+
+/* header picker */
+.cinsPickerHeader{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cinsPickerTitle{
+  font-size: 22px;
   font-weight: 900;
-  outline:none;
-  padding: 0 12px;
 }
-.dedInput{ height: 46px; }
-.dedTextArea{
-  padding: 10px 12px;
-  min-height: 90px;
-  resize: none;
+
+.cinsPickerClose{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  font-size: 26px;
 }
-.dedRow2{
+
+.cinsPickerClose:active{
+  transform: scale(.98);
+  background: rgba(255,255,255,.10);
+}
+
+/* year row */
+.cinsPickerYearRow{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cinsPickerNav{
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.88);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.cinsPickerNav:active{
+  transform: scale(.985);
+  background: rgba(255,255,255,.10);
+}
+
+.cinsPickerYear{
+  flex:1;
+  text-align:center;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: .3px;
+}
+
+/* months grid */
+.cinsMonthsGrid{
   display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 6px;
+  flex: 1;
 }
-.dedShiftBox{
-  width: 100%;
+
+.cinsMonthPickBtn{
+  height: 66px;
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,.14);
-  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-  padding: 12px;
-  margin-top: 10px;
-}
-.dedShiftTop{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-}
-.dedShiftName{ font-weight: 1000; }
-.dedSmallBtn{
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  border:none;
-  background: rgba(255,255,255,.10);
-  color: var(--text);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
   font-weight: 900;
-  transition: transform .12s ease, filter .12s ease;
+  letter-spacing: .2px;
+  font-size: 18px;
 }
-.dedSmallBtn:active{
-  transform: scale(.96);
-  filter: brightness(1.08);
-}
-.dedPillsRow{
-  display:flex;
-  flex-wrap:wrap;
-  gap: 10px;
-  margin-top: 10px;
-}
-.dedPill{
-  display:inline-flex;
-  align-items:center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-  color: var(--text);
-  font-weight: 950;
-  transition: transform .12s ease, filter .12s ease;
-}
-.dedPill:active{
-  transform: scale(.97);
-  filter: brightness(1.08);
-}
-.dedPill input{ display:none; }
-.dedPill.isOn{
-  border-color: rgba(42,233,255,.24);
-  background:
-    radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.14), transparent 55%),
-    linear-gradient(180deg, rgba(124,92,255,.14), rgba(255,79,216,.08));
-}
-.dedPill.isDisabled{
-  opacity: .35;
-  pointer-events:none;
-}
-.dedFooter{
-  display:flex;
-  gap: 10px;
-  justify-content:space-between;
-  align-items:center;
-}
-.dedBtnWide{
-  flex:1;
-  height: 46px;
-  border-radius: 16px;
-  border:none;
+
+.cinsMonthPickBtn:active{
+  transform: scale(.99);
   background: rgba(255,255,255,.10);
-  color: var(--text);
-  font-weight: 1000;
-  letter-spacing:.15px;
-  transition: transform .12s ease, filter .12s ease;
 }
-.dedBtnWide:active{
-  transform: scale(.97);
-  filter: brightness(1.08);
+
+/* mese selezionato */
+.cinsMonthPickBtn.isActive{
+  border-color: rgba(255,255,255,.28);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.14) inset;
 }
-.dedBtnWide.isDisabled{
-  opacity:.35;
-  pointer-events:none;
-}
-.dedHint{
-  margin-top: 8px;
-  color: var(--muted);
-  font-weight: 850;
-  font-size: 12px;
-  line-height: 1.35;
+
+/* hint swipe */
+.cinsPickerHint{
+  text-align:center;
+  opacity:.62;
+  font-weight: 800;
+  letter-spacing: .2px;
+  padding-top: 2px;
 }
