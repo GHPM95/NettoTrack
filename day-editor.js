@@ -22,7 +22,6 @@
   }
 
   function isSundayKey(dateKey) {
-    // usa core se esiste, altrimenti Date
     try {
       if (window.NTCal && typeof window.NTCal.isSunday === "function") {
         const [yy, mm, dd] = String(dateKey).split("-").map(Number);
@@ -37,32 +36,38 @@
     return false;
   }
 
+  function makeDefaultShift() {
+    return {
+      from: "08:00",
+      to: "17:00",
+      pauseMin: 0,
+      pausePaid: false,
+
+      // ✅ include anche "none"
+      // "none" | "morning" | "afternoon" | "night"
+      shiftType: "",
+
+      tags: {
+        morning: false,
+        afternoon: false,
+        night: false,
+        overtime: false,
+        holiday: false,
+        sunday: false
+      },
+      note: ""
+    };
+  }
+
   function defaultState(dateKey) {
     return {
       dateKey,
-      shifts: [
-        {
-          from: "08:00",
-          to: "17:00",
-          pauseMin: 0,
-          pausePaid: false,
-          shiftType: "", // "morning" | "afternoon" | "night" | ""
-          tags: {
-            morning: false,
-            afternoon: false,
-            night: false,
-            overtime: false,
-            holiday: false,
-            sunday: false
-          },
-          note: ""
-        }
-      ]
+      shifts: [ makeDefaultShift() ]
     };
   }
 
   function normalizeShift(s) {
-    const base = defaultState("x").shifts[0];
+    const base = makeDefaultShift();
     if (!s || typeof s !== "object") return { ...base };
 
     const tags = {
@@ -74,14 +79,18 @@
       sunday: !!(s.tags && s.tags.sunday)
     };
 
+    // shiftType: accetta "none"
     let shiftType = "";
     if (typeof s.shiftType === "string") shiftType = s.shiftType;
-    else {
+
+    // fallback se vecchi dati
+    if (!shiftType) {
       if (tags.morning) shiftType = "morning";
       if (tags.afternoon) shiftType = "afternoon";
       if (tags.night) shiftType = "night";
     }
 
+    // allinea tags con shiftType (mutuo)
     tags.morning = shiftType === "morning";
     tags.afternoon = shiftType === "afternoon";
     tags.night = shiftType === "night";
@@ -155,6 +164,34 @@
     return !!mount;
   }
 
+  function enforceSundayRule() {
+    const isSun = isSundayKey(currentKey);
+    for (const s of state.shifts) {
+      s.tags = s.tags || {};
+      s.tags.sunday = isSun ? true : false;
+    }
+    return isSun;
+  }
+
+  function applyNoShift(shift) {
+    // ✅ azzera orari e pause quando "Senza turno"
+    shift.from = "";
+    shift.to = "";
+    shift.pauseMin = 0;
+    shift.pausePaid = false;
+
+    // reset tipo + tags di fascia
+    shift.shiftType = "none";
+    shift.tags = shift.tags || {};
+    shift.tags.morning = false;
+    shift.tags.afternoon = false;
+    shift.tags.night = false;
+
+    // non tocchiamo overtime/holiday (se vuoi azzerarli dimmelo)
+    // shift.tags.overtime = false;
+    // shift.tags.holiday = false;
+  }
+
   function render() {
     if (!ensureMount() || !state) return;
 
@@ -180,30 +217,24 @@
     renderShifts();
 
     $("#deAddShift", mount)?.addEventListener("click", () => {
-      state.shifts.push(defaultState(state.dateKey).shifts[0]);
+      state.shifts.push(makeDefaultShift());
       renderShifts();
       scheduleSave();
     });
-  }
-
-  function enforceSundayRule() {
-    const isSun = isSundayKey(currentKey);
-    // forza domenicale ON/OFF su TUTTI i turni
-    for (const s of state.shifts) {
-      s.tags = s.tags || {};
-      s.tags.sunday = isSun ? true : false;
-    }
-    return isSun;
   }
 
   function renderShifts() {
     const host = $("#deShifts", mount);
     if (!host) return;
 
-    const isSun = enforceSundayRule(); // ✅ applica la regola prima di disegnare
+    const isSun = enforceSundayRule();
 
     host.innerHTML = state.shifts.map((s, idx) => {
       const n = idx + 1;
+      const domOn = !!(s.tags && s.tags.sunday);
+
+      // default option
+      const st = s.shiftType || "";
 
       return `
         <div class="deShiftCard" data-idx="${idx}">
@@ -211,27 +242,26 @@
             <button class="deRemoveShift" type="button" aria-label="Rimuovi turno">−</button>
             <div class="deShiftTitle">Turno ${n}</div>
 
-            <!-- ✅ Domenicale: ON automatico solo di domenica, altrimenti disabilitato -->
             <button
               class="deChip deChipMini ${isSun ? "isOn" : "isDisabled"}"
               type="button"
               data-tag="sunday"
               ${isSun ? "" : "disabled"}
               aria-disabled="${isSun ? "false" : "true"}"
-              aria-pressed="${isSun ? "true" : "false"}"
+              aria-pressed="${domOn ? "true" : "false"}"
               title="Domenicale"
             >Domenicale</button>
           </div>
 
-          <!-- Fascia -->
+          <!-- ✅ Fascia: Senza turno / Mattino / Pomeriggio / Notte -->
           <div class="deGrid" style="margin-bottom:10px;">
             <label class="deField" style="grid-column:1 / -1;">
               <span class="deFieldLbl">Fascia</span>
               <select class="deSelect" data-k="shiftType">
-                <option value="" ${s.shiftType ? "" : "selected"}>—</option>
-                <option value="morning" ${s.shiftType === "morning" ? "selected" : ""}>Mattino</option>
-                <option value="afternoon" ${s.shiftType === "afternoon" ? "selected" : ""}>Pomeriggio</option>
-                <option value="night" ${s.shiftType === "night" ? "selected" : ""}>Notte</option>
+                <option value="none" ${st === "none" ? "selected" : ""}>Senza turno</option>
+                <option value="morning" ${st === "morning" ? "selected" : ""}>Mattino</option>
+                <option value="afternoon" ${st === "afternoon" ? "selected" : ""}>Pomeriggio</option>
+                <option value="night" ${st === "night" ? "selected" : ""}>Notte</option>
               </select>
             </label>
           </div>
@@ -239,32 +269,31 @@
           <div class="deGrid">
             <label class="deField">
               <span class="deFieldLbl">Da (HH:MM)</span>
-              <input class="deInput" type="time" data-k="from" value="${escapeHtml(s.from)}">
+              <input class="deInput" type="time" data-k="from" value="${escapeHtml(s.from)}" ${st === "none" ? "disabled" : ""}>
             </label>
 
             <label class="deField">
               <span class="deFieldLbl">A (HH:MM)</span>
-              <input class="deInput" type="time" data-k="to" value="${escapeHtml(s.to)}">
+              <input class="deInput" type="time" data-k="to" value="${escapeHtml(s.to)}" ${st === "none" ? "disabled" : ""}>
             </label>
 
             <label class="deField">
               <span class="deFieldLbl">Pausa (min)</span>
-              <input class="deInput" type="number" inputmode="numeric" min="0" max="999" data-k="pauseMin" value="${Number(s.pauseMin) || 0}">
+              <input class="deInput" type="number" inputmode="numeric" min="0" max="999" data-k="pauseMin" value="${Number(s.pauseMin) || 0}" ${st === "none" ? "disabled" : ""}>
             </label>
 
             <label class="deField">
               <span class="deFieldLbl">Pausa pagata</span>
-              <select class="deSelect" data-k="pausePaid">
+              <select class="deSelect" data-k="pausePaid" ${st === "none" ? "disabled" : ""}>
                 <option value="false" ${s.pausePaid ? "" : "selected"}>No</option>
                 <option value="true" ${s.pausePaid ? "selected" : ""}>Sì</option>
               </select>
             </label>
           </div>
 
-          <!-- Straordinario + Festivo prima della nota -->
           <div class="deChips deChipsExtra">
-            ${chip("Straordinario", "overtime", !!s.tags.overtime)}
-            ${chip("Festivo", "holiday", !!s.tags.holiday)}
+            ${chip("Straordinario", "overtime", !!(s.tags && s.tags.overtime))}
+            ${chip("Festivo", "holiday", !!(s.tags && s.tags.holiday))}
           </div>
 
           <div class="deBlock deShiftNoteBlock">
@@ -280,9 +309,10 @@
       const idx = Number(card.getAttribute("data-idx"));
       const shift = state.shifts[idx];
 
+      // remove shift (rimane come prima)
       card.querySelector(".deRemoveShift")?.addEventListener("click", () => {
         if (state.shifts.length <= 1) {
-          state.shifts[0] = defaultState(state.dateKey).shifts[0];
+          state.shifts[0] = makeDefaultShift();
         } else {
           state.shifts.splice(idx, 1);
         }
@@ -290,6 +320,7 @@
         scheduleSave();
       });
 
+      // data-k bindings
       Array.from(card.querySelectorAll("[data-k]")).forEach((el) => {
         const k = el.getAttribute("data-k");
         if (!k) return;
@@ -305,13 +336,26 @@
             if (k === "pausePaid") {
               shift.pausePaid = el.value === "true";
             } else if (k === "shiftType") {
-              shift.shiftType = el.value || "";
-              shift.tags = shift.tags || {};
-              shift.tags.morning = shift.shiftType === "morning";
-              shift.tags.afternoon = shift.shiftType === "afternoon";
-              shift.tags.night = shift.shiftType === "night";
+              const v = el.value || "none";
+
+              if (v === "none") {
+                applyNoShift(shift);
+              } else {
+                shift.shiftType = v;
+
+                // riallinea tags fascia (mutuo)
+                shift.tags = shift.tags || {};
+                shift.tags.morning = v === "morning";
+                shift.tags.afternoon = v === "afternoon";
+                shift.tags.night = v === "night";
+
+                // se uscivi da "none" e vuoi ripristinare default ore, lascio vuoto:
+                // qui NON imposto ore, così l’utente decide.
+              }
+
+              renderShifts(); // ✅ serve per disabilitare/abilitare campi
+              scheduleSave();
             }
-            scheduleSave();
           });
         } else if (el.tagName === "TEXTAREA") {
           el.addEventListener("input", () => {
@@ -321,13 +365,13 @@
         }
       });
 
-      // Chips extra: overtime/holiday (sunday è disabilitato o forzato)
+      // chips extra
       Array.from(card.querySelectorAll(".deChip")).forEach((chipEl) => {
         const tag = chipEl.getAttribute("data-tag");
         if (!tag) return;
 
         chipEl.addEventListener("click", () => {
-          // ✅ blocca completamente domenicale se non domenica
+          // blocca domenicale (gestito automaticamente)
           if (tag === "sunday") return;
 
           shift.tags = shift.tags || {};
@@ -356,8 +400,10 @@
   function open(dateKey) {
     currentKey = dateKey || currentKey || new Date().toISOString().slice(0, 10);
     state = loadState(currentKey);
+    // applica regola domenica subito
+    enforceSundayRule();
     render();
-    scheduleSave(); // ✅ salva subito l’allineamento domenicale ON/OFF
+    scheduleSave();
   }
 
   document.addEventListener("nettotrack:dayEditorOpened", (e) => {
