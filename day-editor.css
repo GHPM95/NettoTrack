@@ -420,3 +420,18 @@
 .deChip[data-tag="sunday"]{
   margin-top: 2px;
 }
+
+/* Domenicale in alto a destra (mini chip) */
+.deShiftTop{
+  grid-template-columns: auto 1fr auto; /* - | titolo | domenicale */
+  align-items: center;
+}
+
+.deChipMini{
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  width: auto;
+  justify-content: center;
+  white-space: nowrap;
+}
