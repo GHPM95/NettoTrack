@@ -223,20 +223,17 @@
 .deChipsExtra{ margin-bottom: 10px; }
 
 /* Chip base */
-.deChip{
-  height: 40px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.08);
-  color: var(--text);
-  font-weight: 1000;
-  letter-spacing:.1px;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
-  white-space: nowrap;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.deChip.isOn{
+  border-color: rgba(var(--deChipAccent), .28);
+
+  background:
+    radial-gradient(
+      120% 180% at 30% 0%,
+      rgba(var(--deChipAccent), .10),
+      transparent 62%
+    );
+
+  box-shadow: none; /* ❌ niente glow */
 }
 .deChip:active{
   transform: scale(.97);
