@@ -34,7 +34,7 @@
           pauseMin: 0,
           pausePaid: false,
 
-          // ✅ nuovo: selezione unica
+          // selezione unica
           shiftType: "", // "morning" | "afternoon" | "night" | ""
 
           tags: {
@@ -53,7 +53,6 @@
 
   function normalizeShift(s) {
     const base = defaultState("x").shifts[0];
-
     if (!s || typeof s !== "object") return { ...base };
 
     const tags = {
@@ -65,7 +64,7 @@
       sunday: !!(s.tags && s.tags.sunday)
     };
 
-    // ✅ ricava shiftType
+    // ricava shiftType
     let shiftType = "";
     if (typeof s.shiftType === "string") shiftType = s.shiftType;
     else {
@@ -74,7 +73,7 @@
       if (tags.night) shiftType = "night";
     }
 
-    // ✅ allinea tags con shiftType (mutuo)
+    // allinea tags con shiftType (mutuo)
     tags.morning = shiftType === "morning";
     tags.afternoon = shiftType === "afternoon";
     tags.night = shiftType === "night";
@@ -91,7 +90,6 @@
   }
 
   function loadState(dateKey) {
-    // 1) prova core condiviso (se esiste)
     const core = window.NettoTrackCalendarCore;
     try {
       if (core && typeof core.getDayData === "function") {
@@ -108,7 +106,6 @@
       }
     } catch (_) {}
 
-    // 2) fallback localStorage
     try {
       const raw = localStorage.getItem(STORAGE_PREFIX + dateKey);
       if (!raw) return defaultState(dateKey);
@@ -197,15 +194,26 @@
 
     host.innerHTML = state.shifts.map((s, idx) => {
       const n = idx + 1;
+      const domOn = !!(s.tags && s.tags.sunday);
 
       return `
         <div class="deShiftCard" data-idx="${idx}">
           <div class="deShiftTop">
             <button class="deRemoveShift" type="button" aria-label="Rimuovi turno">−</button>
+
             <div class="deShiftTitle">Turno ${n}</div>
+
+            <!-- ✅ Domenicale in alto a destra -->
+            <button
+              class="deChip deChipMini ${domOn ? "isOn" : ""}"
+              type="button"
+              data-tag="sunday"
+              aria-pressed="${domOn ? "true" : "false"}"
+              title="Domenicale"
+            >Domenicale</button>
           </div>
 
-          <!-- ✅ Selezione unica (prima di Da/A/Pausa...) -->
+          <!-- ✅ Selezione unica Mattino/Pomeriggio/Notte (prima degli orari) -->
           <div class="deGrid" style="margin-bottom:10px;">
             <label class="deField" style="grid-column:1 / -1;">
               <span class="deFieldLbl">Fascia</span>
@@ -243,11 +251,10 @@
             </label>
           </div>
 
-          <!-- ✅ restano chip SOLO per extra -->
-          <div class="deChips">
-            ${chip("Straordinario", "overtime", s.tags.overtime)}
-            ${chip("Festivo", "holiday", s.tags.holiday)}
-            ${chip("Domenicale", "sunday", s.tags.sunday)}
+          <!-- ✅ Straordinario + Festivo prima della nota turno -->
+          <div class="deChips deChipsExtra">
+            ${chip("Straordinario", "overtime", !!(s.tags && s.tags.overtime))}
+            ${chip("Festivo", "holiday", !!(s.tags && s.tags.holiday))}
           </div>
 
           <div class="deBlock deShiftNoteBlock">
@@ -274,18 +281,15 @@
         scheduleSave();
       });
 
-      // data-k bindings
+      // inputs/select/textarea data-k
       Array.from(card.querySelectorAll("[data-k]")).forEach((el) => {
         const k = el.getAttribute("data-k");
         if (!k) return;
 
         if (el.tagName === "INPUT") {
           el.addEventListener("input", () => {
-            if (k === "pauseMin") {
-              shift.pauseMin = clamp(Number(el.value || 0), 0, 999);
-            } else {
-              shift[k] = el.value;
-            }
+            if (k === "pauseMin") shift.pauseMin = clamp(Number(el.value || 0), 0, 999);
+            else shift[k] = el.value;
             scheduleSave();
           });
         } else if (el.tagName === "SELECT") {
@@ -295,7 +299,7 @@
             } else if (k === "shiftType") {
               shift.shiftType = el.value || "";
 
-              // ✅ allinea tags (mutuo)
+              // allinea tags (mutuo)
               shift.tags = shift.tags || {};
               shift.tags.morning = shift.shiftType === "morning";
               shift.tags.afternoon = shift.shiftType === "afternoon";
@@ -311,14 +315,18 @@
         }
       });
 
-      // chips extra
+      // chips: domenicale + extra
       Array.from(card.querySelectorAll(".deChip")).forEach((chipEl) => {
         chipEl.addEventListener("click", () => {
           const tag = chipEl.getAttribute("data-tag");
           if (!tag) return;
+
+          shift.tags = shift.tags || {};
           shift.tags[tag] = !shift.tags[tag];
+
           chipEl.classList.toggle("isOn", !!shift.tags[tag]);
           chipEl.setAttribute("aria-pressed", shift.tags[tag] ? "true" : "false");
+
           scheduleSave();
         });
       });
