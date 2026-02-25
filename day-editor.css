@@ -1,54 +1,39 @@
 /* =========================
-   Day Editor (Turni) - UI responsive come calendario
+   Day Editor (Turni) — CSS pulito
+   Coerente con UI/Calendario
    ========================= */
 
 .deRoot{
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: transparent; /* niente sfondo qui: lo fa già la card esterna */
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+
+  /* 🔑 container invisibile (niente box “in più”) */
+  background: transparent;
 }
 
-/* HEADER: centrato come calendario (simmetria: left spacer = close btn) */
+/* Header come calendario */
 .deHeader{
-  display: grid;
-  grid-template-columns: 38px 1fr 38px; /* stesso ingombro dei bottoni */
-  align-items: center;
+  display:grid;
+  grid-template-columns: 1fr auto;
+  align-items:center;
   gap: 10px;
-
-  padding: 6px 6px 0;
-  position: relative;
 }
 
-/* spacer sinistro invisibile per centrare il titolo */
-.deHeader::before{
-  content:"";
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  visibility: hidden;
-}
-
+/* Titolo come calendario (dimensioni/posizione coerenti) */
 .deTitle{
-  grid-column: 2;
   font-weight: 1000;
-  letter-spacing: .2px;
-  color: var(--text);
-
+  letter-spacing:.2px;
   font-size: clamp(14px, 3.6vw, 17px);
-
-  text-align: center;        /* 🔑 come calendario */
   white-space: nowrap;
-  overflow: hidden;
+  overflow:hidden;
   text-overflow: ellipsis;
 }
 
-/* Bottoni header: stile calendario */
+/* X come ntBtn */
 .deClose{
-  grid-column: 3;
   width: 38px;
   height: 38px;
   border-radius: 14px;
@@ -56,11 +41,8 @@
   background: rgba(255,255,255,.10);
   color: var(--text);
   font-weight: 900;
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
 .deClose:active{
@@ -69,46 +51,44 @@
   background: rgba(255,255,255,.14);
 }
 
-/* LISTA TURNI scrollabile */
+/* lista turni */
 .deShifts{
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding: 0 6px 6px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-}
-
-/* Card singolo turno (glass coerente) */
-.deShiftCard{
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.12);
-  background:
-    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
-  padding: 14px;
+  flex:1;
+  min-height:0;
+  overflow:auto;          /* solo verticale */
+  overflow-x:hidden;
+  padding-right: 2px;
   margin-top: 10px;
 }
-.deShiftCard:first-child{ margin-top: 0; }
 
-.deShiftTop{
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+/* Card turno: “invisibile” ma con padding interno (si adatta alla card esterna) */
+.deShiftCard{
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0 0 14px 0;
 }
 
+/* Top riga turno */
+.deShiftTop{
+  display:grid;
+  grid-template-columns: auto 1fr auto;
+  align-items:center;
+  gap: 10px;
+  padding: 2px 0 6px;
+}
+
+/* Titolo turno */
 .deShiftTitle{
   font-weight: 1000;
-  letter-spacing: .2px;
-  color: var(--text);
-  font-size: clamp(14px, 3.2vw, 16px);
+  letter-spacing:.2px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
 }
 
-/* - (rimuovi turno) come bottoni calendario */
+/* Pulsante "−" (remove shift) stile ntBtn */
 .deRemoveShift{
   width: 38px;
   height: 38px;
@@ -117,11 +97,8 @@
   background: rgba(255,255,255,.10);
   color: var(--text);
   font-weight: 900;
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
 .deRemoveShift:active{
@@ -130,315 +107,156 @@
   background: rgba(255,255,255,.14);
 }
 
+/* Divider elegante tra sezioni */
+.deDivider{
+  height:1px;
+  width:100%;
+  margin: 12px 0 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.16),
+    transparent
+  );
+}
+
 /* Griglia campi */
 .deGrid{
-  display: grid;
+  display:grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
+/* Field wrapper */
 .deField{
-  display: flex;
-  flex-direction: column;
+  display:flex;
+  flex-direction:column;
   gap: 6px;
+  min-width:0;
 }
 
-.deFieldLbl{
+/* Label */
+.deFieldLbl,
+.deLabel{
+  display:block;
   font-size: 12px;
   font-weight: 900;
   color: var(--muted);
-  letter-spacing: .2px;
 }
 
-/* Input/Select coerenti */
+/* Input/select “glass scuro” */
 .deInput,
-.deSelect{
-  height: 44px;
+.deSelect,
+.deTextarea{
+  width:100%;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.10);
+  background:
+    radial-gradient(120% 160% at 30% 0%, rgba(255,255,255,.10), transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
   color: var(--text);
-  padding: 0 12px;
   font-weight: 900;
-  font-size: 16px;
-  outline: none;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  outline:none;
+  padding: 0 12px;
 }
 
-.deInput:focus,
-.deSelect:focus{
-  background: rgba(255,255,255,.12);
-  filter: brightness(1.04);
+.deInput{ height: 46px; }
+.deSelect{ height: 46px; }
+
+.deTextarea{
+  padding: 10px 12px;
+  min-height: 90px;
+  resize: none;
 }
 
-.deInput:active,
-.deSelect:active{
-  transform: scale(.99);
+.deTextareaSmall{
+  min-height: 86px;
 }
 
-/* Chip tags */
+/* Disabled */
+.deInput:disabled,
+.deSelect:disabled{
+  opacity: .40;
+  pointer-events:none;
+}
+
+/* Chips row */
 .deChips{
-  display: flex;
-  flex-wrap: wrap;
+  display:flex;
+  flex-wrap:wrap;
   gap: 10px;
-  margin-top: 12px;
 }
 
+/* Extra row spacing */
+.deChipsExtra{
+  margin-bottom: 10px;
+}
+
+/* Chip base */
 .deChip{
-  height: 38px;
+  height: 40px;
   padding: 0 14px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,.14);
   background: rgba(255,255,255,.08);
   color: var(--text);
   font-weight: 1000;
-  font-size: 14px;
-  letter-spacing: .1px;
-  transition: transform .12s ease, filter .12s ease, background .12s ease, border-color .12s ease;
+  letter-spacing:.1px;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  white-space: nowrap;
 }
 .deChip:active{
   transform: scale(.97);
-  filter: brightness(1.06);
-}
-
-/* ON = gradiente acceso tipo dots/switch */
-.deChip.isOn{
-  border-color: rgba(255,255,255,.18);
-  background: linear-gradient(90deg, var(--accent2), var(--accent1), var(--accent3));
-  color: rgba(255,255,255,.98);
-  text-shadow: 0 1px 10px rgba(0,0,0,.22);
-}
-
-/* Note */
-.deBlock{
-  margin-top: 12px;
-}
-
-.deLabel{
-  font-size: 12px;
-  font-weight: 900;
-  color: var(--muted);
-  letter-spacing: .2px;
-  margin-bottom: 6px;
-}
-
-.deTextarea{
-  width: 100%;
-  min-height: 44px;
-  max-height: 120px;
-  resize: none;
-
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.10);
-  color: var(--text);
-
-  padding: 12px 14px;
-  font-weight: 850;
-  font-size: 15px;
-  outline: none;
-
-  transition: filter .12s ease, background .12s ease;
-}
-.deTextarea:focus{
+  filter: brightness(1.08);
   background: rgba(255,255,255,.12);
-  filter: brightness(1.04);
 }
 
-.deTextareaSmall{
-  min-height: 44px;
+/* Chip acceso = gradiente “puntini intelligenti” */
+.deChip.isOn{
+  border-color: rgba(42,233,255,.22);
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.18), transparent 55%),
+    linear-gradient(90deg, rgba(42,233,255,.22), rgba(124,92,255,.18), rgba(255,79,216,.14));
 }
 
-/* Azioni */
+/* Domenicale mini chip (accanto al titolo) */
+.deChipMini{
+  height: 34px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+/* Disattivato estetico */
+.deChip.isDisabled{
+  opacity: .35;
+  pointer-events:none;
+}
+
+/* Nota block */
+.deBlock{
+  margin-top: 10px;
+}
+
+/* Actions */
 .deActions{
-  padding: 0 6px 6px;
+  padding-top: 10px;
 }
 
+/* + Aggiungi turno stile “wide” */
 .deAddShift{
   width: 100%;
-  height: 52px;
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.14);
+  height: 46px;
+  border-radius: 16px;
+  border: none;
   background: rgba(255,255,255,.10);
   color: var(--text);
   font-weight: 1000;
-  font-size: 16px;
-  letter-spacing: .2px;
+  letter-spacing:.15px;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
 .deAddShift:active{
-  transform: scale(.98);
+  transform: scale(.97);
   filter: brightness(1.08);
   background: rgba(255,255,255,.14);
-}
-
-/* Schermi stretti */
-@media (max-width: 360px){
-  .deGrid{ grid-template-columns: 1fr; }
-  .deAddShift{ height: 48px; }
-}
-
-/* ====== OVERRIDE: layout richiesto ====== */
-
-/* 1) Shift top: minus a sinistra, titolo dopo, e linea sotto */
-.deShiftTop{
-  grid-template-columns: auto 1fr;   /* - | titolo */
-  grid-template-areas:
-    "minus title"
-    "line  line";
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.deRemoveShift{
-  grid-area: minus;
-  justify-self: start;
-}
-
-.deShiftTitle{
-  grid-area: title;
-  justify-self: start;
-}
-
-/* linea divisoria "in tema" */
-.deShiftTop::after{
-  content:"";
-  grid-area: line;
-  height: 1px;
-  width: 100%;
-  margin-top: 10px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(255,255,255,.06),
-    rgba(255,255,255,.18),
-    rgba(255,255,255,.06)
-  );
-}
-
-/* 2) Chips PRIMA della griglia input */
-.deShiftCard{
-  display: flex;
-  flex-direction: column;
-}
-
-.deShiftTop{ order: 1; }
-.deChips{ order: 2; }
-.deGrid{ order: 3; }
-.deShiftNoteBlock{ order: 4; }
-
-/* 3) Mattino/Pomeriggio/Notte sempre sulla stessa riga, full width */
-.deChips{
-  display: grid;                 /* non più flex */
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 10px;
-  margin-top: 12px;
-}
-
-/* chip = occupa tutta la colonna */
-.deChip{
-  width: 100%;
-  justify-content: center;
-}
-
-/* altri chip (Straordinario/Festivo/Domenicale) vanno sotto:
-   li facciamo "a 2 colonne" dopo la prima riga */
-.deChip[data-tag="overtime"],
-.deChip[data-tag="holiday"],
-.deChip[data-tag="sunday"]{
-  grid-column: span 1;
-}
-
-/* Se vuoi: 2° riga più equilibrata (2 + 1 centrato) */
-.deChip[data-tag="overtime"]{ grid-column: 1; }
-.deChip[data-tag="holiday"] { grid-column: 2; }
-.deChip[data-tag="sunday"]  { grid-column: 3; }
-
-/* mobile molto stretto: riduco padding per farci stare bene i 3 chip */
-@media (max-width: 360px){
-  .deChip{ padding: 0 10px; font-size: 13px; }
-  .deChips{ gap: 8px; }
-}
-/* ====== LINEA sotto Pausa + 3 chip sotto ====== */
-
-/* 1) La griglia deve poter ospitare una "riga linea" sotto i campi pausa */
-.deGrid{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-/* Inserisco una linea dopo i 4 campi (Da, A, Pausa, Pausa pagata) */
-.deGrid::after{
-  content:"";
-  grid-column: 1 / -1;
-  height: 1px;
-  margin-top: 6px;
-  margin-bottom: 6px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(255,255,255,.06),
-    rgba(255,255,255,.18),
-    rgba(255,255,255,.06)
-  );
-}
-
-/* 2) Chips layout:
-   - prima riga: Mattino/Pomeriggio/Notte (già ok con 3 colonne)
-   - sotto la linea: Straordinario/Festivo/Domenicale in 3 colonne */
-.deChips{
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-/* 3) Testi chip: si adattano al contenuto senza uscire */
-.deChip{
-  width: 100%;
-  max-width: 100%;
-  padding: 0 12px;
-  height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 4) Metto i 3 "extra" dopo la riga pausa (cioè sotto la deGrid),
-      quindi li lasciamo nella stessa sezione chips ma li ordiniamo dopo.
-      (Funziona perché .deChips è già sotto la deShiftTop e sopra la deGrid.) */
-
-/* Se vuoi proprio separarli visivamente, aumentiamo il distacco
-   SOLO per i 3 extra */
-.deChip[data-tag="overtime"],
-.deChip[data-tag="holiday"],
-.deChip[data-tag="sunday"]{
-  margin-top: 2px;
-}
-
-/* Domenicale in alto a destra (mini chip) */
-.deShiftTop{
-  grid-template-columns: auto 1fr auto; /* - | titolo | domenicale */
-  align-items: center;
-}
-
-.deChipMini{
-  height: 38px;
-  padding: 0 12px;
-  border-radius: 999px;
-  width: auto;
-  justify-content: center;
-  white-space: nowrap;
-}
-/* Domenicale disattivato: opaco e non premibile (look coerente) */
-.deChip.isDisabled,
-.deChip:disabled{
-  opacity: .35;
-  filter: saturate(.7);
-  pointer-events: none;
 }
