@@ -9,38 +9,46 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-
-  /* IMPORTANTISSIMO: nessuno sfondo qui.
-     Lo sfondo “glass” è già la CARD esterna. */
-  background: transparent;
+  background: transparent; /* niente sfondo qui: lo fa già la card esterna */
 }
 
-/* HEADER (stessa scala del calendario) */
+/* HEADER: centrato come calendario (simmetria: left spacer = close btn) */
 .deHeader{
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 38px 1fr 38px; /* stesso ingombro dei bottoni */
   align-items: center;
   gap: 10px;
 
-  /* padding spostato su header/contenuti, non sulla card */
   padding: 6px 6px 0;
+  position: relative;
+}
+
+/* spacer sinistro invisibile per centrare il titolo */
+.deHeader::before{
+  content:"";
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  visibility: hidden;
 }
 
 .deTitle{
+  grid-column: 2;
   font-weight: 1000;
   letter-spacing: .2px;
   color: var(--text);
 
-  /* come cinsTitleBtn: piccolo su mobile, cresce soft */
   font-size: clamp(14px, 3.6vw, 17px);
 
+  text-align: center;        /* 🔑 come calendario */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Bottoni header: come .ntBtn del calendario */
+/* Bottoni header: stile calendario */
 .deClose{
+  grid-column: 3;
   width: 38px;
   height: 38px;
   border-radius: 14px;
@@ -66,16 +74,12 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-
-  /* padding qui per mantenere look identico ma “full card” */
   padding: 0 6px 6px;
-
-  /* scroll più pulito */
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
 
-/* Card singolo turno (resta “glass” ma non gigante) */
+/* Card singolo turno (glass coerente) */
 .deShiftCard{
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,.12);
@@ -84,7 +88,6 @@
     linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
-
   padding: 14px;
   margin-top: 10px;
 }
@@ -105,7 +108,7 @@
   font-size: clamp(14px, 3.2vw, 16px);
 }
 
-/* - (rimuovi turno) come i bottoni del calendario */
+/* - (rimuovi turno) come bottoni calendario */
 .deRemoveShift{
   width: 38px;
   height: 38px;
@@ -134,7 +137,6 @@
   gap: 10px;
 }
 
-/* Etichette */
 .deField{
   display: flex;
   flex-direction: column;
@@ -148,7 +150,7 @@
   letter-spacing: .2px;
 }
 
-/* Input/Select: più “snelli” e coerenti con calendario */
+/* Input/Select coerenti */
 .deInput,
 .deSelect{
   height: 44px;
@@ -182,7 +184,6 @@
   margin-top: 12px;
 }
 
-/* default “soft” */
 .deChip{
   height: 38px;
   padding: 0 14px;
@@ -200,7 +201,7 @@
   filter: brightness(1.06);
 }
 
-/* ON = stesso gradiente “magico” (tipo dots/switch) */
+/* ON = gradiente acceso tipo dots/switch */
 .deChip.isOn{
   border-color: rgba(255,255,255,.18);
   background: linear-gradient(90deg, var(--accent2), var(--accent1), var(--accent3));
@@ -208,7 +209,7 @@
   text-shadow: 0 1px 10px rgba(0,0,0,.22);
 }
 
-/* Blocchi note (solo “nota turno”, niente mega box) */
+/* Note */
 .deBlock{
   margin-top: 12px;
 }
@@ -221,7 +222,6 @@
   margin-bottom: 6px;
 }
 
-/* Nota turno: stessa “pill” elegante */
 .deTextarea{
   width: 100%;
   min-height: 44px;
@@ -245,12 +245,11 @@
   filter: brightness(1.04);
 }
 
-/* se usi una variante piccola */
 .deTextareaSmall{
   min-height: 44px;
 }
 
-/* Azioni (add shift) */
+/* Azioni */
 .deActions{
   padding: 0 6px 6px;
 }
@@ -273,7 +272,7 @@
   background: rgba(255,255,255,.14);
 }
 
-/* Piccoli aggiustamenti su schermi stretti */
+/* Schermi stretti */
 @media (max-width: 360px){
   .deGrid{ grid-template-columns: 1fr; }
   .deAddShift{ height: 48px; }
