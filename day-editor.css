@@ -287,20 +287,25 @@
 }
 
 /* ON = bordo cyan + riempimento “puntino intelligente” */
-.deChip.isOn{
-  border-color: rgba(42,233,255,.55); /* soft ma più leggibile */
+..deChip.isOn{
+  border-color: rgba(236,118,186,.38);
 
   background:
-    radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.14), transparent 58%),
-    linear-gradient(90deg,
-      rgba(42,233,255,.18),
-      rgba(124,92,255,.13),
-      rgba(255,79,216,.10)
+    radial-gradient(
+      140% 220% at 25% 0%,
+      rgba(236,118,186,.18),
+      transparent 58%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(236,118,186,.22),
+      rgba(176,120,255,.16),
+      rgba(255,150,200,.12)
     );
 
   box-shadow:
-    0 0 0 1px rgba(42,233,255,.06) inset,
-    0 6px 16px rgba(42,233,255,.10);
+    0 0 0 1px rgba(236,118,186,.06) inset,
+    0 6px 18px rgba(236,118,186,.12);
 }
 
 /* disattivato estetico */
