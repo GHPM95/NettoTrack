@@ -277,3 +277,86 @@
   .deGrid{ grid-template-columns: 1fr; }
   .deAddShift{ height: 48px; }
 }
+
+/* ====== OVERRIDE: layout richiesto ====== */
+
+/* 1) Shift top: minus a sinistra, titolo dopo, e linea sotto */
+.deShiftTop{
+  grid-template-columns: auto 1fr;   /* - | titolo */
+  grid-template-areas:
+    "minus title"
+    "line  line";
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.deRemoveShift{
+  grid-area: minus;
+  justify-self: start;
+}
+
+.deShiftTitle{
+  grid-area: title;
+  justify-self: start;
+}
+
+/* linea divisoria "in tema" */
+.deShiftTop::after{
+  content:"";
+  grid-area: line;
+  height: 1px;
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,.06),
+    rgba(255,255,255,.18),
+    rgba(255,255,255,.06)
+  );
+}
+
+/* 2) Chips PRIMA della griglia input */
+.deShiftCard{
+  display: flex;
+  flex-direction: column;
+}
+
+.deShiftTop{ order: 1; }
+.deChips{ order: 2; }
+.deGrid{ order: 3; }
+.deShiftNoteBlock{ order: 4; }
+
+/* 3) Mattino/Pomeriggio/Notte sempre sulla stessa riga, full width */
+.deChips{
+  display: grid;                 /* non più flex */
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* chip = occupa tutta la colonna */
+.deChip{
+  width: 100%;
+  justify-content: center;
+}
+
+/* altri chip (Straordinario/Festivo/Domenicale) vanno sotto:
+   li facciamo "a 2 colonne" dopo la prima riga */
+.deChip[data-tag="overtime"],
+.deChip[data-tag="holiday"],
+.deChip[data-tag="sunday"]{
+  grid-column: span 1;
+}
+
+/* Se vuoi: 2° riga più equilibrata (2 + 1 centrato) */
+.deChip[data-tag="overtime"]{ grid-column: 1; }
+.deChip[data-tag="holiday"] { grid-column: 2; }
+.deChip[data-tag="sunday"]  { grid-column: 3; }
+
+/* mobile molto stretto: riduco padding per farci stare bene i 3 chip */
+@media (max-width: 360px){
+  .deChip{ padding: 0 10px; font-size: 13px; }
+  .deChips{ gap: 8px; }
+}
