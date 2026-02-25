@@ -17,63 +17,81 @@
   function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
 
   function formatDateKeyToIT(dateKey) {
-    // atteso: YYYY-MM-DD
     if (!dateKey || typeof dateKey !== "string" || !dateKey.includes("-")) return dateKey || "";
     const [y, m, d] = dateKey.split("-");
     if (!y || !m || !d) return dateKey;
     return `${d}/${m}/${y}`;
   }
 
-  function defaultShift() {
-    return {
-      from: "08:00",
-      to: "17:00",
-      pauseMin: 0,
-      pausePaid: false,
-      tags: {
-        morning: false,
-        afternoon: false,
-        night: false,
-        overtime: false,
-        holiday: false,
-        sunday: false
-      },
-      note: ""
-    };
-  }
-
   function defaultState(dateKey) {
     return {
       dateKey,
-      // Manteniamo note per compatibilità dati pregressi,
-      // ma NON la mostriamo più in UI.
       note: "",
-      shifts: [ defaultShift() ]
+      shifts: [
+        {
+          from: "08:00",
+          to: "17:00",
+          pauseMin: 0,
+          pausePaid: false,
+
+          // ✅ nuovo: selezione unica
+          shiftType: "", // "morning" | "afternoon" | "night" | ""
+
+          tags: {
+            morning: false,
+            afternoon: false,
+            night: false,
+            overtime: false,
+            holiday: false,
+            sunday: false
+          },
+          note: ""
+        }
+      ]
     };
   }
 
   function normalizeShift(s) {
-    const base = defaultShift();
-    if (!s || typeof s !== "object") return base;
+    const base = defaultState("x").shifts[0];
+
+    if (!s || typeof s !== "object") return { ...base };
+
+    const tags = {
+      morning: !!(s.tags && s.tags.morning),
+      afternoon: !!(s.tags && s.tags.afternoon),
+      night: !!(s.tags && s.tags.night),
+      overtime: !!(s.tags && s.tags.overtime),
+      holiday: !!(s.tags && s.tags.holiday),
+      sunday: !!(s.tags && s.tags.sunday)
+    };
+
+    // ✅ ricava shiftType
+    let shiftType = "";
+    if (typeof s.shiftType === "string") shiftType = s.shiftType;
+    else {
+      if (tags.morning) shiftType = "morning";
+      if (tags.afternoon) shiftType = "afternoon";
+      if (tags.night) shiftType = "night";
+    }
+
+    // ✅ allinea tags con shiftType (mutuo)
+    tags.morning = shiftType === "morning";
+    tags.afternoon = shiftType === "afternoon";
+    tags.night = shiftType === "night";
+
     return {
       from: typeof s.from === "string" ? s.from : base.from,
       to: typeof s.to === "string" ? s.to : base.to,
       pauseMin: Number.isFinite(Number(s.pauseMin)) ? clamp(Number(s.pauseMin), 0, 999) : base.pauseMin,
       pausePaid: !!s.pausePaid,
-      tags: {
-        morning: !!(s.tags && s.tags.morning),
-        afternoon: !!(s.tags && s.tags.afternoon),
-        night: !!(s.tags && s.tags.night),
-        overtime: !!(s.tags && s.tags.overtime),
-        holiday: !!(s.tags && s.tags.holiday),
-        sunday: !!(s.tags && s.tags.sunday)
-      },
+      shiftType,
+      tags,
       note: typeof s.note === "string" ? s.note : base.note
     };
   }
 
   function loadState(dateKey) {
-    // 1) prova core condiviso
+    // 1) prova core condiviso (se esiste)
     const core = window.NettoTrackCalendarCore;
     try {
       if (core && typeof core.getDayData === "function") {
@@ -84,7 +102,7 @@
             note: String(data.note || ""),
             shifts: Array.isArray(data.shifts) && data.shifts.length
               ? data.shifts.map(normalizeShift)
-              : [defaultShift()]
+              : defaultState(dateKey).shifts
           };
         }
       }
@@ -101,7 +119,7 @@
         note: String(parsed.note || ""),
         shifts: Array.isArray(parsed.shifts) && parsed.shifts.length
           ? parsed.shifts.map(normalizeShift)
-          : [defaultShift()]
+          : defaultState(dateKey).shifts
       };
     } catch (_) {
       return defaultState(dateKey);
@@ -116,22 +134,21 @@
   function saveNow() {
     if (!currentKey || !state) return;
 
-    const payload = {
-      note: state.note,    // compatibilità
-      shifts: state.shifts
-    };
-
-    // 1) core condiviso
     const core = window.NettoTrackCalendarCore;
     try {
       if (core && typeof core.setDayData === "function") {
-        core.setDayData(currentKey, payload);
+        core.setDayData(currentKey, {
+          note: state.note,
+          shifts: state.shifts
+        });
       }
     } catch (_) {}
 
-    // 2) localStorage fallback
     try {
-      localStorage.setItem(STORAGE_PREFIX + currentKey, JSON.stringify(payload));
+      localStorage.setItem(STORAGE_PREFIX + currentKey, JSON.stringify({
+        note: state.note,
+        shifts: state.shifts
+      }));
     } catch (_) {}
   }
 
@@ -146,7 +163,6 @@
     if (!ensureMount()) return;
     if (!state) return;
 
-    // ✅ NOTA IN ALTO RIMOSSA: resta solo nota per singolo turno
     mount.innerHTML = `
       <div class="deRoot">
         <div class="deHeader">
@@ -154,25 +170,22 @@
           <button class="deClose" type="button" aria-label="Chiudi">×</button>
         </div>
 
-        <div class="deContent">
-  <div class="deShifts" id="deShifts"></div>
-  <div class="deActions">
-    <button class="deAddShift" id="deAddShift" type="button">+ Aggiungi turno</button>
-  </div>
-</div>
+        <div class="deShifts" id="deShifts"></div>
+
+        <div class="deActions">
+          <button class="deAddShift" id="deAddShift" type="button">+ Aggiungi turno</button>
+        </div>
+      </div>
     `;
 
-    // close
     $(".deClose", mount)?.addEventListener("click", () => {
       document.dispatchEvent(new Event("nettotrack:closeDayEditor"));
     });
 
-    // shifts
     renderShifts();
 
-    // add shift
     $("#deAddShift", mount)?.addEventListener("click", () => {
-      state.shifts.push(defaultShift());
+      state.shifts.push(defaultState(state.dateKey).shifts[0]);
       renderShifts();
       scheduleSave();
     });
@@ -184,11 +197,25 @@
 
     host.innerHTML = state.shifts.map((s, idx) => {
       const n = idx + 1;
+
       return `
         <div class="deShiftCard" data-idx="${idx}">
           <div class="deShiftTop">
-            <div class="deShiftTitle">Turno ${n}</div>
             <button class="deRemoveShift" type="button" aria-label="Rimuovi turno">−</button>
+            <div class="deShiftTitle">Turno ${n}</div>
+          </div>
+
+          <!-- ✅ Selezione unica (prima di Da/A/Pausa...) -->
+          <div class="deGrid" style="margin-bottom:10px;">
+            <label class="deField" style="grid-column:1 / -1;">
+              <span class="deFieldLbl">Fascia</span>
+              <select class="deSelect" data-k="shiftType">
+                <option value="" ${s.shiftType ? "" : "selected"}>—</option>
+                <option value="morning" ${s.shiftType === "morning" ? "selected" : ""}>Mattino</option>
+                <option value="afternoon" ${s.shiftType === "afternoon" ? "selected" : ""}>Pomeriggio</option>
+                <option value="night" ${s.shiftType === "night" ? "selected" : ""}>Notte</option>
+              </select>
+            </label>
           </div>
 
           <div class="deGrid">
@@ -216,10 +243,8 @@
             </label>
           </div>
 
+          <!-- ✅ restano chip SOLO per extra -->
           <div class="deChips">
-            ${chip("Mattino", "morning", s.tags.morning)}
-            ${chip("Pomeriggio", "afternoon", s.tags.afternoon)}
-            ${chip("Notte", "night", s.tags.night)}
             ${chip("Straordinario", "overtime", s.tags.overtime)}
             ${chip("Festivo", "holiday", s.tags.holiday)}
             ${chip("Domenicale", "sunday", s.tags.sunday)}
@@ -227,12 +252,13 @@
 
           <div class="deBlock deShiftNoteBlock">
             <div class="deLabel">Nota turno (opzionale)</div>
-            <textarea class="deTextarea deTextareaSmall deTextareaPicker" data-k="note" placeholder="Nota...">${escapeHtml(s.note || "")}</textarea>
+            <textarea class="deTextarea deTextareaSmall" data-k="note" placeholder="Nota...">${escapeHtml(s.note || "")}</textarea>
           </div>
         </div>
       `;
     }).join("");
 
+    // bind events per card
     Array.from(host.querySelectorAll(".deShiftCard")).forEach((card) => {
       const idx = Number(card.getAttribute("data-idx"));
       const shift = state.shifts[idx];
@@ -240,7 +266,7 @@
       // remove
       card.querySelector(".deRemoveShift")?.addEventListener("click", () => {
         if (state.shifts.length <= 1) {
-          state.shifts[0] = defaultShift();
+          state.shifts[0] = defaultState(state.dateKey).shifts[0];
         } else {
           state.shifts.splice(idx, 1);
         }
@@ -248,7 +274,7 @@
         scheduleSave();
       });
 
-      // inputs/selects/textarea
+      // data-k bindings
       Array.from(card.querySelectorAll("[data-k]")).forEach((el) => {
         const k = el.getAttribute("data-k");
         if (!k) return;
@@ -264,7 +290,17 @@
           });
         } else if (el.tagName === "SELECT") {
           el.addEventListener("change", () => {
-            shift.pausePaid = el.value === "true";
+            if (k === "pausePaid") {
+              shift.pausePaid = el.value === "true";
+            } else if (k === "shiftType") {
+              shift.shiftType = el.value || "";
+
+              // ✅ allinea tags (mutuo)
+              shift.tags = shift.tags || {};
+              shift.tags.morning = shift.shiftType === "morning";
+              shift.tags.afternoon = shift.shiftType === "afternoon";
+              shift.tags.night = shift.shiftType === "night";
+            }
             scheduleSave();
           });
         } else if (el.tagName === "TEXTAREA") {
@@ -275,7 +311,7 @@
         }
       });
 
-      // chips
+      // chips extra
       Array.from(card.querySelectorAll(".deChip")).forEach((chipEl) => {
         chipEl.addEventListener("click", () => {
           const tag = chipEl.getAttribute("data-tag");
