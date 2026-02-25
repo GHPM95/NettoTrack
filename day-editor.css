@@ -1,13 +1,9 @@
 /* =========================
-   Day Editor (Turni) — CSS pulito (final)
-   Coerente con UI/Calendario + fix iOS
+   Day Editor (Turni) — CSS pulito (fix layout iOS)
+   - niente overflow/overlap
+   - scrollbar “staccata”
+   - tutto proporzionato come calendario
    ========================= */
-
-:root{
-  /* colore tema per frecce/select + asterischi */
-  --deAccent: rgba(236,118,186,1);
-  --deAccentSoft: rgba(236,118,186,1);
-}
 
 .deRoot{
   width:100%;
@@ -17,32 +13,27 @@
   min-height:0;
   background: transparent;
   box-sizing: border-box;
+
+  /* ✅ ACCENTO CHIP (premium, viola/rosa) */
+  --deChipAccent: 236,118,186; /* rgb senza alpha */
 }
+
 .deRoot *{ box-sizing: border-box; }
 
-/* =========================
-   Header (titolo centrato come calendario)
-   ========================= */
+/* Header come calendario */
 .deHeader{
   display:grid;
-  grid-template-columns: 38px 1fr 38px;
+  grid-template-columns: 1fr auto;
   align-items:center;
   gap: 10px;
   min-width: 0;
 }
-.deHeaderSpacer{
-  width: 38px;
-  height: 38px;
-  opacity: 0;
-  pointer-events: none;
-}
 
-/* Titolo centrato */
+/* Titolo come calendario */
 .deTitle{
   font-weight: 1000;
   letter-spacing:.2px;
   font-size: clamp(14px, 3.6vw, 17px);
-  text-align:center;
   white-space: nowrap;
   overflow:hidden;
   text-overflow: ellipsis;
@@ -50,12 +41,9 @@
 }
 
 /* X come ntBtn */
-.deClose,
-.deRemoveShift{
+.deClose{
   width: 38px;
   height: 38px;
-  min-width: 38px;
-  max-width: 38px;
   border-radius: 14px;
   border: none;
   background: rgba(255,255,255,.10);
@@ -63,59 +51,54 @@
   font-weight: 900;
   font-size: 18px;
   line-height: 1;
-  transition: transform .12s ease, filter .12s ease, background .12s ease, opacity .12s ease;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
   flex: 0 0 auto;
 }
-.deClose:active,
-.deRemoveShift:active{
+.deClose:active{
   transform: scale(.96);
   filter: brightness(1.08);
   background: rgba(255,255,255,.14);
 }
-.deClose:disabled,
-.deRemoveShift:disabled{
-  opacity: .32;
-  pointer-events:none;
-}
 
-/* =========================
-   Lista turni / scroll
-   ========================= */
+/* lista turni */
 .deShifts{
   flex:1;
   min-height:0;
-  overflow:auto;
+
+  overflow: auto;          /* solo verticale */
   overflow-x:hidden;
 
-  /* spazio a dx per non attaccare la scrollbar al bordo */
-  padding-right: 14px;
+  /* ✅ spazio a destra per non “attaccare” la scrollbar al bordo */
+  padding-right: 12px;
+
+  /* ✅ evita che contenuti tocchino l’header */
   margin-top: 10px;
 
+  /* iOS scroll più stabile */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
 
-/* Card turno invisibile */
+/* Card turno: invisibile (niente box in più) */
 .deShiftCard{
-  border:none;
-  background:transparent;
+  border: none;
+  background: transparent;
   padding: 0;
   margin: 0 0 14px 0;
-  min-width:0;
-}
-
-/* =========================
-   Top riga Turno: [-] [Turno 1] [Domenicale]
-   ========================= */
-.deShiftTop{
-  display:grid;
-  grid-template-columns: 38px 1fr auto;
-  align-items:center;
-  gap: 10px;
-  padding: 2px 0 8px;
   min-width: 0;
 }
 
+/* Top riga turno */
+.deShiftTop{
+  display:grid;
+  grid-template-columns: auto 1fr auto; /* [remove] [titolo] [domenicale] */
+  align-items:center;
+  gap: 10px;
+  padding: 2px 0 6px;
+  min-width: 0;
+}
+
+/* Titolo turno */
 .deShiftTitle{
   font-weight: 1000;
   letter-spacing:.2px;
@@ -126,32 +109,48 @@
   min-width: 0;
 }
 
-/* Domenicale chip piccolo a dx */
-.deChipMini{
-  height: 34px;
-  padding: 0 12px;
-  font-size: 12px;
+/* Pulsante remove: FORZA dimensione (evita che diventi “barra lunga”) */
+.deShiftTop .deRemoveShift{
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  border-radius: 14px;
+  border: none;
+  background: rgba(255,255,255,.10);
+  color: var(--text);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  justify-self: start;
+}
+.deShiftTop .deRemoveShift:active{
+  transform: scale(.96);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.14);
 }
 
-/* =========================
-   Divider elegante
-   ========================= */
+/* Divider elegante */
 .deDivider{
   height:1px;
   width:100%;
   margin: 12px 0 10px;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.16),
+    transparent
+  );
 }
 
-/* =========================
-   Grid campi (no overlap)
-   ========================= */
+/* Griglia campi */
 .deGrid{
   display:grid;
-  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  min-width:0;
+  min-width: 0;
 }
 
 /* Field wrapper */
@@ -162,7 +161,7 @@
   min-width:0;
 }
 
-/* Label: stessa scala di “Pausa (min)” */
+/* Label */
 .deFieldLbl,
 .deLabel{
   display:block;
@@ -171,19 +170,12 @@
   color: var(--muted);
 }
 
-/* Asterisco obbligatorio */
-.deReq{
-  color: var(--deAccent);
-  font-weight: 1000;
-  margin-left: 4px;
-}
-
-/* Input/select/textarea glass scuro (font coerente, no testo gigante) */
+/* Input/select/textarea “glass scuro” */
 .deInput,
 .deSelect,
 .deTextarea{
   width:100%;
-  min-width:0;
+  min-width:0; /* ✅ importantissimo per non “sfondare” */
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
   background:
@@ -191,7 +183,6 @@
     linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
   color: var(--text);
   font-weight: 900;
-  font-size: 14px;
   outline:none;
   padding: 0 12px;
 }
@@ -199,43 +190,12 @@
 .deInput{ height: 46px; }
 .deSelect{ height: 46px; }
 
-/* Placeholder opacizzato (textarea) */
-.deTextarea::placeholder{
-  color: rgba(255,255,255,.45);
-  font-weight: 900;
-}
-
-/* “vuoto/non scelto”: testo opacizzato (classe gestita dal JS) */
-.deIsEmpty{
-  color: rgba(255,255,255,.45) !important;
-}
-
-/* Select: frecce tema (niente nero) */
+/* iOS: evita che la select “spinga”/tagli icona */
 .deSelect{
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 44px;
-
-  background-image:
-    linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,0)),
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='rgba(42,233,255,0.92)' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  background-size: 18px 18px;
+  padding-right: 38px; /* spazio per eventuale freccia/chevron */
   background-clip: padding-box;
-
-  /* dropdown più coerente (quando il browser lo consente) */
-  color-scheme: dark;
-}
-
-.deSelect option{
-  background: rgba(18,18,24,.96);
-  color: #fff;
-}
-
-/* Time input: evita “stringersi e sovrapporsi” su iOS */
-.deInput[type="time"]{
-  padding-right: 12px;
 }
 
 /* Textarea */
@@ -246,16 +206,14 @@
 }
 .deTextareaSmall{ min-height: 86px; }
 
-/* Disabled estetico */
+/* Disabled */
 .deInput:disabled,
 .deSelect:disabled{
   opacity: .40;
   pointer-events:none;
 }
 
-/* =========================
-   Chips
-   ========================= */
+/* Chips row */
 .deChips{
   display:flex;
   flex-wrap:wrap;
@@ -264,6 +222,7 @@
 }
 .deChipsExtra{ margin-bottom: 10px; }
 
+/* Chip base */
 .deChip{
   height: 40px;
   padding: 0 14px;
@@ -273,8 +232,7 @@
   color: var(--text);
   font-weight: 1000;
   letter-spacing:.1px;
-  font-size: 13px;
-  transition: transform .12s ease, filter .12s ease, background .12s ease, opacity .12s ease;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
   white-space: nowrap;
   max-width: 100%;
   overflow: hidden;
@@ -286,40 +244,55 @@
   background: rgba(255,255,255,.12);
 }
 
-/* ON = bordo cyan + riempimento “puntino intelligente” */
+/* ✅ Chip acceso = PREMIUM (viola/rosa soft, non urlato) */
 .deChip.isOn{
-  border-color: rgba(236,118,186,.38); /* soft ma più leggibile */
+  /* bordo più soft (5–10%) */
+  border-color: rgba(var(--deChipAccent), .34);
 
   background:
-    radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.14), transparent 58%),
-    linear-gradient(90deg,
-      rgba(42,233,255,.22),
-      rgba(124,92,255,.16),
-      rgba(255,79,216,.12)
+    radial-gradient(
+      140% 220% at 25% 0%,
+      rgba(var(--deChipAccent), .16),
+      transparent 58%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(var(--deChipAccent), .20),
+      rgba(176,120,255,.14),
+      rgba(255,150,200,.10)
     );
 
+  /* leggero “premium glow” */
   box-shadow:
-    0 0 0 1px rgba(236,118,186,.06) inset,
-    0 6px 18px rgba(42,233,255,.12);
+    0 0 0 1px rgba(var(--deChipAccent), .05) inset,
+    0 8px 22px rgba(var(--deChipAccent), .10);
 }
 
-/* disattivato estetico */
+/* Domenicale mini chip (accanto al titolo) */
+.deChipMini{
+  height: 34px;
+  padding: 0 12px;
+  font-size: 12px;
+  justify-self: end;
+}
+
+/* Disattivato estetico */
 .deChip.isDisabled{
   opacity: .35;
   pointer-events:none;
 }
 
-/* Nota */
+/* Nota block */
 .deBlock{ margin-top: 10px; }
 
-/* =========================
-   Actions
-   ========================= */
+/* Actions */
 .deActions{
   padding-top: 10px;
+  /* ✅ evita che il bottone tocchi il bordo in basso se la card è stretta */
   padding-bottom: 2px;
 }
 
+/* + Aggiungi turno stile “wide” */
 .deAddShift{
   width: 100%;
   height: 46px;
@@ -329,14 +302,10 @@
   color: var(--text);
   font-weight: 1000;
   letter-spacing:.15px;
-  transition: transform .12s ease, filter .12s ease, background .12s ease, opacity .12s ease;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
 .deAddShift:active{
   transform: scale(.97);
   filter: brightness(1.08);
   background: rgba(255,255,255,.14);
-}
-.deAddShift:disabled{
-  opacity: .35;
-  pointer-events:none;
 }
