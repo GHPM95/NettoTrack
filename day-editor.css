@@ -5,8 +5,8 @@
 
 :root{
   /* colore tema per frecce/select + asterischi */
-  --deAccent: rgba(42,233,255,.68);
-  --deAccentSoft: rgba(42,233,255,.22);
+  --deAccent: rgba(236,118,186,1);
+  --deAccentSoft: rgba(236,118,186,1);
 }
 
 .deRoot{
