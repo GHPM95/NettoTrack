@@ -5,8 +5,8 @@
 
 :root{
   /* colore tema per frecce/select + asterischi */
-  --deAccent: rgba(42,233,255,.92); /* cyan */
-  --deAccentSoft: rgba(42,233,255,.35);
+  --deAccent: rgba(42,233,255,.68);
+  --deAccentSoft: rgba(42,233,255,.22);
 }
 
 .deRoot{
@@ -290,11 +290,11 @@
 .deChip.isOn{
   border-color: var(--deAccent);
   background:
-    radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.22), transparent 55%),
+    radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.16), transparent 55%),
     linear-gradient(90deg,
-      rgba(42,233,255,.45),
-      rgba(124,92,255,.30),
-      rgba(255,79,216,.24)
+      rgba(42,233,255,.28),
+      rgba(124,92,255,.20),
+      rgba(255,79,216,.16)
     );
 }
 
