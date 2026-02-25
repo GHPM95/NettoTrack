@@ -1,7 +1,5 @@
 /* day-editor.js
    Card "Turni" separata dal calendario (NON tocca calendar-insert.js)
-   Si apre con: window.NettoTrackUI.openDayEditor(dateKey)
-   oppure evento: "nettotrack:dayEditorOpened" { detail: { dateKey } }
 */
 (() => {
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -23,20 +21,32 @@
     return `${d}/${m}/${y}`;
   }
 
+  function isSundayKey(dateKey) {
+    // usa core se esiste, altrimenti Date
+    try {
+      if (window.NTCal && typeof window.NTCal.isSunday === "function") {
+        const [yy, mm, dd] = String(dateKey).split("-").map(Number);
+        return window.NTCal.isSunday(yy, mm - 1, dd);
+      }
+    } catch (_) {}
+    try {
+      const [yy, mm, dd] = String(dateKey).split("-").map(Number);
+      const dt = new Date(yy, (mm - 1), dd);
+      return dt.getDay() === 0;
+    } catch (_) {}
+    return false;
+  }
+
   function defaultState(dateKey) {
     return {
       dateKey,
-      note: "",
       shifts: [
         {
           from: "08:00",
           to: "17:00",
           pauseMin: 0,
           pausePaid: false,
-
-          // selezione unica
           shiftType: "", // "morning" | "afternoon" | "night" | ""
-
           tags: {
             morning: false,
             afternoon: false,
@@ -64,7 +74,6 @@
       sunday: !!(s.tags && s.tags.sunday)
     };
 
-    // ricava shiftType
     let shiftType = "";
     if (typeof s.shiftType === "string") shiftType = s.shiftType;
     else {
@@ -73,7 +82,6 @@
       if (tags.night) shiftType = "night";
     }
 
-    // allinea tags con shiftType (mutuo)
     tags.morning = shiftType === "morning";
     tags.afternoon = shiftType === "afternoon";
     tags.night = shiftType === "night";
@@ -97,7 +105,6 @@
         if (data && typeof data === "object") {
           return {
             dateKey,
-            note: String(data.note || ""),
             shifts: Array.isArray(data.shifts) && data.shifts.length
               ? data.shifts.map(normalizeShift)
               : defaultState(dateKey).shifts
@@ -113,7 +120,6 @@
       if (!parsed || typeof parsed !== "object") return defaultState(dateKey);
       return {
         dateKey,
-        note: String(parsed.note || ""),
         shifts: Array.isArray(parsed.shifts) && parsed.shifts.length
           ? parsed.shifts.map(normalizeShift)
           : defaultState(dateKey).shifts
@@ -134,31 +140,23 @@
     const core = window.NettoTrackCalendarCore;
     try {
       if (core && typeof core.setDayData === "function") {
-        core.setDayData(currentKey, {
-          note: state.note,
-          shifts: state.shifts
-        });
+        core.setDayData(currentKey, { shifts: state.shifts });
       }
     } catch (_) {}
 
     try {
-      localStorage.setItem(STORAGE_PREFIX + currentKey, JSON.stringify({
-        note: state.note,
-        shifts: state.shifts
-      }));
+      localStorage.setItem(STORAGE_PREFIX + currentKey, JSON.stringify({ shifts: state.shifts }));
     } catch (_) {}
   }
 
   function ensureMount() {
     const id = `${SLIDE_ID}Mount`;
-    mount = document.getElementById(id) || $(`#${id}`);
-    if (!mount) mount = document.querySelector(`#${id}`);
+    mount = document.getElementById(id) || $(`#${id}`) || document.querySelector(`#${id}`);
     return !!mount;
   }
 
   function render() {
-    if (!ensureMount()) return;
-    if (!state) return;
+    if (!ensureMount() || !state) return;
 
     mount.innerHTML = `
       <div class="deRoot">
@@ -188,32 +186,44 @@
     });
   }
 
+  function enforceSundayRule() {
+    const isSun = isSundayKey(currentKey);
+    // forza domenicale ON/OFF su TUTTI i turni
+    for (const s of state.shifts) {
+      s.tags = s.tags || {};
+      s.tags.sunday = isSun ? true : false;
+    }
+    return isSun;
+  }
+
   function renderShifts() {
     const host = $("#deShifts", mount);
     if (!host) return;
 
+    const isSun = enforceSundayRule(); // ✅ applica la regola prima di disegnare
+
     host.innerHTML = state.shifts.map((s, idx) => {
       const n = idx + 1;
-      const domOn = !!(s.tags && s.tags.sunday);
 
       return `
         <div class="deShiftCard" data-idx="${idx}">
           <div class="deShiftTop">
             <button class="deRemoveShift" type="button" aria-label="Rimuovi turno">−</button>
-
             <div class="deShiftTitle">Turno ${n}</div>
 
-            <!-- ✅ Domenicale in alto a destra -->
+            <!-- ✅ Domenicale: ON automatico solo di domenica, altrimenti disabilitato -->
             <button
-              class="deChip deChipMini ${domOn ? "isOn" : ""}"
+              class="deChip deChipMini ${isSun ? "isOn" : "isDisabled"}"
               type="button"
               data-tag="sunday"
-              aria-pressed="${domOn ? "true" : "false"}"
+              ${isSun ? "" : "disabled"}
+              aria-disabled="${isSun ? "false" : "true"}"
+              aria-pressed="${isSun ? "true" : "false"}"
               title="Domenicale"
             >Domenicale</button>
           </div>
 
-          <!-- ✅ Selezione unica Mattino/Pomeriggio/Notte (prima degli orari) -->
+          <!-- Fascia -->
           <div class="deGrid" style="margin-bottom:10px;">
             <label class="deField" style="grid-column:1 / -1;">
               <span class="deFieldLbl">Fascia</span>
@@ -251,10 +261,10 @@
             </label>
           </div>
 
-          <!-- ✅ Straordinario + Festivo prima della nota turno -->
+          <!-- Straordinario + Festivo prima della nota -->
           <div class="deChips deChipsExtra">
-            ${chip("Straordinario", "overtime", !!(s.tags && s.tags.overtime))}
-            ${chip("Festivo", "holiday", !!(s.tags && s.tags.holiday))}
+            ${chip("Straordinario", "overtime", !!s.tags.overtime)}
+            ${chip("Festivo", "holiday", !!s.tags.holiday)}
           </div>
 
           <div class="deBlock deShiftNoteBlock">
@@ -265,12 +275,11 @@
       `;
     }).join("");
 
-    // bind events per card
+    // bind events
     Array.from(host.querySelectorAll(".deShiftCard")).forEach((card) => {
       const idx = Number(card.getAttribute("data-idx"));
       const shift = state.shifts[idx];
 
-      // remove
       card.querySelector(".deRemoveShift")?.addEventListener("click", () => {
         if (state.shifts.length <= 1) {
           state.shifts[0] = defaultState(state.dateKey).shifts[0];
@@ -281,7 +290,6 @@
         scheduleSave();
       });
 
-      // inputs/select/textarea data-k
       Array.from(card.querySelectorAll("[data-k]")).forEach((el) => {
         const k = el.getAttribute("data-k");
         if (!k) return;
@@ -298,8 +306,6 @@
               shift.pausePaid = el.value === "true";
             } else if (k === "shiftType") {
               shift.shiftType = el.value || "";
-
-              // allinea tags (mutuo)
               shift.tags = shift.tags || {};
               shift.tags.morning = shift.shiftType === "morning";
               shift.tags.afternoon = shift.shiftType === "afternoon";
@@ -315,18 +321,19 @@
         }
       });
 
-      // chips: domenicale + extra
+      // Chips extra: overtime/holiday (sunday è disabilitato o forzato)
       Array.from(card.querySelectorAll(".deChip")).forEach((chipEl) => {
+        const tag = chipEl.getAttribute("data-tag");
+        if (!tag) return;
+
         chipEl.addEventListener("click", () => {
-          const tag = chipEl.getAttribute("data-tag");
-          if (!tag) return;
+          // ✅ blocca completamente domenicale se non domenica
+          if (tag === "sunday") return;
 
           shift.tags = shift.tags || {};
           shift.tags[tag] = !shift.tags[tag];
-
           chipEl.classList.toggle("isOn", !!shift.tags[tag]);
           chipEl.setAttribute("aria-pressed", shift.tags[tag] ? "true" : "false");
-
           scheduleSave();
         });
       });
@@ -350,6 +357,7 @@
     currentKey = dateKey || currentKey || new Date().toISOString().slice(0, 10);
     state = loadState(currentKey);
     render();
+    scheduleSave(); // ✅ salva subito l’allineamento domenicale ON/OFF
   }
 
   document.addEventListener("nettotrack:dayEditorOpened", (e) => {
