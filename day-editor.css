@@ -360,3 +360,63 @@
   .deChip{ padding: 0 10px; font-size: 13px; }
   .deChips{ gap: 8px; }
 }
+/* ====== LINEA sotto Pausa + 3 chip sotto ====== */
+
+/* 1) La griglia deve poter ospitare una "riga linea" sotto i campi pausa */
+.deGrid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* Inserisco una linea dopo i 4 campi (Da, A, Pausa, Pausa pagata) */
+.deGrid::after{
+  content:"";
+  grid-column: 1 / -1;
+  height: 1px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,.06),
+    rgba(255,255,255,.18),
+    rgba(255,255,255,.06)
+  );
+}
+
+/* 2) Chips layout:
+   - prima riga: Mattino/Pomeriggio/Notte (già ok con 3 colonne)
+   - sotto la linea: Straordinario/Festivo/Domenicale in 3 colonne */
+.deChips{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* 3) Testi chip: si adattano al contenuto senza uscire */
+.deChip{
+  width: 100%;
+  max-width: 100%;
+  padding: 0 12px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 4) Metto i 3 "extra" dopo la riga pausa (cioè sotto la deGrid),
+      quindi li lasciamo nella stessa sezione chips ma li ordiniamo dopo.
+      (Funziona perché .deChips è già sotto la deShiftTop e sopra la deGrid.) */
+
+/* Se vuoi proprio separarli visivamente, aumentiamo il distacco
+   SOLO per i 3 extra */
+.deChip[data-tag="overtime"],
+.deChip[data-tag="holiday"],
+.deChip[data-tag="sunday"]{
+  margin-top: 2px;
+}
