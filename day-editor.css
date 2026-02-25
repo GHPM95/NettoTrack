@@ -435,3 +435,10 @@
   justify-content: center;
   white-space: nowrap;
 }
+/* Domenicale disattivato: opaco e non premibile (look coerente) */
+.deChip.isDisabled,
+.deChip:disabled{
+  opacity: .35;
+  filter: saturate(.7);
+  pointer-events: none;
+}
