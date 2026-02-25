@@ -288,7 +288,7 @@
 
 /* ON = bordo cyan + riempimento “puntino intelligente” */
 .deChip.isOn{
-  border-color: var(--deAccent);
+  border-color: rgba(42,233,255,.55); /* ora sembra ~.65 */
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.16), transparent 55%),
     linear-gradient(90deg,
