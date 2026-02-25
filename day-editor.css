@@ -1,6 +1,8 @@
 /* =========================
-   Day Editor (Turni) — CSS pulito
-   Coerente con UI/Calendario
+   Day Editor (Turni) — CSS pulito (fix layout iOS)
+   - niente overflow/overlap
+   - scrollbar “staccata”
+   - tutto proporzionato come calendario
    ========================= */
 
 .deRoot{
@@ -9,8 +11,11 @@
   display:flex;
   flex-direction:column;
   min-height:0;
-  background: transparent; /* container invisibile */
+  background: transparent;
+  box-sizing: border-box;
 }
+
+.deRoot *{ box-sizing: border-box; }
 
 /* Header come calendario */
 .deHeader{
@@ -18,6 +23,7 @@
   grid-template-columns: 1fr auto;
   align-items:center;
   gap: 10px;
+  min-width: 0;
 }
 
 /* Titolo come calendario */
@@ -28,6 +34,7 @@
   white-space: nowrap;
   overflow:hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 /* X come ntBtn */
@@ -42,6 +49,7 @@
   font-size: 18px;
   line-height: 1;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
+  flex: 0 0 auto;
 }
 .deClose:active{
   transform: scale(.96);
@@ -53,30 +61,38 @@
 .deShifts{
   flex:1;
   min-height:0;
-  overflow:auto;          /* solo verticale */
+
+  overflow: auto;          /* solo verticale */
   overflow-x:hidden;
+
+  /* ✅ spazio a destra per non “attaccare” la scrollbar al bordo */
+  padding-right: 12px;
+
+  /* ✅ evita che contenuti tocchino l’header */
   margin-top: 10px;
 
-  /* evita scrollbar appiccicata al bordo */
-  padding-right: 12px;
-  scrollbar-gutter: stable;
+  /* iOS scroll più stabile */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
-/* Card turno: “invisibile” ma con spacing interno */
+/* Card turno: invisibile (niente box in più) */
 .deShiftCard{
   border: none;
   background: transparent;
   padding: 0;
   margin: 0 0 14px 0;
+  min-width: 0;
 }
 
 /* Top riga turno */
 .deShiftTop{
   display:grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto; /* [remove] [titolo] [domenicale] */
   align-items:center;
   gap: 10px;
   padding: 2px 0 6px;
+  min-width: 0;
 }
 
 /* Titolo turno */
@@ -87,6 +103,29 @@
   white-space: nowrap;
   overflow:hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Pulsante remove: FORZA dimensione (evita che diventi “barra lunga”) */
+.deShiftTop .deRemoveShift{
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  border-radius: 14px;
+  border: none;
+  background: rgba(255,255,255,.10);
+  color: var(--text);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  justify-self: start;
+}
+.deShiftTop .deRemoveShift:active{
+  transform: scale(.96);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.14);
 }
 
 /* Divider elegante */
@@ -108,6 +147,7 @@
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  min-width: 0;
 }
 
 /* Field wrapper */
@@ -132,6 +172,7 @@
 .deSelect,
 .deTextarea{
   width:100%;
+  min-width:0; /* ✅ importantissimo per non “sfondare” */
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
   background:
@@ -146,7 +187,15 @@
 .deInput{ height: 46px; }
 .deSelect{ height: 46px; }
 
-/* textarea */
+/* iOS: evita che la select “spinga”/tagli icona */
+.deSelect{
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 38px; /* spazio per eventuale freccia/chevron */
+  background-clip: padding-box;
+}
+
+/* Textarea */
 .deTextarea{
   padding: 10px 12px;
   min-height: 90px;
@@ -166,7 +215,9 @@
   display:flex;
   flex-wrap:wrap;
   gap: 10px;
+  min-width: 0;
 }
+.deChipsExtra{ margin-bottom: 10px; }
 
 /* Chip base */
 .deChip{
@@ -180,6 +231,9 @@
   letter-spacing:.1px;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
   white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .deChip:active{
   transform: scale(.97);
@@ -195,11 +249,12 @@
     linear-gradient(90deg, rgba(42,233,255,.22), rgba(124,92,255,.18), rgba(255,79,216,.14));
 }
 
-/* mini chip (Domenicale) */
+/* Domenicale mini chip (accanto al titolo) */
 .deChipMini{
   height: 34px;
   padding: 0 12px;
   font-size: 12px;
+  justify-self: end;
 }
 
 /* Disattivato estetico */
@@ -209,13 +264,13 @@
 }
 
 /* Nota block */
-.deBlock{
-  margin-top: 10px;
-}
+.deBlock{ margin-top: 10px; }
 
 /* Actions */
 .deActions{
   padding-top: 10px;
+  /* ✅ evita che il bottone tocchi il bordo in basso se la card è stretta */
+  padding-bottom: 2px;
 }
 
 /* + Aggiungi turno stile “wide” */
