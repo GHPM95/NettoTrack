@@ -407,29 +407,51 @@
           </div>
 
           <div class="deGrid deGrid--time">
-            <label class="deField">
-              <span class="deFieldLbl">Da<span class="deReq">*</span></span>
-              <input class="deInput" type="time" data-k="from" value="${escapeHtml(s.from)}">
-            </label>
+  <label class="deField">
+    <span class="deFieldLbl">Da<span class="deReq">*</span></span>
+    <input
+      class="deInput"
+      type="time"
+      data-k="from"
+      value="${escapeHtml(s.from)}"
+      style="max-width:100%;"
+    >
+  </label>
 
-            <label class="deField">
-              <span class="deFieldLbl">A<span class="deReq">*</span></span>
-              <input class="deInput" type="time" data-k="to" value="${escapeHtml(s.to)}">
-            </label>
+  <label class="deField">
+    <span class="deFieldLbl">A<span class="deReq">*</span></span>
+    <input
+      class="deInput"
+      type="time"
+      data-k="to"
+      value="${escapeHtml(s.to)}"
+      style="max-width:100%;"
+    >
+  </label>
+</div>
 
-            <label class="deField">
-              <span class="deFieldLbl">Pausa (min)</span>
-              <input class="deInput" type="number" inputmode="numeric" min="0" max="999" data-k="pauseMin" value="${Number(s.pauseMin) || 0}">
-            </label>
+<div class="deGrid">
+  <label class="deField">
+    <span class="deFieldLbl">Pausa (min)</span>
+    <input
+      class="deInput"
+      type="number"
+      inputmode="numeric"
+      min="0"
+      max="999"
+      data-k="pauseMin"
+      value="${Number(s.pauseMin) || 0}"
+    >
+  </label>
 
-            <label class="deField">
-              <span class="deFieldLbl">Pausa pagata</span>
-              <select class="deSelect" data-k="pausePaid">
-                <option value="false" ${s.pausePaid ? "" : "selected"}>No</option>
-                <option value="true" ${s.pausePaid ? "selected" : ""}>Sì</option>
-              </select>
-            </label>
-          </div>
+  <label class="deField">
+    <span class="deFieldLbl">Pausa pagata</span>
+    <select class="deSelect" data-k="pausePaid">
+      <option value="false" ${s.pausePaid ? "" : "selected"}>No</option>
+      <option value="true" ${s.pausePaid ? "selected" : ""}>Sì</option>
+    </select>
+  </label>
+</div>
 
           <div class="deDivider"></div>
 
