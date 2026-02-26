@@ -168,6 +168,23 @@
 }
 
 /* =========================
+   FIX: ripristina la griglia standard (serve per Pausa min / Pausa pagata)
+   ========================= */
+
+.deGrid{
+  display:grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* se vuoi essere ultra-sicuro su iOS */
+.deGrid > .deField{
+  min-width: 0;
+}
+
+/* =========================
    Centra testo nei time input (Da / A)
    ========================= */
 
