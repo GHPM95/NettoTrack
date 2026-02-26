@@ -17,22 +17,21 @@
 
 .deRoot *{ box-sizing: border-box; }
 
-/* =========================
-   HEADER (titolo centrato + X a destra)
-   (robusto anche se l'ordine HTML è invertito)
-   ========================= */
+/* Header come calendario */
 .deHeader{
   display:grid;
-  grid-template-columns: 38px 1fr 38px; /* spazio sx, titolo, spazio dx */
+  /* ✅ titolo centrato, X a destra (senza toccare colori) */
+  grid-template-columns: 38px 1fr 38px;
   align-items:center;
   gap: 10px;
   min-width: 0;
 }
 
-/* Titolo sempre al centro */
+/* Titolo come calendario */
 .deTitle{
   grid-column: 2;
-  text-align:center;
+  text-align: center;
+
   font-weight: 1000;
   letter-spacing:.2px;
   font-size: clamp(14px, 3.6vw, 17px);
@@ -42,7 +41,7 @@
   min-width: 0;
 }
 
-/* X sempre a destra */
+/* X come ntBtn */
 .deClose{
   grid-column: 3;
   justify-self: end;
@@ -153,8 +152,9 @@
 /* Griglia campi */
 .deGrid{
   display:grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)); /* ✅ anti-overflow iOS */
-  column-gap: 12px; /* ✅ più respiro tra Da/A (evita “fusione”) */
+  /* ✅ fix iOS: evita che i due time “sforino” e si sovrappongano */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 12px;
   row-gap: 10px;
   min-width: 0;
 }
@@ -182,9 +182,6 @@
 .deTextarea{
   width:100%;
   min-width:0; /* ✅ importantissimo per non “sfondare” */
-  max-width:100%;
-  display:block;
-
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
   background:
@@ -194,17 +191,15 @@
   font-weight: 900;
   outline:none;
   padding: 0 12px;
-  background-clip: padding-box;
 }
 
 .deInput{ height: 46px; }
 .deSelect{ height: 46px; }
 
-/* ✅ FIX specifico per i TIME su iOS: evita overlay/“sovrapposizioni” */
+/* ✅ FIX time iOS: non cambia colori, solo evita glitch/overlap */
 .deInput[type="time"]{
   -webkit-appearance: none;
   appearance: none;
-  padding-right: 12px;
 }
 
 /* iOS: evita che la select “spinga”/tagli icona */
@@ -261,7 +256,7 @@
   background: rgba(255,255,255,.12);
 }
 
-/* Chip acceso = gradiente “puntini intelligenti” */
+/* Chip acceso = gradiente “puntini intelligenti” (IDENTICO al tuo) */
 .deChip.isOn{
   border-color: rgba(42,233,255,.22);
   background:
