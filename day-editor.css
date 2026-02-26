@@ -392,5 +392,35 @@
   color: rgba(255,255,255,.90);
 }
 
+/* =========================
+   Centra testo nei time input (Da / A)
+   ========================= */
+
+.deInput[type="time"]{
+  text-align: center;                 /* centro il testo */
+  font-variant-numeric: tabular-nums; /* numeri allineati bene */
+  line-height: 46px;                  /* stesso della height (46) per centratura visiva */
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* alcuni browser webkit preferiscono questa */
+.deInput[type="time"]::-webkit-datetime-edit{
+  text-align: center;
+  width: 100%;
+}
+
+/* centro anche i singoli pezzi (hh, mm) dove supportato */
+.deInput[type="time"]::-webkit-datetime-edit-fields-wrapper{
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+}
+.deInput[type="time"]::-webkit-datetime-edit-hour-field,
+.deInput[type="time"]::-webkit-datetime-edit-minute-field,
+.deInput[type="time"]::-webkit-datetime-edit-ampm-field{
+  text-align: center;
+}
+
 .deAdvPanel{ display:none; }
 .deAdvPanel.isOn{ display:block; }
