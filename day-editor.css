@@ -422,5 +422,42 @@
   text-align: center;
 }
 
+/* =========================
+   FIX definitivo griglia TIME (Da/A + Pausa min/Pausa pagata)
+   Non tocca altre griglie
+   ========================= */
+
+.deGrid.deGrid--time{
+  display:grid !important;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+  gap: 10px !important;
+  width: 100%;
+  min-width: 0;
+}
+
+/* ogni campo occupa solo 1 colonna */
+.deGrid.deGrid--time > .deField{
+  grid-column: auto !important;
+  min-width: 0;
+}
+
+/* se per caso avevi qualche field forzato a 1/-1, lo neutralizziamo SOLO qui */
+.deGrid.deGrid--time > .deField[style*="grid-column"]{
+  grid-column: auto !important;
+}
+
+/* input time: non deve mai “sfondare” */
+.deGrid.deGrid--time .deInput[type="time"],
+.deGrid.deGrid--time .deSelect{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+}
+
+/* centra il testo dentro i due time (Da/A) */
+.deGrid.deGrid--time .deInput[type="time"]{
+  text-align:center;
+}
+
 .deAdvPanel{ display:none; }
 .deAdvPanel.isOn{ display:block; }
