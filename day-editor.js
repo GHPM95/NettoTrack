@@ -417,11 +417,6 @@
       style="max-width:100%;"
     >
   </label>
-  
-  /* Spazio tra blocco Orari (Da/A) e blocco Pausa */
-.deGrid--time + .deGrid{
-  margin-top: 10px; /* prova 10px, se vuoi più aria metti 12/14 */
-}
 
   <label class="deField">
     <span class="deFieldLbl">A<span class="deReq">*</span></span>
