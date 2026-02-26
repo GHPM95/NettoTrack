@@ -177,7 +177,7 @@
 
 /* ✅ asterisco obbligatorio BIANCO */
 .deReq{
-  margin-left:4px;
+  margin-left:0px;
   color: rgba(255,255,255,.92);
   font-weight: 1000;
 }
