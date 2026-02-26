@@ -1,16 +1,32 @@
 /* day-editor.js
    Card "Turni" (slide: dayEditor) — separata dal calendario
    Apre tramite: evento "nettotrack:dayEditorOpened" { detail: { dateKey } }
+
+   Extra:
+   - Salva dati (disattivo se non cambia nulla)
+   - Impostazioni avanzate (accordion user-controlled)
+   - Restore su refresh (best effort, non rompe nulla se UI non supporta)
 */
 (() => {
   const $ = (sel, root = document) => root.querySelector(sel);
 
   const SLIDE_ID = "dayEditor";
   const STORAGE_PREFIX = "nettotrack:turni:";
+  const SESSION_LAST = "nt:lastOpen";
+  const SESSION_LAST_DATE = "nt:lastDateKey";
 
   let currentKey = null;
   let mount = null;
   let state = null;
+
+  // snapshot per confrontare “cambiato/non cambiato”
+  let lastSavedSnapshot = "";
+  let dirty = false;
+
+  // accordion advanced (user controlled)
+  let advancedOpen = false;
+
+  // debounce storage
   let saveTimer = null;
 
   /* -------------------------
@@ -27,8 +43,28 @@
       .replaceAll("'", "&#039;");
   }
 
+  function stableStringify(obj) {
+    // JSON stabile (ordine chiavi deterministico)
+    const seen = new WeakSet();
+    const sortObj = (x) => {
+      if (x && typeof x === "object") {
+        if (seen.has(x)) return x;
+        seen.add(x);
+
+        if (Array.isArray(x)) return x.map(sortObj);
+
+        const out = {};
+        Object.keys(x).sort().forEach((k) => {
+          out[k] = sortObj(x[k]);
+        });
+        return out;
+      }
+      return x;
+    };
+    try { return JSON.stringify(sortObj(obj)); } catch { return JSON.stringify(obj); }
+  }
+
   function formatDateKeyToIT(dateKey) {
-    // YYYY-MM-DD -> DD/MM/YYYY
     if (!dateKey || typeof dateKey !== "string" || !dateKey.includes("-")) return dateKey || "";
     const [y, m, d] = dateKey.split("-");
     if (!y || !m || !d) return dateKey;
@@ -36,7 +72,6 @@
   }
 
   function isSundayKey(dateKey) {
-    // Prefer NTCal if available
     try {
       if (window.NTCal && typeof window.NTCal.isSunday === "function") {
         const [yy, mm, dd] = String(dateKey).split("-").map(Number);
@@ -54,50 +89,20 @@
   }
 
   /* -------------------------
-     Advanced options (mutually exclusive)
-  ------------------------- */
-  const ADV1_OPTIONS = [
-    ["-", "-"],
-    ["Ferie", "Ferie"],
-    ["Malattia", "Malattia"],
-    ["Infortunio sul lavoro", "Infortunio sul lavoro"],
-    ["Permessi retribuiti", "Permessi retribuiti"],
-    ["Permessi non retribuiti", "Permessi non retribuiti"],
-  ];
-
-  const ADV2_OPTIONS = [
-    ["-", "-"],
-    ["Congedo matrimoniale", "Congedo matrimoniale"],
-    ["Congedo familiare", "Congedo familiare"],
-    ["Congedo di maternità", "Congedo di maternità"],
-    ["Congedo di paternità", "Congedo di paternità"],
-    ["Congedo speciale 104", "Congedo speciale 104"],
-    ["Congedo per gravi motivi", "Congedo per gravi motivi"],
-    ["Aspettativa", "Aspettativa"],
-  ];
-
-  function optHtml(list, selected) {
-    return list.map(([v, label]) =>
-      `<option value="${escapeHtml(v)}" ${String(selected) === String(v) ? "selected" : ""}>${escapeHtml(label)}</option>`
-    ).join("");
-  }
-
-  /* -------------------------
      Model
   ------------------------- */
   function makeDefaultShift() {
     return {
-      from: "08:00",
-      to: "17:00",
+      from: "",
+      to: "",
       pauseMin: 0,
       pausePaid: false,
 
       // "none" | "morning" | "afternoon" | "night"
-      shiftType: "morning",
+      shiftType: "none",
 
-      // chips
       tags: {
-        morning: true,
+        morning: false,
         afternoon: false,
         night: false,
         overtime: false,
@@ -105,9 +110,9 @@
         sunday: false
       },
 
-      // advanced (mutually exclusive)
-      adv1: "-", // ferie/malattia/permessi...
-      adv2: "-", // congedi/aspettativa...
+      // advanced (mutualmente esclusivi tra gruppi)
+      advA: "-", // Ferie/Malattia...
+      advB: "-", // Congedi...
 
       note: ""
     };
@@ -130,28 +135,19 @@
       sunday: !!(s.tags && s.tags.sunday)
     };
 
-    let shiftType = typeof s.shiftType === "string" ? s.shiftType : "";
-    if (!shiftType) {
-      // fallback per vecchi dati
-      if (tags.morning) shiftType = "morning";
-      if (tags.afternoon) shiftType = "afternoon";
-      if (tags.night) shiftType = "night";
-    }
-    if (!shiftType) shiftType = "none";
+    let shiftType = typeof s.shiftType === "string" ? s.shiftType : "none";
+    if (!["none","morning","afternoon","night"].includes(shiftType)) shiftType = "none";
 
-    // allinea tags fascia (mutuo, ma "none" non blocca/azzera)
+    // allinea tags fascia (mutuo)
     tags.morning = shiftType === "morning";
     tags.afternoon = shiftType === "afternoon";
     tags.night = shiftType === "night";
+    if (shiftType === "none") {
+      tags.morning = false; tags.afternoon = false; tags.night = false;
+    }
 
-    let adv1 = typeof s.adv1 === "string" ? s.adv1 : "-";
-    let adv2 = typeof s.adv2 === "string" ? s.adv2 : "-";
-
-    // mutua esclusione in normalizzazione
-    if (adv1 && adv1 !== "-") adv2 = "-";
-    if (adv2 && adv2 !== "-") adv1 = "-";
-    if (!adv1) adv1 = "-";
-    if (!adv2) adv2 = "-";
+    const advA = typeof s.advA === "string" ? s.advA : "-";
+    const advB = typeof s.advB === "string" ? s.advB : "-";
 
     return {
       from: typeof s.from === "string" ? s.from : base.from,
@@ -160,8 +156,8 @@
       pausePaid: !!s.pausePaid,
       shiftType,
       tags,
-      adv1,
-      adv2,
+      advA: advA || "-",
+      advB: advB || "-",
       note: typeof s.note === "string" ? s.note : base.note
     };
   }
@@ -214,32 +210,87 @@
     shift.tags.morning = type === "morning";
     shift.tags.afternoon = type === "afternoon";
     shift.tags.night = type === "night";
+
+    if (type === "none") {
+      shift.tags.morning = false;
+      shift.tags.afternoon = false;
+      shift.tags.night = false;
+    }
+  }
+
+  function anyMeaningfulDataExists() {
+    // serve per disattivare salva / aggiungi turno quando tutto è “spento”
+    if (!state || !Array.isArray(state.shifts)) return false;
+
+    return state.shifts.some((s) => {
+      const hasTimes = !!(s.from || s.to);
+      const hasPause = Number(s.pauseMin || 0) > 0 || !!s.pausePaid;
+      const hasFascia = (s.shiftType && s.shiftType !== "none");
+      const hasExtra = !!(s.tags && (s.tags.overtime || s.tags.holiday));
+      const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
+      const hasNote = !!(s.note && String(s.note).trim().length);
+      return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
+    });
+  }
+
+  function hasAtLeastOneCompleteShift() {
+    // per attivare “+ Aggiungi turno” e “Salva”
+    // (minimo: almeno un turno con Da e A valorizzati)
+    if (!state || !Array.isArray(state.shifts)) return false;
+    return state.shifts.some((s) => !!(s.from && s.to));
+  }
+
+  function markDirty() {
+    dirty = true;
+    updateActionsEnabled();
+  }
+
+  function updateDirtyFromSnapshot() {
+    const snap = stableStringify(state?.shifts || []);
+    dirty = snap !== lastSavedSnapshot;
+    updateActionsEnabled();
   }
 
   /* -------------------------
      Save
   ------------------------- */
-  function scheduleSave() {
+  function scheduleBackgroundSave() {
+    // salvataggio “soft” (non premendo Salva). Lo mantengo per compatibilità,
+    // MA il tasto “Salva” farà un saveNow immediato.
     if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveNow, 220);
+    saveTimer = setTimeout(() => {
+      // non aggiorna lastSavedSnapshot, perché non è un “Salva dati”
+      saveToStorage(false);
+    }, 220);
   }
 
-  function saveNow() {
+  function saveToStorage(isUserSave) {
     if (!currentKey || !state) return;
 
+    const payload = { shifts: state.shifts };
+
+    // 1) core shared
     const core = window.NettoTrackCalendarCore;
     try {
       if (core && typeof core.setDayData === "function") {
-        core.setDayData(currentKey, { shifts: state.shifts });
+        core.setDayData(currentKey, payload);
       }
     } catch (_) {}
 
+    // 2) local
     try {
-      localStorage.setItem(
-        STORAGE_PREFIX + currentKey,
-        JSON.stringify({ shifts: state.shifts })
-      );
+      localStorage.setItem(STORAGE_PREFIX + currentKey, JSON.stringify(payload));
     } catch (_) {}
+
+    if (isUserSave) {
+      lastSavedSnapshot = stableStringify(state.shifts);
+      dirty = false;
+      // richiudi advanced SOLO su “Salva dati” (come richiesto)
+      advancedOpen = false;
+      renderShifts(); // riflette chiusura advanced e stato pulsanti
+    } else {
+      updateDirtyFromSnapshot();
+    }
   }
 
   /* -------------------------
@@ -261,6 +312,7 @@
     mount.innerHTML = `
       <div class="deRoot">
         <div class="deHeader">
+          <div class="deHeaderSpacer" aria-hidden="true"></div>
           <div class="deTitle">Turni · ${formatDateKeyToIT(state.dateKey)}</div>
           <button class="deClose" type="button" aria-label="Chiudi">×</button>
         </div>
@@ -269,21 +321,57 @@
 
         <div class="deActions">
           <button class="deAddShift" id="deAddShift" type="button">+ Aggiungi turno</button>
+          <button class="deSave" id="deSave" type="button">Salva dati</button>
         </div>
       </div>
     `;
 
     $(".deClose", mount)?.addEventListener("click", () => {
+      // chiudendo la card, advanced sparisce naturalmente
+      advancedOpen = false;
       document.dispatchEvent(new Event("nettotrack:closeDayEditor"));
     });
 
     $("#deAddShift", mount)?.addEventListener("click", () => {
       state.shifts.push(makeDefaultShift());
+      markDirty();
       renderShifts();
-      scheduleSave();
+      scheduleBackgroundSave();
+    });
+
+    $("#deSave", mount)?.addEventListener("click", () => {
+      // salva SOLO se attivo
+      const btn = $("#deSave", mount);
+      if (btn && btn.disabled) return;
+      saveToStorage(true);
     });
 
     renderShifts();
+    updateActionsEnabled();
+  }
+
+  function updateActionsEnabled() {
+    const addBtn = $("#deAddShift", mount);
+    const saveBtn = $("#deSave", mount);
+
+    const anyData = anyMeaningfulDataExists();
+    const hasComplete = hasAtLeastOneCompleteShift();
+
+    // + Aggiungi turno: attivo solo se almeno un turno ha Da e A (come richiesto)
+    if (addBtn) {
+      const canAdd = hasComplete; // puoi stringere ancora (es. solo turno corrente) se vuoi
+      addBtn.disabled = !canAdd;
+      addBtn.classList.toggle("isDisabled", !canAdd);
+    }
+
+    // Salva: attivo solo se:
+    // - ci sono dati minimali (Da e A almeno in un turno)
+    // - E ci sono cambiamenti rispetto al salvataggio
+    if (saveBtn) {
+      const canSave = hasComplete && dirty;
+      saveBtn.disabled = !canSave;
+      saveBtn.classList.toggle("isDisabled", !canSave);
+    }
   }
 
   function renderShifts() {
@@ -296,13 +384,13 @@
       const n = idx + 1;
       const st = s.shiftType || "none";
 
-      const adv1 = s.adv1 || "-";
-      const adv2 = s.adv2 || "-";
+      const advA = s.advA || "-";
+      const advB = s.advB || "-";
 
       return `
         <div class="deShiftCard" data-idx="${idx}">
           <div class="deShiftTop">
-            <button class="deRemoveShift" type="button" aria-label="Rimuovi turno" ${state.shifts.length <= 1 ? "disabled" : ""}>−</button>
+            <button class="deResetShift" type="button" aria-label="Reset turno" ${state.shifts.length <= 1 ? "disabled" : ""}>−</button>
             <div class="deShiftTitle">Turno ${n}</div>
 
             <button
@@ -332,12 +420,12 @@
           <!-- Orari + Pausa -->
           <div class="deGrid">
             <label class="deField">
-              <span class="deFieldLbl">Da</span>
+              <span class="deFieldLbl">Da<span class="deReq">*</span></span>
               <input class="deInput" type="time" data-k="from" value="${escapeHtml(s.from)}">
             </label>
 
             <label class="deField">
-              <span class="deFieldLbl">A</span>
+              <span class="deFieldLbl">A<span class="deReq">*</span></span>
               <input class="deInput" type="time" data-k="to" value="${escapeHtml(s.to)}">
             </label>
 
@@ -355,7 +443,6 @@
             </label>
           </div>
 
-          <!-- Linea + Extra -->
           <div class="deDivider"></div>
 
           <div class="deChips deChipsExtra">
@@ -363,31 +450,41 @@
             ${chip("Festivo", "holiday", !!(s.tags && s.tags.holiday))}
           </div>
 
-          <!-- ✅ Linea prima di Note + Impostazioni avanzate -->
           <div class="deDivider"></div>
 
-          <div class="deAdv" data-adv>
-            <button class="deAdvToggle" type="button" data-adv-toggle aria-expanded="false">
-              <span>Impostazioni avanzate</span>
-              <span class="deAdvChevron" aria-hidden="true"></span>
-            </button>
+          <!-- Impostazioni avanzate (user controlled) -->
+          <button class="deAdvToggle" type="button" aria-expanded="${advancedOpen ? "true" : "false"}">
+            Impostazioni avanzate
+            <span class="deAdvChevron" aria-hidden="true">▾</span>
+          </button>
 
-            <div class="deAdvBody" data-adv-body>
-              <div class="deGrid" style="margin-top:10px;">
-                <label class="deField" style="grid-column:1 / -1;">
-                  <span class="deFieldLbl">Assenze / Permessi</span>
-                  <select class="deSelect" data-k="adv1">
-                    ${optHtml(ADV1_OPTIONS, adv1)}
-                  </select>
-                </label>
+          <div class="deAdvPanel ${advancedOpen ? "isOn" : ""}">
+            <div class="deGrid" style="margin-top:10px;">
+              <label class="deField" style="grid-column:1 / -1;">
+                <span class="deFieldLbl">Assenza / permessi</span>
+                <select class="deSelect" data-k="advA">
+                  <option value="-" ${advA === "-" ? "selected" : ""}>-</option>
+                  <option value="Ferie" ${advA === "Ferie" ? "selected" : ""}>Ferie</option>
+                  <option value="Malattia" ${advA === "Malattia" ? "selected" : ""}>Malattia</option>
+                  <option value="Infortunio sul lavoro" ${advA === "Infortunio sul lavoro" ? "selected" : ""}>Infortunio sul lavoro</option>
+                  <option value="Permessi retribuiti" ${advA === "Permessi retribuiti" ? "selected" : ""}>Permessi retribuiti</option>
+                  <option value="Permessi non retribuiti" ${advA === "Permessi non retribuiti" ? "selected" : ""}>Permessi non retribuiti</option>
+                </select>
+              </label>
 
-                <label class="deField" style="grid-column:1 / -1;">
-                  <span class="deFieldLbl">Congedi / Aspettativa</span>
-                  <select class="deSelect" data-k="adv2">
-                    ${optHtml(ADV2_OPTIONS, adv2)}
-                  </select>
-                </label>
-              </div>
+              <label class="deField" style="grid-column:1 / -1;">
+                <span class="deFieldLbl">Congedi / aspettative</span>
+                <select class="deSelect" data-k="advB">
+                  <option value="-" ${advB === "-" ? "selected" : ""}>-</option>
+                  <option value="Congedo matrimoniale" ${advB === "Congedo matrimoniale" ? "selected" : ""}>Congedo matrimoniale</option>
+                  <option value="Congedo familiare" ${advB === "Congedo familiare" ? "selected" : ""}>Congedo familiare</option>
+                  <option value="Congedo di maternità" ${advB === "Congedo di maternità" ? "selected" : ""}>Congedo di maternità</option>
+                  <option value="Congedo di paternità" ${advB === "Congedo di paternità" ? "selected" : ""}>Congedo di paternità</option>
+                  <option value="Congedo speciale 104" ${advB === "Congedo speciale 104" ? "selected" : ""}>Congedo speciale 104</option>
+                  <option value="Congedo per gravi motivi" ${advB === "Congedo per gravi motivi" ? "selected" : ""}>Congedo per gravi motivi</option>
+                  <option value="Aspettativa" ${advB === "Aspettativa" ? "selected" : ""}>Aspettativa</option>
+                </select>
+              </label>
             </div>
           </div>
 
@@ -400,28 +497,51 @@
       `;
     }).join("");
 
-    // Bind events
+    // Bind
     Array.from(host.querySelectorAll(".deShiftCard")).forEach((card) => {
       const idx = Number(card.getAttribute("data-idx"));
       const shift = state.shifts[idx];
 
-      // remove shift
-      card.querySelector(".deRemoveShift")?.addEventListener("click", () => {
-        if (state.shifts.length <= 1) return;
-        state.shifts.splice(idx, 1);
+      // reset turno:
+      // - se ci sono altri turni: elimina questo turno
+      // - se è l’unico: resetta i campi (ma non blocca nulla)
+      card.querySelector(".deResetShift")?.addEventListener("click", () => {
+        if (!state || !Array.isArray(state.shifts)) return;
+
+        if (state.shifts.length > 1) {
+          state.shifts.splice(idx, 1);
+        } else {
+          const isSun = isSundayKey(currentKey);
+          const fresh = makeDefaultShift();
+          fresh.tags.sunday = isSun;
+          // reset “spento”
+          fresh.shiftType = "none";
+          fresh.from = "";
+          fresh.to = "";
+          fresh.pauseMin = 0;
+          fresh.pausePaid = false;
+          fresh.tags.morning = false;
+          fresh.tags.afternoon = false;
+          fresh.tags.night = false;
+          fresh.tags.overtime = false;
+          fresh.tags.holiday = false;
+          fresh.advA = "-";
+          fresh.advB = "-";
+          fresh.note = "";
+          state.shifts[0] = fresh;
+        }
+
+        markDirty();
         renderShifts();
-        scheduleSave();
+        // reset deve aggiornare subito i dati salvati esistenti (come richiesto)
+        saveToStorage(false);
       });
 
-      // advanced toggle
-      const advWrap = card.querySelector("[data-adv]");
-      const advBtn = card.querySelector("[data-adv-toggle]");
-      if (advWrap && advBtn) {
-        advBtn.addEventListener("click", () => {
-          const on = advWrap.classList.toggle("isOpen");
-          advBtn.setAttribute("aria-expanded", on ? "true" : "false");
-        });
-      }
+      // toggle advanced (USER controlled)
+      card.querySelector(".deAdvToggle")?.addEventListener("click", () => {
+        advancedOpen = !advancedOpen;
+        renderShifts();
+      });
 
       // inputs/selects/textarea
       Array.from(card.querySelectorAll("[data-k]")).forEach((el) => {
@@ -432,39 +552,47 @@
           el.addEventListener("input", () => {
             if (k === "pauseMin") shift.pauseMin = clamp(Number(el.value || 0), 0, 999);
             else shift[k] = el.value;
-            scheduleSave();
+
+            markDirty();
+            scheduleBackgroundSave();
           });
         }
 
         if (el.tagName === "SELECT") {
           el.addEventListener("change", () => {
+            const v = el.value;
+
             if (k === "pausePaid") {
-              shift.pausePaid = el.value === "true";
-              scheduleSave();
+              shift.pausePaid = v === "true";
+              markDirty();
+              scheduleBackgroundSave();
               return;
             }
 
             if (k === "shiftType") {
-              const v = el.value || "none";
-              applyShiftType(shift, v);   // ✅ "none" NON azzera e NON blocca
-              scheduleSave();
+              applyShiftType(shift, v || "none");
+              markDirty();
+              renderShifts();
+              scheduleBackgroundSave();
               return;
             }
 
-            // Advanced mutual exclusion
-            if (k === "adv1") {
-              shift.adv1 = el.value || "-";
-              if (shift.adv1 !== "-") shift.adv2 = "-";
+            // advanced mutual exclusion tra i due gruppi
+            if (k === "advA") {
+              shift.advA = v || "-";
+              if (shift.advA !== "-") shift.advB = "-";
+              markDirty();
               renderShifts();
-              scheduleSave();
+              scheduleBackgroundSave();
               return;
             }
 
-            if (k === "adv2") {
-              shift.adv2 = el.value || "-";
-              if (shift.adv2 !== "-") shift.adv1 = "-";
+            if (k === "advB") {
+              shift.advB = v || "-";
+              if (shift.advB !== "-") shift.advA = "-";
+              markDirty();
               renderShifts();
-              scheduleSave();
+              scheduleBackgroundSave();
               return;
             }
           });
@@ -473,28 +601,32 @@
         if (el.tagName === "TEXTAREA") {
           el.addEventListener("input", () => {
             shift.note = el.value;
-            scheduleSave();
+            markDirty();
+            scheduleBackgroundSave();
           });
         }
       });
 
-      // chips (solo overtime/holiday)
+      // chips
       Array.from(card.querySelectorAll(".deChip")).forEach((chipEl) => {
         const tag = chipEl.getAttribute("data-tag");
         if (!tag) return;
 
         chipEl.addEventListener("click", () => {
-          if (tag === "sunday") return; // gestito automaticamente
+          if (tag === "sunday") return; // auto
 
           shift.tags = shift.tags || {};
           shift.tags[tag] = !shift.tags[tag];
           chipEl.classList.toggle("isOn", !!shift.tags[tag]);
           chipEl.setAttribute("aria-pressed", shift.tags[tag] ? "true" : "false");
 
-          scheduleSave();
+          markDirty();
+          scheduleBackgroundSave();
         });
       });
     });
+
+    updateDirtyFromSnapshot();
   }
 
   /* -------------------------
@@ -503,12 +635,20 @@
   function open(dateKey) {
     currentKey = dateKey || currentKey || new Date().toISOString().slice(0, 10);
     state = loadState(currentKey);
-
-    // allineamento regola domenicale subito
     enforceSundayRule();
 
+    // snapshot “salvato”
+    lastSavedSnapshot = stableStringify(state.shifts);
+    dirty = false;
+
+    // persist per refresh restore
+    try {
+      sessionStorage.setItem(SESSION_LAST, SLIDE_ID);
+      sessionStorage.setItem(SESSION_LAST_DATE, currentKey);
+    } catch (_) {}
+
     render();
-    scheduleSave();
+    updateActionsEnabled();
   }
 
   document.addEventListener("nettotrack:dayEditorOpened", (e) => {
@@ -517,4 +657,26 @@
   });
 
   window.NettoTrackDayEditor = { open };
+
+  /* -------------------------
+     Restore su refresh (best effort)
+  ------------------------- */
+  document.addEventListener("DOMContentLoaded", () => {
+    try {
+      const last = sessionStorage.getItem(SESSION_LAST);
+      const dk = sessionStorage.getItem(SESSION_LAST_DATE);
+      if (last === SLIDE_ID && dk) {
+        // Prova a far riaprire la card se l’UI espone un metodo.
+        // Se non esiste, non rompe nulla.
+        setTimeout(() => {
+          if (window.NettoTrackUI && typeof window.NettoTrackUI.openDayEditor === "function") {
+            window.NettoTrackUI.openDayEditor(dk);
+            return;
+          }
+          // fallback: prova evento (se la tua UI lo usa)
+          document.dispatchEvent(new CustomEvent("nettotrack:dayEditorOpened", { detail: { dateKey: dk } }));
+        }, 60);
+      }
+    } catch (_) {}
+  });
 })();
