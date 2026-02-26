@@ -159,13 +159,13 @@
   min-width: 0;
 }
 
-/* Griglia orari: MAI sovrapposti (alias della base) */
+/* Griglia orari: FIX definitivo iOS – MAI tagliati */
 .deGrid--time{
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   width: 100%;
-  min-width: 0;
+  max-width: 100%;
 }
 
 /* Field wrapper */
@@ -369,3 +369,17 @@
 
 .deAdvPanel{ display:none; }
 .deAdvPanel.isOn{ display:block; }
+
+/* iOS: impedisce agli input time di sforare la colonna */
+.deGrid--time .deField{
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.deGrid--time .deInput[type="time"]{
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
