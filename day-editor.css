@@ -14,8 +14,10 @@
   background: transparent;
   box-sizing: border-box;
 
-  /* ✅ ACCENTO CHIP (premium, viola/rosa) */
-  --deChipAccent: 236,118,186; /* rgb senza alpha */
+  /* ✅ Accent “premium” per chip ON (viola/rosa in tema) */
+  --deChipAccent: 186, 90, 255; /* rgb */
+  --deChipBorderA: .18;         /* intensità bordo ON */
+  --deChipFillA: .10;           /* intensità fill ON */
 }
 
 .deRoot *{ box-sizing: border-box; }
@@ -222,47 +224,51 @@
 }
 .deChipsExtra{ margin-bottom: 10px; }
 
+/* =========================
+   CHIP — “premium soft” (coerente con tema)
+   ========================= */
+
 /* Chip base */
-.deChip.isOn{
-  border-color: rgba(var(--deChipAccent), .28);
+.deChip{
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
 
+  border: 1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(
-      120% 180% at 30% 0%,
-      rgba(var(--deChipAccent), .10),
-      transparent 62%
-    );
+    radial-gradient(120% 180% at 25% 0%, rgba(255,255,255,.08), transparent 62%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
 
-  box-shadow: none; /* ❌ niente glow */
+  color: var(--text);
+  font-weight: 1000;
+  letter-spacing:.1px;
+
+  transition: transform .12s ease, filter .12s ease, background .18s ease, border-color .18s ease;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 .deChip:active{
   transform: scale(.97);
   filter: brightness(1.08);
-  background: rgba(255,255,255,.12);
+  background:
+    radial-gradient(120% 180% at 25% 0%, rgba(255,255,255,.10), transparent 62%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
 }
 
-/* ✅ Chip acceso = PREMIUM (viola/rosa soft, non urlato) */
+/* Chip ON: bordo più soft + fill interno minimal (niente glow) */
 .deChip.isOn{
-  /* bordo più soft (5–10%) */
-  border-color: rgba(var(--deChipAccent), .34);
-
+  border-color: rgba(var(--deChipAccent), var(--deChipBorderA));
   background:
-    radial-gradient(
-      140% 220% at 25% 0%,
-      rgba(var(--deChipAccent), .16),
-      transparent 58%
-    ),
-    linear-gradient(
-      90deg,
-      rgba(var(--deChipAccent), .20),
-      rgba(176,120,255,.14),
-      rgba(255,150,200,.10)
+    radial-gradient(120% 180% at 25% 0%, rgba(var(--deChipAccent), var(--deChipFillA)), transparent 62%),
+    linear-gradient(90deg,
+      rgba(var(--deChipAccent), .08),
+      rgba(124,92,255,.06),
+      rgba(255,79,216,.05)
     );
-
-  /* leggero “premium glow” */
-  box-shadow:
-    0 0 0 1px rgba(var(--deChipAccent), .05) inset,
-    0 8px 22px rgba(var(--deChipAccent), .10);
+  box-shadow: none;
 }
 
 /* Domenicale mini chip (accanto al titolo) */
