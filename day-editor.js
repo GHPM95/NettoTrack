@@ -44,19 +44,15 @@
   }
 
   function stableStringify(obj) {
-    // JSON stabile (ordine chiavi deterministico)
     const seen = new WeakSet();
     const sortObj = (x) => {
       if (x && typeof x === "object") {
         if (seen.has(x)) return x;
         seen.add(x);
-
         if (Array.isArray(x)) return x.map(sortObj);
 
         const out = {};
-        Object.keys(x).sort().forEach((k) => {
-          out[k] = sortObj(x[k]);
-        });
+        Object.keys(x).sort().forEach((k) => (out[k] = sortObj(x[k])));
         return out;
       }
       return x;
@@ -97,10 +93,7 @@
       to: "",
       pauseMin: 0,
       pausePaid: false,
-
-      // "none" | "morning" | "afternoon" | "night"
       shiftType: "none",
-
       tags: {
         morning: false,
         afternoon: false,
@@ -109,11 +102,8 @@
         holiday: false,
         sunday: false
       },
-
-      // advanced (mutualmente esclusivi tra gruppi)
-      advA: "-", // Ferie/Malattia...
-      advB: "-", // Congedi...
-
+      advA: "-",
+      advB: "-",
       note: ""
     };
   }
@@ -138,7 +128,6 @@
     let shiftType = typeof s.shiftType === "string" ? s.shiftType : "none";
     if (!["none","morning","afternoon","night"].includes(shiftType)) shiftType = "none";
 
-    // allinea tags fascia (mutuo)
     tags.morning = shiftType === "morning";
     tags.afternoon = shiftType === "afternoon";
     tags.night = shiftType === "night";
@@ -163,7 +152,6 @@
   }
 
   function loadState(dateKey) {
-    // Optional shared core
     const core = window.NettoTrackCalendarCore;
     try {
       if (core && typeof core.getDayData === "function") {
@@ -177,7 +165,6 @@
       }
     } catch (_) {}
 
-    // Local fallback
     try {
       const raw = localStorage.getItem(STORAGE_PREFIX + dateKey);
       if (!raw) return defaultState(dateKey);
@@ -205,12 +192,10 @@
 
   function applyShiftType(shift, type) {
     shift.shiftType = type;
-
     shift.tags = shift.tags || {};
     shift.tags.morning = type === "morning";
     shift.tags.afternoon = type === "afternoon";
     shift.tags.night = type === "night";
-
     if (type === "none") {
       shift.tags.morning = false;
       shift.tags.afternoon = false;
@@ -219,7 +204,6 @@
   }
 
   function anyMeaningfulDataExists() {
-    // serve per disattivare salva / aggiungi turno quando tutto è “spento”
     if (!state || !Array.isArray(state.shifts)) return false;
 
     return state.shifts.some((s) => {
@@ -234,10 +218,14 @@
   }
 
   function hasAtLeastOneCompleteShift() {
-    // per attivare “+ Aggiungi turno” e “Salva”
-    // (minimo: almeno un turno con Da e A valorizzati)
     if (!state || !Array.isArray(state.shifts)) return false;
     return state.shifts.some((s) => !!(s.from && s.to));
+  }
+
+  // ✅ NUOVO: Salva si attiva solo se TUTTI i turni sono completi (Da & A)
+  function areAllShiftsComplete() {
+    if (!state || !Array.isArray(state.shifts) || state.shifts.length === 0) return false;
+    return state.shifts.every((s) => !!(s.from && s.to));
   }
 
   function markDirty() {
@@ -255,11 +243,8 @@
      Save
   ------------------------- */
   function scheduleBackgroundSave() {
-    // salvataggio “soft” (non premendo Salva). Lo mantengo per compatibilità,
-    // MA il tasto “Salva” farà un saveNow immediato.
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-      // non aggiorna lastSavedSnapshot, perché non è un “Salva dati”
       saveToStorage(false);
     }, 220);
   }
@@ -269,7 +254,6 @@
 
     const payload = { shifts: state.shifts };
 
-    // 1) core shared
     const core = window.NettoTrackCalendarCore;
     try {
       if (core && typeof core.setDayData === "function") {
@@ -277,7 +261,6 @@
       }
     } catch (_) {}
 
-    // 2) local
     try {
       localStorage.setItem(STORAGE_PREFIX + currentKey, JSON.stringify(payload));
     } catch (_) {}
@@ -285,9 +268,8 @@
     if (isUserSave) {
       lastSavedSnapshot = stableStringify(state.shifts);
       dirty = false;
-      // richiudi advanced SOLO su “Salva dati” (come richiesto)
-      advancedOpen = false;
-      renderShifts(); // riflette chiusura advanced e stato pulsanti
+      advancedOpen = false; // richiudo solo su Salva
+      renderShifts();
     } else {
       updateDirtyFromSnapshot();
     }
@@ -327,12 +309,14 @@
     `;
 
     $(".deClose", mount)?.addEventListener("click", () => {
-      // chiudendo la card, advanced sparisce naturalmente
       advancedOpen = false;
       document.dispatchEvent(new Event("nettotrack:closeDayEditor"));
     });
 
     $("#deAddShift", mount)?.addEventListener("click", () => {
+      const btn = $("#deAddShift", mount);
+      if (btn && btn.disabled) return;
+
       state.shifts.push(makeDefaultShift());
       markDirty();
       renderShifts();
@@ -340,7 +324,6 @@
     });
 
     $("#deSave", mount)?.addEventListener("click", () => {
-      // salva SOLO se attivo
       const btn = $("#deSave", mount);
       if (btn && btn.disabled) return;
       saveToStorage(true);
@@ -356,21 +339,28 @@
 
     const anyData = anyMeaningfulDataExists();
     const hasComplete = hasAtLeastOneCompleteShift();
+    const allComplete = areAllShiftsComplete();
 
-    // + Aggiungi turno: attivo solo se almeno un turno ha Da e A (come richiesto)
+    // + Aggiungi turno: attivo solo se almeno un turno ha Da e A
     if (addBtn) {
-      const canAdd = hasComplete; // puoi stringere ancora (es. solo turno corrente) se vuoi
+      const canAdd = hasComplete;
       addBtn.disabled = !canAdd;
       addBtn.classList.toggle("isDisabled", !canAdd);
     }
 
-    // Salva: attivo solo se:
-    // - ci sono dati minimali (Da e A almeno in un turno)
-    // - E ci sono cambiamenti rispetto al salvataggio
+    // ✅ Salva: attivo SOLO se:
+    // - tutti i turni sono completi (Da & A)   ← questa è la tua richiesta
+    // - e ci sono cambiamenti (dirty)
     if (saveBtn) {
-      const canSave = hasComplete && dirty;
+      const canSave = allComplete && dirty;
       saveBtn.disabled = !canSave;
       saveBtn.classList.toggle("isDisabled", !canSave);
+    }
+
+    // se non c'è nessun dato, forzo entrambi spenti (sicurezza)
+    if (!anyData) {
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.classList.add("isDisabled"); }
+      if (addBtn)  { addBtn.disabled = true; addBtn.classList.add("isDisabled"); }
     }
   }
 
@@ -404,7 +394,6 @@
             >Domenicale</button>
           </div>
 
-          <!-- Fascia -->
           <div class="deGrid" style="margin-bottom:10px;">
             <label class="deField" style="grid-column:1 / -1;">
               <span class="deFieldLbl">Fascia</span>
@@ -417,7 +406,6 @@
             </label>
           </div>
 
-          <!-- Orari + Pausa -->
           <div class="deGrid">
             <label class="deField">
               <span class="deFieldLbl">Da<span class="deReq">*</span></span>
@@ -452,7 +440,6 @@
 
           <div class="deDivider"></div>
 
-          <!-- Impostazioni avanzate (user controlled) -->
           <button class="deAdvToggle" type="button" aria-expanded="${advancedOpen ? "true" : "false"}">
             Impostazioni avanzate
             <span class="deAdvChevron" aria-hidden="true">▾</span>
@@ -488,7 +475,6 @@
             </div>
           </div>
 
-          <!-- Nota turno -->
           <div class="deBlock deShiftNoteBlock">
             <div class="deLabel">Nota turno (opzionale)</div>
             <textarea class="deTextarea deTextareaSmall" data-k="note" placeholder="Nota...">${escapeHtml(s.note || "")}</textarea>
@@ -497,14 +483,10 @@
       `;
     }).join("");
 
-    // Bind
     Array.from(host.querySelectorAll(".deShiftCard")).forEach((card) => {
       const idx = Number(card.getAttribute("data-idx"));
       const shift = state.shifts[idx];
 
-      // reset turno:
-      // - se ci sono altri turni: elimina questo turno
-      // - se è l’unico: resetta i campi (ma non blocca nulla)
       card.querySelector(".deResetShift")?.addEventListener("click", () => {
         if (!state || !Array.isArray(state.shifts)) return;
 
@@ -514,36 +496,19 @@
           const isSun = isSundayKey(currentKey);
           const fresh = makeDefaultShift();
           fresh.tags.sunday = isSun;
-          // reset “spento”
-          fresh.shiftType = "none";
-          fresh.from = "";
-          fresh.to = "";
-          fresh.pauseMin = 0;
-          fresh.pausePaid = false;
-          fresh.tags.morning = false;
-          fresh.tags.afternoon = false;
-          fresh.tags.night = false;
-          fresh.tags.overtime = false;
-          fresh.tags.holiday = false;
-          fresh.advA = "-";
-          fresh.advB = "-";
-          fresh.note = "";
           state.shifts[0] = fresh;
         }
 
         markDirty();
         renderShifts();
-        // reset deve aggiornare subito i dati salvati esistenti (come richiesto)
         saveToStorage(false);
       });
 
-      // toggle advanced (USER controlled)
       card.querySelector(".deAdvToggle")?.addEventListener("click", () => {
         advancedOpen = !advancedOpen;
         renderShifts();
       });
 
-      // inputs/selects/textarea
       Array.from(card.querySelectorAll("[data-k]")).forEach((el) => {
         const k = el.getAttribute("data-k");
         if (!k) return;
@@ -577,7 +542,6 @@
               return;
             }
 
-            // advanced mutual exclusion tra i due gruppi
             if (k === "advA") {
               shift.advA = v || "-";
               if (shift.advA !== "-") shift.advB = "-";
@@ -607,13 +571,12 @@
         }
       });
 
-      // chips
       Array.from(card.querySelectorAll(".deChip")).forEach((chipEl) => {
         const tag = chipEl.getAttribute("data-tag");
         if (!tag) return;
 
         chipEl.addEventListener("click", () => {
-          if (tag === "sunday") return; // auto
+          if (tag === "sunday") return;
 
           shift.tags = shift.tags || {};
           shift.tags[tag] = !shift.tags[tag];
@@ -637,11 +600,9 @@
     state = loadState(currentKey);
     enforceSundayRule();
 
-    // snapshot “salvato”
     lastSavedSnapshot = stableStringify(state.shifts);
     dirty = false;
 
-    // persist per refresh restore
     try {
       sessionStorage.setItem(SESSION_LAST, SLIDE_ID);
       sessionStorage.setItem(SESSION_LAST_DATE, currentKey);
@@ -658,22 +619,16 @@
 
   window.NettoTrackDayEditor = { open };
 
-  /* -------------------------
-     Restore su refresh (best effort)
-  ------------------------- */
   document.addEventListener("DOMContentLoaded", () => {
     try {
       const last = sessionStorage.getItem(SESSION_LAST);
       const dk = sessionStorage.getItem(SESSION_LAST_DATE);
       if (last === SLIDE_ID && dk) {
-        // Prova a far riaprire la card se l’UI espone un metodo.
-        // Se non esiste, non rompe nulla.
         setTimeout(() => {
           if (window.NettoTrackUI && typeof window.NettoTrackUI.openDayEditor === "function") {
             window.NettoTrackUI.openDayEditor(dk);
             return;
           }
-          // fallback: prova evento (se la tua UI lo usa)
           document.dispatchEvent(new CustomEvent("nettotrack:dayEditorOpened", { detail: { dateKey: dk } }));
         }, 60);
       }
