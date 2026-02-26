@@ -20,8 +20,7 @@
 /* Header come calendario */
 .deHeader{
   display:grid;
-  /* ✅ titolo centrato, X a destra (senza toccare colori) */
-  grid-template-columns: 38px 1fr 38px;
+  grid-template-columns: 1fr auto;
   align-items:center;
   gap: 10px;
   min-width: 0;
@@ -29,9 +28,6 @@
 
 /* Titolo come calendario */
 .deTitle{
-  grid-column: 2;
-  text-align: center;
-
   font-weight: 1000;
   letter-spacing:.2px;
   font-size: clamp(14px, 3.6vw, 17px);
@@ -43,9 +39,6 @@
 
 /* X come ntBtn */
 .deClose{
-  grid-column: 3;
-  justify-self: end;
-
   width: 38px;
   height: 38px;
   border-radius: 14px;
@@ -134,6 +127,10 @@
   filter: brightness(1.08);
   background: rgba(255,255,255,.14);
 }
+.deShiftTop .deRemoveShift:disabled{
+  opacity: .35;
+  pointer-events:none;
+}
 
 /* Divider elegante */
 .deDivider{
@@ -152,10 +149,8 @@
 /* Griglia campi */
 .deGrid{
   display:grid;
-  /* ✅ fix iOS: evita che i due time “sforino” e si sovrappongano */
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 12px;
-  row-gap: 10px;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
   min-width: 0;
 }
 
@@ -196,17 +191,11 @@
 .deInput{ height: 46px; }
 .deSelect{ height: 46px; }
 
-/* ✅ FIX time iOS: non cambia colori, solo evita glitch/overlap */
-.deInput[type="time"]{
-  -webkit-appearance: none;
-  appearance: none;
-}
-
 /* iOS: evita che la select “spinga”/tagli icona */
 .deSelect{
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 38px; /* spazio per eventuale freccia/chevron */
+  padding-right: 44px; /* spazio per chevron */
   background-clip: padding-box;
 }
 
@@ -217,13 +206,6 @@
   resize: none;
 }
 .deTextareaSmall{ min-height: 86px; }
-
-/* Disabled */
-.deInput:disabled,
-.deSelect:disabled{
-  opacity: .40;
-  pointer-events:none;
-}
 
 /* Chips row */
 .deChips{
@@ -256,7 +238,7 @@
   background: rgba(255,255,255,.12);
 }
 
-/* Chip acceso = gradiente “puntini intelligenti” (IDENTICO al tuo) */
+/* Chip acceso = gradiente “puntini intelligenti” (NON tocchiamo colori) */
 .deChip.isOn{
   border-color: rgba(42,233,255,.22);
   background:
@@ -284,7 +266,6 @@
 /* Actions */
 .deActions{
   padding-top: 10px;
-  /* ✅ evita che il bottone tocchi il bordo in basso se la card è stretta */
   padding-bottom: 2px;
 }
 
@@ -304,4 +285,57 @@
   transform: scale(.97);
   filter: brightness(1.08);
   background: rgba(255,255,255,.14);
+}
+
+/* =========================
+   Impostazioni avanzate
+   ========================= */
+
+.deAdv{
+  margin-top: 4px;
+}
+
+.deAdvToggle{
+  width: 100%;
+  height: 46px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  font-weight: 1000;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 0 12px;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+}
+.deAdvToggle:active{
+  transform: scale(.98);
+  filter: brightness(1.06);
+  background: rgba(255,255,255,.10);
+}
+
+.deAdvChevron{
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  opacity: .9;
+  transform: translateY(1px);
+}
+
+.deAdvBody{
+  display:none;
+  margin-top: 10px;
+}
+.deAdv.isOpen .deAdvBody{ display:block; }
+
+/* chevron “soft” via mask */
+.deAdvChevron{
+  background: rgba(255,255,255,.80);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z'/%3E%3C/svg%3E") center/contain no-repeat;
+  transition: transform .18s ease;
+}
+.deAdv.isOpen .deAdvChevron{
+  transform: rotate(180deg) translateY(-1px);
 }
