@@ -274,6 +274,17 @@
       updateDirtyFromSnapshot();
     }
   }
+  
+  function stopPendingAutoSave() {
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+   }
+ }
+
+    document.addEventListener("nettotrack:closeDayEditor", () => {
+   stopPendingAutoSave();
+  });
 
   /* -------------------------
      Mount & Render
@@ -309,9 +320,12 @@
     `;
 
     $(".deClose", mount)?.addEventListener("click", () => {
-      advancedOpen = false;
-      document.dispatchEvent(new Event("nettotrack:closeDayEditor"));
-    });
+  // STOP: niente autosave dopo la chiusura
+  stopPendingAutoSave();
+
+  advancedOpen = false;
+  document.dispatchEvent(new Event("nettotrack:closeDayEditor"));
+  });
 
     $("#deAddShift", mount)?.addEventListener("click", () => {
       const btn = $("#deAddShift", mount);
