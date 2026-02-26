@@ -167,6 +167,36 @@
   min-width: 0;
 }
 
+/* =========================
+   Centra testo nei time input (Da / A)
+   ========================= */
+
+.deInput[type="time"]{
+  text-align: center;                 /* centro il testo */
+  font-variant-numeric: tabular-nums; /* numeri allineati bene */
+  line-height: 46px;                  /* stesso della height (46) per centratura visiva */
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* alcuni browser webkit preferiscono questa */
+.deInput[type="time"]::-webkit-datetime-edit{
+  text-align: center;
+  width: 100%;
+}
+
+/* centro anche i singoli pezzi (hh, mm) dove supportato */
+.deInput[type="time"]::-webkit-datetime-edit-fields-wrapper{
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+}
+.deInput[type="time"]::-webkit-datetime-edit-hour-field,
+.deInput[type="time"]::-webkit-datetime-edit-minute-field,
+.deInput[type="time"]::-webkit-datetime-edit-ampm-field{
+  text-align: center;
+}
+
 /* campo time: non deve MAI forzare larghezze strane */
 .deInput[type="time"]{
   width: 100%;
@@ -390,73 +420,6 @@
   opacity:.85;
   transform: translateY(1px);
   color: rgba(255,255,255,.90);
-}
-
-/* =========================
-   Centra testo nei time input (Da / A)
-   ========================= */
-
-.deInput[type="time"]{
-  text-align: center;                 /* centro il testo */
-  font-variant-numeric: tabular-nums; /* numeri allineati bene */
-  line-height: 46px;                  /* stesso della height (46) per centratura visiva */
-  padding-left: 8px;
-  padding-right: 8px;
-}
-
-/* alcuni browser webkit preferiscono questa */
-.deInput[type="time"]::-webkit-datetime-edit{
-  text-align: center;
-  width: 100%;
-}
-
-/* centro anche i singoli pezzi (hh, mm) dove supportato */
-.deInput[type="time"]::-webkit-datetime-edit-fields-wrapper{
-  display: inline-flex;
-  justify-content: center;
-  width: 100%;
-}
-.deInput[type="time"]::-webkit-datetime-edit-hour-field,
-.deInput[type="time"]::-webkit-datetime-edit-minute-field,
-.deInput[type="time"]::-webkit-datetime-edit-ampm-field{
-  text-align: center;
-}
-
-/* =========================
-   FIX definitivo griglia TIME (Da/A + Pausa min/Pausa pagata)
-   Non tocca altre griglie
-   ========================= */
-
-.deGrid.deGrid--time{
-  display:grid !important;
-  grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
-  gap: 10px !important;
-  width: 100%;
-  min-width: 0;
-}
-
-/* ogni campo occupa solo 1 colonna */
-.deGrid.deGrid--time > .deField{
-  grid-column: auto !important;
-  min-width: 0;
-}
-
-/* se per caso avevi qualche field forzato a 1/-1, lo neutralizziamo SOLO qui */
-.deGrid.deGrid--time > .deField[style*="grid-column"]{
-  grid-column: auto !important;
-}
-
-/* input time: non deve mai “sfondare” */
-.deGrid.deGrid--time .deInput[type="time"],
-.deGrid.deGrid--time .deSelect{
-  width:100%;
-  min-width:0;
-  max-width:100%;
-}
-
-/* centra il testo dentro i due time (Da/A) */
-.deGrid.deGrid--time .deInput[type="time"]{
-  text-align:center;
 }
 
 .deAdvPanel{ display:none; }
