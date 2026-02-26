@@ -150,7 +150,16 @@
   );
 }
 
-/* Griglia orari: MAI sovrapposti */
+/* ✅ Griglia base (mancava): 2 colonne, mai overflow */
+.deGrid{
+  display:grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Griglia orari: MAI sovrapposti (alias della base) */
 .deGrid--time{
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -165,11 +174,7 @@
   flex-direction:column;
   gap: 6px;
   min-width:0;
-}
-
-.deField{
-  min-width: 0;
-  overflow: hidden;
+  overflow:hidden;
 }
 
 /* Label */
@@ -208,17 +213,13 @@
 .deInput{ height: 46px; }
 .deSelect{ height: 46px; }
 
+/* ✅ iOS: input time NON deve mai allargarsi o “sfondare” */
 .deInput[type="time"]{
-  max-width: 100%;
+  display:block;
   width:100%;
+  min-width:0;
+  max-width:100%;
   overflow:hidden;
-}
-
-/* iOS fix: input time non deve mai allargarsi */
-.deInput[type="time"]{
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
 }
 
 /* ✅ select: freccia GIÙ BIANCA */
