@@ -150,22 +150,47 @@
   );
 }
 
-/* ✅ Griglia base (mancava): 2 colonne, mai overflow */
-.deGrid{
-  display:grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+/* =========================
+   FIX ORARI (Da / A) — MAI tagliati, MAI sovrapposti
+   ========================= */
+
+/* invece di grid per gli orari: flex “a prova di iOS” */
+.deGrid--time{
+  display: flex;
   gap: 10px;
   width: 100%;
   min-width: 0;
 }
 
-/* Griglia orari: FIX definitivo iOS – MAI tagliati */
-.deGrid--time{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+.deGrid--time > .deField{
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* campo time: non deve MAI forzare larghezze strane */
+.deInput[type="time"]{
   width: 100%;
+  min-width: 0;
   max-width: 100%;
+
+  /* riduco un filo padding e size SOLO qui per evitare “clipping” interno */
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 15px;
+  letter-spacing: 0;
+
+  /* iOS / WebKit: evita comportamenti di layout aggressivi */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* se qualche browser prova comunque a “spingere”, lo blocco */
+.deField{
+  min-width: 0;
+}
+
+.deField > *{
+  min-width: 0;
 }
 
 /* Field wrapper */
@@ -369,17 +394,3 @@
 
 .deAdvPanel{ display:none; }
 .deAdvPanel.isOn{ display:block; }
-
-/* iOS: impedisce agli input time di sforare la colonna */
-.deGrid--time .deField{
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.deGrid--time .deInput[type="time"]{
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
