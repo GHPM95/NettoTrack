@@ -17,13 +17,20 @@
 
 .deRoot *{ box-sizing: border-box; }
 
-/* Header come calendario */
+/* Header: titolo centrato, X a destra */
 .deHeader{
   display:grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 38px 1fr 38px; /* spacer | title | X */
   align-items:center;
   gap: 10px;
   min-width: 0;
+}
+
+.deHeaderSpacer{
+  width:38px;
+  height:38px;
+  opacity:0;
+  pointer-events:none;
 }
 
 /* Titolo come calendario */
@@ -35,6 +42,7 @@
   overflow:hidden;
   text-overflow: ellipsis;
   min-width: 0;
+  text-align:center;
 }
 
 /* X come ntBtn */
@@ -62,21 +70,17 @@
   flex:1;
   min-height:0;
 
-  overflow: auto;          /* solo verticale */
+  overflow: auto;
   overflow-x:hidden;
 
-  /* ✅ spazio a destra per non “attaccare” la scrollbar al bordo */
   padding-right: 12px;
-
-  /* ✅ evita che contenuti tocchino l’header */
   margin-top: 10px;
 
-  /* iOS scroll più stabile */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
 
-/* Card turno: invisibile (niente box in più) */
+/* Card turno: invisibile */
 .deShiftCard{
   border: none;
   background: transparent;
@@ -88,7 +92,7 @@
 /* Top riga turno */
 .deShiftTop{
   display:grid;
-  grid-template-columns: auto 1fr auto; /* [remove] [titolo] [domenicale] */
+  grid-template-columns: auto 1fr auto;
   align-items:center;
   gap: 10px;
   padding: 2px 0 6px;
@@ -106,8 +110,8 @@
   min-width: 0;
 }
 
-/* Pulsante remove: FORZA dimensione (evita che diventi “barra lunga”) */
-.deShiftTop .deRemoveShift{
+/* Reset turno: identico a X */
+.deResetShift{
   width: 38px !important;
   height: 38px !important;
   min-width: 38px !important;
@@ -122,13 +126,13 @@
   transition: transform .12s ease, filter .12s ease, background .12s ease;
   justify-self: start;
 }
-.deShiftTop .deRemoveShift:active{
+.deResetShift:active{
   transform: scale(.96);
   filter: brightness(1.08);
   background: rgba(255,255,255,.14);
 }
-.deShiftTop .deRemoveShift:disabled{
-  opacity: .35;
+.deResetShift:disabled{
+  opacity:.35;
   pointer-events:none;
 }
 
@@ -146,10 +150,10 @@
   );
 }
 
-/* Griglia campi */
+/* Griglia campi (safe per iOS, evita overlap) */
 .deGrid{
   display:grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0,1fr));
   gap: 10px;
   min-width: 0;
 }
@@ -171,12 +175,19 @@
   color: var(--muted);
 }
 
+/* asterisco obbligatorio (stesso tono tema, non nero) */
+.deReq{
+  margin-left:4px;
+  color: rgba(42,233,255,.70);
+  font-weight: 1000;
+}
+
 /* Input/select/textarea “glass scuro” */
 .deInput,
 .deSelect,
 .deTextarea{
   width:100%;
-  min-width:0; /* ✅ importantissimo per non “sfondare” */
+  min-width:0;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
   background:
@@ -191,12 +202,25 @@
 .deInput{ height: 46px; }
 .deSelect{ height: 46px; }
 
-/* iOS: evita che la select “spinga”/tagli icona */
+/* time input: evita sforamenti/sovrapposizioni */
+.deInput[type="time"]{
+  max-width: 100%;
+  width:100%;
+  overflow:hidden;
+}
+
+/* select: freccia “tema” (non nera) */
 .deSelect{
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 44px; /* spazio per chevron */
+  padding-right: 40px;
   background-clip: padding-box;
+  background-image:
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3E%3Cpath fill='rgba(42,233,255,0.65)' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left top, right 12px center;
+  background-size: auto, 18px 18px;
 }
 
 /* Textarea */
@@ -207,7 +231,14 @@
 }
 .deTextareaSmall{ min-height: 86px; }
 
-/* Chips row */
+/* Disabled */
+.deInput:disabled,
+.deSelect:disabled{
+  opacity: .40;
+  pointer-events:none;
+}
+
+/* Chips */
 .deChips{
   display:flex;
   flex-wrap:wrap;
@@ -216,7 +247,6 @@
 }
 .deChipsExtra{ margin-bottom: 10px; }
 
-/* Chip base */
 .deChip{
   height: 40px;
   padding: 0 14px;
@@ -238,15 +268,15 @@
   background: rgba(255,255,255,.12);
 }
 
-/* Chip acceso = gradiente “puntini intelligenti” (NON tocchiamo colori) */
+/* ON: marcato ma “premium soft” */
 .deChip.isOn{
-  border-color: rgba(42,233,255,.22);
+  border-color: rgba(42,233,255,.45);
   background:
-    radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.18), transparent 55%),
-    linear-gradient(90deg, rgba(42,233,255,.22), rgba(124,92,255,.18), rgba(255,79,216,.14));
+    radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.22), transparent 55%),
+    linear-gradient(90deg, rgba(42,233,255,.28), rgba(124,92,255,.22), rgba(255,79,216,.18));
 }
 
-/* Domenicale mini chip (accanto al titolo) */
+/* Domenicale mini */
 .deChipMini{
   height: 34px;
   padding: 0 12px;
@@ -263,15 +293,17 @@
 /* Nota block */
 .deBlock{ margin-top: 10px; }
 
-/* Actions */
+/* Actions: due pulsanti affiancati */
 .deActions{
   padding-top: 10px;
   padding-bottom: 2px;
+  display:flex;
+  gap: 10px;
 }
 
-/* + Aggiungi turno stile “wide” */
-.deAddShift{
-  width: 100%;
+.deAddShift,
+.deSave{
+  flex: 1 1 0;
   height: 46px;
   border-radius: 16px;
   border: none;
@@ -280,62 +312,54 @@
   font-weight: 1000;
   letter-spacing:.15px;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
+  min-width: 0;
 }
-.deAddShift:active{
+.deAddShift:active,
+.deSave:active{
   transform: scale(.97);
   filter: brightness(1.08);
   background: rgba(255,255,255,.14);
 }
 
-/* =========================
-   Impostazioni avanzate
-   ========================= */
-
-.deAdv{
-  margin-top: 4px;
+.deAddShift.isDisabled,
+.deSave.isDisabled,
+.deAddShift:disabled,
+.deSave:disabled{
+  opacity:.35;
+  pointer-events:none;
 }
 
+/* Advanced toggle */
 .deAdvToggle{
-  width: 100%;
+  width:100%;
   height: 46px;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
   background: rgba(255,255,255,.08);
   color: var(--text);
   font-weight: 1000;
+  letter-spacing:.1px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding: 0 12px;
+  padding: 0 14px;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
 .deAdvToggle:active{
-  transform: scale(.98);
-  filter: brightness(1.06);
-  background: rgba(255,255,255,.10);
+  transform: scale(.97);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.12);
 }
 
 .deAdvChevron{
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-  opacity: .9;
+  opacity:.8;
   transform: translateY(1px);
 }
 
-.deAdvBody{
+/* panel (solo visibilità, senza chiudersi da solo) */
+.deAdvPanel{
   display:none;
-  margin-top: 10px;
 }
-.deAdv.isOpen .deAdvBody{ display:block; }
-
-/* chevron “soft” via mask */
-.deAdvChevron{
-  background: rgba(255,255,255,.80);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z'/%3E%3C/svg%3E") center/contain no-repeat;
-          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z'/%3E%3C/svg%3E") center/contain no-repeat;
-  transition: transform .18s ease;
-}
-.deAdv.isOpen .deAdvChevron{
-  transform: rotate(180deg) translateY(-1px);
+.deAdvPanel.isOn{
+  display:block;
 }
