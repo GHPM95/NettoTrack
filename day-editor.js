@@ -406,7 +406,7 @@
             </label>
           </div>
 
-          <div class="deGrid">
+          <div class="deGrid deGrid--time">
             <label class="deField">
               <span class="deFieldLbl">Da<span class="deReq">*</span></span>
               <input class="deInput" type="time" data-k="from" value="${escapeHtml(s.from)}">
