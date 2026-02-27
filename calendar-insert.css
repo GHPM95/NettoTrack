@@ -141,16 +141,20 @@
 }
 
 /* TODAY: RIEMPI TUTTO */
+/* TODAY — ring elegante */
 .cinsDay.isToday{
-  border-color: rgba(255,255,255,.18);
+  border-color: transparent;
 }
+
 .cinsDay.isToday::after{
   content:"";
   position:absolute;
-  inset: 0;
+  inset: 2px;
   border-radius: inherit;
-  background: linear-gradient(180deg, var(--accent3), var(--accent2));
-  opacity: .88;
+  background: none;
+  box-shadow:
+    0 0 0 2px rgba(120,200,255,.9),
+    0 0 12px rgba(120,200,255,.45);
   z-index: 1;
 }
 
