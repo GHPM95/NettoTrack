@@ -226,18 +226,19 @@
   }
   
 
-  function computeBaseExtra(model) {
-    let hasBase = false;
-    let hasExtra = false;
-    if (model?.shifts?.length) {
-      for (const s of model.shifts) {
-        const isExtra = !!(s?.flags?.straordinario || s?.flags?.festivo || s?.flags?.domenicale);
-        if (isExtra) hasExtra = true;
-        else hasBase = true;
-      }
-    }
-    return { hasBase, hasExtra };
-  }
+  function hasMeaningfulDayData(model) {
+  if (!model || !Array.isArray(model.shifts) || model.shifts.length === 0) return false;
+
+  return model.shifts.some((s) => {
+    const hasTimes = !!(s?.from || s?.to);
+    const hasPause = Number(s?.pauseMin || 0) > 0 || !!s?.pausePaid;
+    const hasFascia = !!(s?.shiftType && s.shiftType !== "none");
+    const hasExtra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
+    const hasAdv = (s?.advA && s.advA !== "-") || (s?.advB && s?.advB !== "-");
+    const hasNote = !!(s?.note && String(s.note).trim().length);
+    return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
+  });
+}
 
   function renderMonth() {
     const mount = document.getElementById("calInsertMount");
@@ -274,29 +275,19 @@
         num.textContent = String(dayNum);
         btn.appendChild(num);
 
-        // dots: saved o draft
+        // dot premium: saved o draft
         const saved = loadDay(key);
         const draft = loadDraft(key);
         const model = saved || draft;
 
-        if (model) {
-          const { hasBase, hasExtra } = computeBaseExtra(model);
-          if (hasBase || hasExtra) {
-            const dots = document.createElement("div");
-            dots.className = "cinsDots";
-            if (hasBase) {
-              const d = document.createElement("div");
-              d.className = "cinsDot base";
-              dots.appendChild(d);
-            }
-            if (hasExtra) {
-              const d = document.createElement("div");
-              d.className = "cinsDot extra";
-              dots.appendChild(d);
-            }
-            btn.appendChild(dots);
-          }
-        }
+        if (hasMeaningfulDayData(model)) {
+        const dots = document.createElement("div");
+        dots.className = "cinsDots";
+        const d = document.createElement("div");
+        d.className = "cinsDot premium";
+        dots.appendChild(d);
+        btn.appendChild(dots);
+}
 
         btn.addEventListener("click", () => {
           window.NettoTrackUI?.openDayEditor(key);
