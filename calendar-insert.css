@@ -155,50 +155,32 @@
 }
 
 /* dots */
+/* dots */
 .cinsDots{
   position:absolute;
-  bottom: 5px; /* prima era 7px → più in basso */
+  bottom: 4px;            /* ✅ più in basso (prima era 7px) */
   left: 50%;
   transform: translateX(-50%);
-  display:flex;
-  gap: 0;               /* niente gap: gestiamo noi la sovrapposizione */
   z-index: 3;
 }
+
+/* dot base */
 .cinsDot{
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  opacity: .95;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  opacity: 1;             /* ✅ niente mix strani */
+  background: transparent;
 }
-.cinsDot.base{ background: var(--accent2); }
-.cinsDot.extra{ background: var(--accent1); }
 
+/* 🔵 blu: giorno compilato normale */
 .cinsDot.premium{
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), transparent 55%),
-    linear-gradient(90deg, rgba(42,233,255,.95), rgba(124,92,255,.85), rgba(255,79,216,.75));
-  box-shadow:
-    0 0 0 2px rgba(255,255,255,.10),
-    0 10px 18px rgba(0,0,0,.28);
+  background: var(--accent2);
 }
+
+/* 🟣 fucsia/viola: extra */
 .cinsDot.premiumExtra{
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-
-  /* fucsia → viola */
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), transparent 55%),
-    linear-gradient(90deg, rgba(255,79,216,.95), rgba(124,92,255,.95));
-
-  box-shadow:
-    0 0 0 2px rgba(255,255,255,.10),
-    0 10px 18px rgba(0,0,0,.28);
-
-  /* sovrapposizione sul blu */
-  margin-left: -3px;
+  background: var(--accent1);
 }
 
 /* =========================
