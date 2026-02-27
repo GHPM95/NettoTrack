@@ -281,13 +281,27 @@
         const model = saved || draft;
 
         if (hasMeaningfulDayData(model)) {
-        const dots = document.createElement("div");
-        dots.className = "cinsDots";
-        const d = document.createElement("div");
-        d.className = "cinsDot premium";
-        dots.appendChild(d);
-        btn.appendChild(dots);
+  const dots = document.createElement("div");
+  dots.className = "cinsDots";
+
+  // dot blu (sempre, se il giorno è "compilato")
+  const base = document.createElement("div");
+  base.className = "cinsDot premium";
+  dots.appendChild(base);
+
+  // extra: straordinario / festivo / domenicale
+  const hasExtra =
+    !!model?.shifts?.some((s) => !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday)));
+
+  if (hasExtra) {
+    const extra = document.createElement("div");
+    extra.className = "cinsDot premiumExtra";
+    dots.appendChild(extra);
+  }
+
+  btn.appendChild(dots);
 }
+        
 
         btn.addEventListener("click", () => {
           window.NettoTrackUI?.openDayEditor(key);
