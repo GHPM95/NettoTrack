@@ -330,7 +330,9 @@ document.dispatchEvent(new Event("nettotrack:dataChanged"));
 
     $(".deClose", mount)?.addEventListener("click", () => {
   // STOP: niente autosave dopo la chiusura
-  stopPendingAutoSave();
+stopPendingAutoSave();
+state = null;
+currentKey = null;
 
   advancedOpen = false;
   document.dispatchEvent(new Event("nettotrack:closeDayEditor"));
