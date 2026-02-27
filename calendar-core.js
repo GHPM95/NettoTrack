@@ -1,164 +1,186 @@
-/* calendar-core.js
-   Core condiviso NettoTrack (dateKey, storage turni, draft, helpers)
-   - Allinea le chiavi storage con day-editor.js:
-     nettotrack:turni:YYYY-MM-DD
-   - Fornisce NTCal.loadDay/loadDraft usati da calendar-insert.js
-   - Fornisce NettoTrackCalendarCore.getDayData/setDayData usati da day-editor.js
-   - Emana evento "nettotrack:dataChanged" quando cambia qualcosa
-*/
 (() => {
-  const DAY_PREFIX   = "nettotrack:turni:";        // ✅ CHIAVE SALVATAGGIO DEFINITIVA
-  const DRAFT_PREFIX = "nettotrack:turni:draft:";  // bozza (se ti serve)
+  /* =====================================================
+     UTIL
+  ===================================================== */
+  const pad2 = (n) => String(n).padStart(2, "0");
 
-  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
-
-  function pad2(n) {
-    n = String(n ?? "");
-    return n.length === 1 ? "0" + n : n;
-  }
-
-  // y=2026, m=0..11, d=1..31 -> "YYYY-MM-DD"
-  function dateKey(y, m, d) {
-    return `${String(y)}-${pad2(m + 1)}-${pad2(d)}`;
+  function dateKey(y, mZeroBased, d) {
+    return `${y}-${pad2(mZeroBased + 1)}-${pad2(d)}`; // YYYY-MM-DD
   }
 
   function todayParts() {
-    const dt = new Date();
-    return { y: dt.getFullYear(), m: dt.getMonth(), d: dt.getDate() };
+    const t = new Date();
+    return { y: t.getFullYear(), m: t.getMonth(), d: t.getDate() };
   }
 
-  function isSunday(y, m, d) {
+  function isSunday(y, mZeroBased, d) {
+    return new Date(y, mZeroBased, d).getDay() === 0;
+  }
+
+  /* =====================================================
+     STORAGE — PER GIORNO
+     ⚠️ IMPORTANTISSIMO:
+     Day Editor salva con prefix "nettotrack:turni:".
+     Qui facciamo compatibilità: leggiamo/scriviamo sia prefix che key “nuda”.
+  ===================================================== */
+  const DAY_PREFIX = "nettotrack:turni:";
+
+  function keyWithPrefix(dateKeyStr) {
+    const k = String(dateKeyStr || "");
+    if (!k) return "";
+    return k.startsWith(DAY_PREFIX) ? k : (DAY_PREFIX + k);
+  }
+
+  function loadDay(dateKeyStr) {
+    const k1 = keyWithPrefix(dateKeyStr);
+    const k2 = String(dateKeyStr || "");
+
+    // 1) prova la chiave “nuova” (prefix)
     try {
-      const dt = new Date(y, m, d);
-      return dt.getDay() === 0;
+      const raw = localStorage.getItem(k1);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+
+    // 2) fallback: chiave vecchia “nuda”
+    try {
+      const raw = localStorage.getItem(k2);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+
+    return null;
+  }
+
+  function saveDay(dateKeyStr, obj) {
+    const k1 = keyWithPrefix(dateKeyStr);
+    const k2 = String(dateKeyStr || "");
+    const raw = (() => { try { return JSON.stringify(obj); } catch { return ""; } })();
+    if (!raw) return;
+
+    // scrivo su prefix (standard)
+    try { localStorage.setItem(k1, raw); } catch {}
+
+    // compatibilità: scrivo anche su chiave nuda (se ti dava fastidio, dimmelo e lo togliamo)
+    try { localStorage.setItem(k2, raw); } catch {}
+  }
+
+  function removeDay(dateKeyStr) {
+    const k1 = keyWithPrefix(dateKeyStr);
+    const k2 = String(dateKeyStr || "");
+    try { localStorage.removeItem(k1); } catch {}
+    try { localStorage.removeItem(k2); } catch {}
+  }
+
+  /* =====================================================
+     DRAFT (MODIFICHE NON SALVATE)
+     (lo teniamo compatibile con il tuo codice attuale)
+  ===================================================== */
+  function draftKey(dateKeyStr) {
+    // mantengo lo schema che avevi già
+    return `_draft_${String(dateKeyStr || "")}`;
+  }
+
+  function loadDraft(dateKeyStr) {
+    try {
+      const raw = localStorage.getItem(draftKey(dateKeyStr));
+      if (!raw) return null;
+      return JSON.parse(raw);
     } catch {
-      return false;
-    }
-  }
-
-  function safeParse(raw) {
-    try { return JSON.parse(raw); } catch { return null; }
-  }
-
-  function emitDataChanged() {
-    try {
-      document.dispatchEvent(new Event("nettotrack:dataChanged"));
-    } catch (_) {}
-  }
-
-  // ---- Model helpers (compatibilità: tags o flags) ----
-  function hasMeaningfulDayData(model) {
-    if (!model || !Array.isArray(model.shifts) || model.shifts.length === 0) return false;
-
-    return model.shifts.some((s) => {
-      const hasTimes = !!(s?.from || s?.to);
-      const hasPause = Number(s?.pauseMin || 0) > 0 || !!s?.pausePaid;
-      const hasFascia = !!(s?.shiftType && s.shiftType !== "none");
-
-      const tags = s?.tags || {};
-      const flags = s?.flags || {}; // vecchia compatibilità
-      const hasExtra =
-        !!(tags.overtime || tags.holiday || tags.sunday) ||
-        !!(flags.straordinario || flags.festivo || flags.domenicale);
-
-      const hasAdv = (s?.advA && s.advA !== "-") || (s?.advB && s.advB !== "-");
-      const hasNote = !!(s?.note && String(s.note).trim().length);
-
-      return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
-    });
-  }
-
-  // ---- Storage: Day ----
-  function storageKeyDay(key) {
-    return DAY_PREFIX + key;
-  }
-
-  // Backward compat: se per sbaglio esiste un vecchio salvataggio senza prefisso, lo migro
-  function migrateLegacyIfNeeded(key) {
-    try {
-      const pref = storageKeyDay(key);
-      if (localStorage.getItem(pref)) return;
-
-      const legacy = localStorage.getItem(key);
-      if (!legacy) return;
-
-      localStorage.setItem(pref, legacy);
-      // opzionale: pulisco legacy
-      // localStorage.removeItem(key);
-    } catch (_) {}
-  }
-
-  function loadDay(key) {
-    migrateLegacyIfNeeded(key);
-    try {
-      const raw = localStorage.getItem(storageKeyDay(key));
-      if (!raw) return null;
-      const obj = safeParse(raw);
-      return (obj && typeof obj === "object") ? obj : null;
-    } catch (_) {
       return null;
     }
   }
 
-  function saveDay(key, data) {
+  function saveDraft(dateKeyStr, obj) {
     try {
-      localStorage.setItem(storageKeyDay(key), JSON.stringify(data ?? {}));
-    } catch (_) {}
-    emitDataChanged();
+      localStorage.setItem(draftKey(dateKeyStr), JSON.stringify(obj));
+    } catch {}
   }
 
-  function removeDay(key) {
+  function removeDraft(dateKeyStr) {
     try {
-      localStorage.removeItem(storageKeyDay(key));
-    } catch (_) {}
-    emitDataChanged();
+      localStorage.removeItem(draftKey(dateKeyStr));
+    } catch {}
   }
 
-  // ---- Storage: Draft ----
-  function storageKeyDraft(key) {
-    return DRAFT_PREFIX + key;
+  /* =====================================================
+     TIME / ORE
+     (aggiornato: riconosce sia "tags" (nuovo) che "flags" (vecchio))
+  ===================================================== */
+  function parseHHMM(str) {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(String(str || "").trim());
+    if (!m) return null;
+    const hh = Number(m[1]);
+    const mm = Number(m[2]);
+    if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
+    return hh * 60 + mm;
   }
 
-  function loadDraft(key) {
-    try {
-      const raw = localStorage.getItem(storageKeyDraft(key));
-      if (!raw) return null;
-      const obj = safeParse(raw);
-      return (obj && typeof obj === "object") ? obj : null;
-    } catch (_) {
-      return null;
+  function minutesToHours(min) {
+    return Math.round((min / 60) * 10) / 10; // 1 decimale
+  }
+
+  function shiftMinutes(shift) {
+    if (!shift) return 0;
+    const a = parseHHMM(shift.from);
+    const b = parseHHMM(shift.to);
+    if (a == null || b == null) return 0;
+
+    let diff = b - a;
+    if (diff < 0) diff += 24 * 60; // overnight
+
+    const pause = Number(shift.pauseMin || 0) || 0;
+    const pausePaid = !!shift.pausePaid;
+
+    return Math.max(0, diff - (pausePaid ? 0 : pause));
+  }
+
+  function isExtraShift(s) {
+    // nuovo schema (Day Editor): tags
+    const t = s?.tags;
+    if (t && (t.overtime || t.holiday || t.sunday)) return true;
+
+    // vecchio schema: flags
+    const f = s?.flags;
+    if (f && (f.straordinario || f.festivo || f.domenicale)) return true;
+
+    return false;
+  }
+
+  function dayTotals(dayObj) {
+    const shifts = Array.isArray(dayObj?.shifts) ? dayObj.shifts : [];
+    let baseMin = 0;
+    let extraMin = 0;
+
+    for (const s of shifts) {
+      const min = shiftMinutes(s);
+      if (isExtraShift(s)) extraMin += min;
+      else baseMin += min;
     }
+
+    return {
+      baseHours: minutesToHours(baseMin),
+      extraHours: minutesToHours(extraMin),
+      hasBase: baseMin > 0,
+      hasExtra: extraMin > 0
+    };
   }
 
-  function saveDraft(key, data) {
-    try {
-      localStorage.setItem(storageKeyDraft(key), JSON.stringify(data ?? {}));
-    } catch (_) {}
-    emitDataChanged();
+  /* =====================================================
+     SETTIMANA
+  ===================================================== */
+  function startOfWeek(date) {
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const day = d.getDay(); // 0=Sun … 6=Sat
+    const diff = (day === 0 ? -6 : 1 - day); // Monday-based
+    d.setDate(d.getDate() + diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
   }
 
-  function removeDraft(key) {
-    try {
-      localStorage.removeItem(storageKeyDraft(key));
-    } catch (_) {}
-    emitDataChanged();
-  }
-
-  // ---- API per day-editor (compatibilità con il tuo codice) ----
-  const NettoTrackCalendarCore = {
-    getDayData: (key) => loadDay(key),
-    setDayData: (key, data) => saveDay(key, data),
-    removeDayData: (key) => removeDay(key),
-
-    getDraftData: (key) => loadDraft(key),
-    setDraftData: (key, data) => saveDraft(key, data),
-    removeDraftData: (key) => removeDraft(key),
-
-    hasMeaningfulDayData
-  };
-
-  // ---- API per calendar-insert (il tuo file fa destructuring da window.NTCal) ----
-  const NTCal = {
+  /* =====================================================
+     EXPORT GLOBALE
+  ===================================================== */
+  window.NTCal = {
+    pad2,
     dateKey,
     todayParts,
     isSunday,
@@ -171,9 +193,7 @@
     saveDraft,
     removeDraft,
 
-    hasMeaningfulDayData
+    dayTotals,
+    startOfWeek
   };
-
-  window.NettoTrackCalendarCore = NettoTrackCalendarCore;
-  window.NTCal = NTCal;
 })();
