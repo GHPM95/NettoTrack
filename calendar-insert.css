@@ -277,9 +277,20 @@
   /* per swipe down */
   touch-action: none;
 }
-.cinsPickerClose{
-  flex-shrink: 0;
-  }
+.cinsSwipeHint{
+  margin-top: auto;        /* ← lo spinge in basso */
+  padding-top: 8px;
+  text-align: center;
+
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.6;
+
+  letter-spacing: .2px;
+  .cinsSwipeHint{
+  text-transform: none; /* NON uppercase */
+}
+}
 
 .cinsPickerTop{
   display:flex;
