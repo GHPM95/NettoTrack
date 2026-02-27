@@ -288,10 +288,6 @@
   font-weight: 700;
   opacity: 0.6;
   letter-spacing: .2px;
-  
-.cinsSwipeHint{
-  text-transform: none; /* NON uppercase */
-}
 }
 
 .cinsPickerTop{
