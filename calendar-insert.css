@@ -155,33 +155,30 @@
 }
 
 /* dots */
-/* dots */
 .cinsDots{
   position:absolute;
-  bottom: 4px;            /* ✅ più in basso (prima era 7px) */
+  bottom: 4px;
   left: 50%;
   transform: translateX(-50%);
+  display:flex;
+  gap: 0;                /* niente gap, li gestiamo noi */
   z-index: 3;
 }
 
-/* dot base */
 .cinsDot{
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  opacity: 1;             /* ✅ niente mix strani */
-  background: transparent;
+  opacity: 1;
 }
 
-/* 🔵 blu: giorno compilato normale */
-.cinsDot.premium{
-  background: var(--accent2);
+/* sovrapposizione leggera */
+.cinsDot + .cinsDot{
+  margin-left: -3px;     /* ✅ overlap */
 }
 
-/* 🟣 fucsia/viola: extra */
-.cinsDot.premiumExtra{
-  background: var(--accent1);
-}
+.cinsDot.premium{ background: var(--accent2); }
+.cinsDot.premiumExtra{ background: var(--accent1); }
 
 /* =========================
    Giorno con dati salvati — dot premium
