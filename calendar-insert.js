@@ -290,8 +290,10 @@
   dots.appendChild(base);
 
   // extra: straordinario / festivo / domenicale
-  const hasExtra =
-    !!model?.shifts?.some((s) => !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday)));
+  const hasExtra = Array.isArray(model?.shifts) && model.shifts.some((s) => {
+  const t = s?.tags || {};
+  return t.overtime === true || t.holiday === true || t.sunday === true;
+});
 
   if (hasExtra) {
     const extra = document.createElement("div");
