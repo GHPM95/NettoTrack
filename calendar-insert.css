@@ -79,18 +79,24 @@
 
 .cinsW{
   width: 100%;
-  aspect-ratio: 1 / 1;
+  /* niente cerchio */
+  aspect-ratio: auto;
   display:flex;
   align-items:center;
   justify-content:center;
-  border-radius: 999px; /* tondo */
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.05);
+
+  border-radius: 0;
+  border: none;
+  background: transparent;
+
   font-size: 12px;
   font-weight: 900;
   color: var(--muted);
   user-select:none;
   pointer-events:none;
+
+  /* un filo di “aria” come il calendario */
+  padding: 2px 0;
 }
 
 /* grid */
