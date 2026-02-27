@@ -288,7 +288,7 @@
 .cinsPickerTitle{
   font-weight: 1000;
   letter-spacing:.2px;
-  color: rgba(255,255,255,0.9); /* più pulito */
+  color: rgba(255,255,255,0.8); /* più pulito */
 }
 
 .cinsYearRow{
