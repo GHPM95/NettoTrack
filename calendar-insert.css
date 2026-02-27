@@ -251,6 +251,12 @@
   width: 100%;
   height: 100%;
   max-width: 520px;
+}
+
+.cinsPickerCard .ntBtn{
+  background: rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.9);
+}
 
   border-radius: var(--rCard);
   border: 1px solid rgba(255,255,255,.14);
@@ -282,6 +288,7 @@
 .cinsPickerTitle{
   font-weight: 1000;
   letter-spacing:.2px;
+  color: rgba(255,255,255,0.9); /* più pulito */
 }
 
 .cinsYearRow{
@@ -295,6 +302,7 @@
 .cinsYearVal{
   font-weight: 1000;
   letter-spacing:.2px;
+  color: rgba(255,255,255,0.95);
 }
 
 .cinsMonthGrid{
@@ -310,15 +318,18 @@
   height: 44px;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.10);
-  color: var(--text);
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.12);
+}
   font-weight: 1000;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
 .cinsPickBtn:active{
   transform: scale(.97);
   filter: brightness(1.08);
-  background: rgba(255,255,255,.14);
+  background: linear-gradient(135deg, var(--accent3), var(--accent2));
+  color: #fff;
+}
 }
 
 /* hint */
