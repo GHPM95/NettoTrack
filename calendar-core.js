@@ -1,259 +1,179 @@
+/* calendar-core.js
+   Core condiviso NettoTrack (dateKey, storage turni, draft, helpers)
+   - Allinea le chiavi storage con day-editor.js:
+     nettotrack:turni:YYYY-MM-DD
+   - Fornisce NTCal.loadDay/loadDraft usati da calendar-insert.js
+   - Fornisce NettoTrackCalendarCore.getDayData/setDayData usati da day-editor.js
+   - Emana evento "nettotrack:dataChanged" quando cambia qualcosa
+*/
 (() => {
-  /* =====================================================
-     UTIL
-  ===================================================== */
-  const pad2 = (n) => String(n).padStart(2, "0");
+  const DAY_PREFIX   = "nettotrack:turni:";        // ✅ CHIAVE SALVATAGGIO DEFINITIVA
+  const DRAFT_PREFIX = "nettotrack:turni:draft:";  // bozza (se ti serve)
 
-  function dateKey(y, mZeroBased, d) {
-    return `${y}-${pad2(mZeroBased + 1)}-${pad2(d)}`; // YYYY-MM-DD
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+
+  function pad2(n) {
+    n = String(n ?? "");
+    return n.length === 1 ? "0" + n : n;
+  }
+
+  // y=2026, m=0..11, d=1..31 -> "YYYY-MM-DD"
+  function dateKey(y, m, d) {
+    return `${String(y)}-${pad2(m + 1)}-${pad2(d)}`;
   }
 
   function todayParts() {
-    const t = new Date();
-    return { y: t.getFullYear(), m: t.getMonth(), d: t.getDate() };
+    const dt = new Date();
+    return { y: dt.getFullYear(), m: dt.getMonth(), d: dt.getDate() };
   }
 
-  function isSunday(y, mZeroBased, d) {
-    return new Date(y, mZeroBased, d).getDay() === 0;
-  }
-
-  /* =====================================================
-     STORAGE KEYS (compat)
-     - nuovo:  nettotrack:turni:YYYY-MM-DD
-     - vecchio: YYYY-MM-DD
-  ===================================================== */
-  const PREFIX_TURNI = "nettotrack:turni:";
-
-  function keyPrefixed(dateKeyStr) {
-    return PREFIX_TURNI + dateKeyStr;
-  }
-
-  function keyLegacy(dateKeyStr) {
-    return dateKeyStr; // compat con vecchi moduli
-  }
-
-  /* =====================================================
-     NORMALIZE (compat flags <-> tags)
-     - day-editor usa tags: overtime/holiday/sunday
-     - calendar-insert vecchio controlla flags: straordinario/festivo/domenicale
-  ===================================================== */
-  function normalizeShiftForCompat(shift) {
-    if (!shift || typeof shift !== "object") return shift;
-
-    const out = { ...shift };
-
-    // ensure tags
-    const t = (out.tags && typeof out.tags === "object") ? { ...out.tags } : {};
-    out.tags = t;
-
-    // ensure flags (legacy)
-    const f = (out.flags && typeof out.flags === "object") ? { ...out.flags } : {};
-
-    // map tags -> flags (se tags esiste)
-    // (day-editor) overtime/holiday/sunday
-    if (typeof t.overtime === "boolean") f.straordinario = t.overtime;
-    if (typeof t.holiday === "boolean") f.festivo = t.holiday;
-    if (typeof t.sunday === "boolean") f.domenicale = t.sunday;
-
-    // map flags -> tags (se flags esiste ma tags no/undefined)
-    if (typeof f.straordinario === "boolean" && typeof t.overtime !== "boolean") t.overtime = f.straordinario;
-    if (typeof f.festivo === "boolean" && typeof t.holiday !== "boolean") t.holiday = f.festivo;
-    if (typeof f.domenicale === "boolean" && typeof t.sunday !== "boolean") t.sunday = f.domenicale;
-
-    out.flags = f;
-    out.tags = t;
-
-    return out;
-  }
-
-  function normalizeDayForCompat(dayObj) {
-    if (!dayObj || typeof dayObj !== "object") return dayObj;
-
-    const out = { ...dayObj };
-    if (Array.isArray(out.shifts)) {
-      out.shifts = out.shifts.map(normalizeShiftForCompat);
+  function isSunday(y, m, d) {
+    try {
+      const dt = new Date(y, m, d);
+      return dt.getDay() === 0;
+    } catch {
+      return false;
     }
-    return out;
   }
 
-  /* =====================================================
-     STORAGE — PER GIORNO
-     loadDay: prova prefisso -> legacy
-     saveDay: salva prefisso + legacy (così i dot funzionano sempre)
-  ===================================================== */
-  function loadDay(dateKeyStr) {
-    try {
-      const raw1 = localStorage.getItem(keyPrefixed(dateKeyStr));
-      if (raw1) return normalizeDayForCompat(JSON.parse(raw1));
-    } catch (_) {}
-
-    try {
-      const raw2 = localStorage.getItem(keyLegacy(dateKeyStr));
-      if (raw2) return normalizeDayForCompat(JSON.parse(raw2));
-    } catch (_) {}
-
-    return null;
+  function safeParse(raw) {
+    try { return JSON.parse(raw); } catch { return null; }
   }
 
-  function saveDay(dateKeyStr, obj) {
-    const payload = normalizeDayForCompat(obj);
-
-    // salva nuovo (canonico)
+  function emitDataChanged() {
     try {
-      localStorage.setItem(keyPrefixed(dateKeyStr), JSON.stringify(payload));
-    } catch (_) {}
-
-    // salva anche legacy per compat (calendar-insert / vecchie parti)
-    try {
-      localStorage.setItem(keyLegacy(dateKeyStr), JSON.stringify(payload));
+      document.dispatchEvent(new Event("nettotrack:dataChanged"));
     } catch (_) {}
   }
 
-  function removeDay(dateKeyStr) {
-    try { localStorage.removeItem(keyPrefixed(dateKeyStr)); } catch (_) {}
-    try { localStorage.removeItem(keyLegacy(dateKeyStr)); } catch (_) {}
+  // ---- Model helpers (compatibilità: tags o flags) ----
+  function hasMeaningfulDayData(model) {
+    if (!model || !Array.isArray(model.shifts) || model.shifts.length === 0) return false;
+
+    return model.shifts.some((s) => {
+      const hasTimes = !!(s?.from || s?.to);
+      const hasPause = Number(s?.pauseMin || 0) > 0 || !!s?.pausePaid;
+      const hasFascia = !!(s?.shiftType && s.shiftType !== "none");
+
+      const tags = s?.tags || {};
+      const flags = s?.flags || {}; // vecchia compatibilità
+      const hasExtra =
+        !!(tags.overtime || tags.holiday || tags.sunday) ||
+        !!(flags.straordinario || flags.festivo || flags.domenicale);
+
+      const hasAdv = (s?.advA && s.advA !== "-") || (s?.advB && s.advB !== "-");
+      const hasNote = !!(s?.note && String(s.note).trim().length);
+
+      return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
+    });
   }
 
-  /* =====================================================
-     DRAFT (MODIFICHE NON SALVATE)
-     - compat su entrambe le chiavi
-  ===================================================== */
-  function draftKeyPrefixed(dateKeyStr) {
-    return `_draft_${keyPrefixed(dateKeyStr)}`;
-  }
-  function draftKeyLegacy(dateKeyStr) {
-    return `_draft_${keyLegacy(dateKeyStr)}`;
+  // ---- Storage: Day ----
+  function storageKeyDay(key) {
+    return DAY_PREFIX + key;
   }
 
-  function loadDraft(dateKeyStr) {
+  // Backward compat: se per sbaglio esiste un vecchio salvataggio senza prefisso, lo migro
+  function migrateLegacyIfNeeded(key) {
     try {
-      const raw1 = localStorage.getItem(draftKeyPrefixed(dateKeyStr));
-      if (raw1) return normalizeDayForCompat(JSON.parse(raw1));
-    } catch (_) {}
+      const pref = storageKeyDay(key);
+      if (localStorage.getItem(pref)) return;
 
+      const legacy = localStorage.getItem(key);
+      if (!legacy) return;
+
+      localStorage.setItem(pref, legacy);
+      // opzionale: pulisco legacy
+      // localStorage.removeItem(key);
+    } catch (_) {}
+  }
+
+  function loadDay(key) {
+    migrateLegacyIfNeeded(key);
     try {
-      const raw2 = localStorage.getItem(draftKeyLegacy(dateKeyStr));
-      if (raw2) return normalizeDayForCompat(JSON.parse(raw2));
-    } catch (_) {}
-
-    return null;
-  }
-
-  function saveDraft(dateKeyStr, obj) {
-    const payload = normalizeDayForCompat(obj);
-    try { localStorage.setItem(draftKeyPrefixed(dateKeyStr), JSON.stringify(payload)); } catch (_) {}
-    try { localStorage.setItem(draftKeyLegacy(dateKeyStr), JSON.stringify(payload)); } catch (_) {}
-  }
-
-  function removeDraft(dateKeyStr) {
-    try { localStorage.removeItem(draftKeyPrefixed(dateKeyStr)); } catch (_) {}
-    try { localStorage.removeItem(draftKeyLegacy(dateKeyStr)); } catch (_) {}
-  }
-
-  /* =====================================================
-     TIME / ORE
-  ===================================================== */
-  function parseHHMM(str) {
-    const m = /^(\d{1,2}):(\d{2})$/.exec(String(str || "").trim());
-    if (!m) return null;
-    const hh = Number(m[1]);
-    const mm = Number(m[2]);
-    if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
-    return hh * 60 + mm;
-  }
-
-  function minutesToHours(min) {
-    return Math.round((min / 60) * 10) / 10; // 1 decimale
-  }
-
-  function shiftMinutes(shift) {
-    if (!shift) return 0;
-    const a = parseHHMM(shift.from);
-    const b = parseHHMM(shift.to);
-    if (a == null || b == null) return 0;
-
-    let diff = b - a;
-    if (diff < 0) diff += 24 * 60; // overnight
-
-    const pause = Number(shift.pauseMin || 0) || 0;
-    const pausePaid = !!shift.pausePaid;
-
-    return Math.max(0, diff - (pausePaid ? 0 : pause));
-  }
-
-  function dayTotals(dayObj) {
-    const d = normalizeDayForCompat(dayObj);
-    const shifts = Array.isArray(d?.shifts) ? d.shifts : [];
-
-    let baseMin = 0;
-    let extraMin = 0;
-
-    for (const s of shifts) {
-      const min = shiftMinutes(s);
-
-      // extra se (tags) o (flags) — entrambi supportati
-      const isExtra =
-        !!(s?.tags?.overtime || s?.tags?.holiday || s?.tags?.sunday) ||
-        !!(s?.flags?.straordinario || s?.flags?.festivo || s?.flags?.domenicale);
-
-      if (isExtra) extraMin += min;
-      else baseMin += min;
+      const raw = localStorage.getItem(storageKeyDay(key));
+      if (!raw) return null;
+      const obj = safeParse(raw);
+      return (obj && typeof obj === "object") ? obj : null;
+    } catch (_) {
+      return null;
     }
-
-    return {
-      baseHours: minutesToHours(baseMin),
-      extraHours: minutesToHours(extraMin),
-      hasBase: baseMin > 0,
-      hasExtra: extraMin > 0
-    };
   }
 
-  /* =====================================================
-     SETTIMANA
-  ===================================================== */
-  function startOfWeek(date) {
-    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const day = d.getDay(); // 0=Sun … 6=Sat
-    const diff = (day === 0 ? -6 : 1 - day); // Monday-based
-    d.setDate(d.getDate() + diff);
-    d.setHours(0, 0, 0, 0);
-    return d;
+  function saveDay(key, data) {
+    try {
+      localStorage.setItem(storageKeyDay(key), JSON.stringify(data ?? {}));
+    } catch (_) {}
+    emitDataChanged();
   }
 
-  /* =====================================================
-     API GLOBALE
-     - NTCal: usato da calendar-insert.js
-     - NettoTrackCalendarCore: usato da day-editor.js (getDayData/setDayData)
-  ===================================================== */
-  window.NTCal = {
-    pad2,
+  function removeDay(key) {
+    try {
+      localStorage.removeItem(storageKeyDay(key));
+    } catch (_) {}
+    emitDataChanged();
+  }
+
+  // ---- Storage: Draft ----
+  function storageKeyDraft(key) {
+    return DRAFT_PREFIX + key;
+  }
+
+  function loadDraft(key) {
+    try {
+      const raw = localStorage.getItem(storageKeyDraft(key));
+      if (!raw) return null;
+      const obj = safeParse(raw);
+      return (obj && typeof obj === "object") ? obj : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function saveDraft(key, data) {
+    try {
+      localStorage.setItem(storageKeyDraft(key), JSON.stringify(data ?? {}));
+    } catch (_) {}
+    emitDataChanged();
+  }
+
+  function removeDraft(key) {
+    try {
+      localStorage.removeItem(storageKeyDraft(key));
+    } catch (_) {}
+    emitDataChanged();
+  }
+
+  // ---- API per day-editor (compatibilità con il tuo codice) ----
+  const NettoTrackCalendarCore = {
+    getDayData: (key) => loadDay(key),
+    setDayData: (key, data) => saveDay(key, data),
+    removeDayData: (key) => removeDay(key),
+
+    getDraftData: (key) => loadDraft(key),
+    setDraftData: (key, data) => saveDraft(key, data),
+    removeDraftData: (key) => removeDraft(key),
+
+    hasMeaningfulDayData
+  };
+
+  // ---- API per calendar-insert (il tuo file fa destructuring da window.NTCal) ----
+  const NTCal = {
     dateKey,
     todayParts,
     isSunday,
 
-    // storage
     loadDay,
     saveDay,
     removeDay,
 
-    // draft
     loadDraft,
     saveDraft,
     removeDraft,
 
-    // totals
-    dayTotals,
-    startOfWeek
+    hasMeaningfulDayData
   };
 
-  // alias “core” che il day-editor prova a usare
-  window.NettoTrackCalendarCore = {
-    getDayData: (dk) => loadDay(dk),
-    setDayData: (dk, data) => saveDay(dk, data),
-    removeDayData: (dk) => removeDay(dk),
-
-    getDraft: (dk) => loadDraft(dk),
-    setDraft: (dk, data) => saveDraft(dk, data),
-    removeDraft: (dk) => removeDraft(dk)
-  };
+  window.NettoTrackCalendarCore = NettoTrackCalendarCore;
+  window.NTCal = NTCal;
 })();
