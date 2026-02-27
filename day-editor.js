@@ -29,6 +29,9 @@
   // debounce storage
   let saveTimer = null;
 
+// autosave on/off (si spegne quando chiudi con X)
+let autoSaveEnabled = true;
+
   /* -------------------------
      Utils
   ------------------------- */
@@ -243,11 +246,14 @@
      Save
   ------------------------- */
   function scheduleBackgroundSave() {
-    if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      saveToStorage(false);
-    }, 220);
-  }
+  if (!autoSaveEnabled) return;         // ✅ dopo X non schedula nulla
+  if (saveTimer) clearTimeout(saveTimer);
+
+  saveTimer = setTimeout(() => {
+    if (!autoSaveEnabled) return;       // ✅ safety
+    saveToStorage(false);
+  }, 220);
+}
 
   function saveToStorage(isUserSave) {
     if (!currentKey || !state) return;
@@ -265,6 +271,8 @@
       localStorage.setItem(STORAGE_PREFIX + currentKey, JSON.stringify(payload));
     } catch (_) {}
 
+document.dispatchEvent(new Event("nettotrack:dataChanged"));
+
     if (isUserSave) {
       lastSavedSnapshot = stableStringify(state.shifts);
       dirty = false;
@@ -276,11 +284,12 @@
   }
   
   function stopPendingAutoSave() {
+  autoSaveEnabled = false;              // ✅ spegne proprio l’autosave
   if (saveTimer) {
     clearTimeout(saveTimer);
     saveTimer = null;
-   }
- }
+  }
+}
 
     document.addEventListener("nettotrack:closeDayEditor", () => {
    stopPendingAutoSave();
@@ -632,7 +641,9 @@
      Open
   ------------------------- */
   function open(dateKey) {
-    currentKey = dateKey || currentKey || new Date().toISOString().slice(0, 10);
+  autoSaveEnabled = true; // ✅ quando apro, autosave torna attivo
+
+  currentKey = dateKey || currentKey || new Date().toISOString().slice(0, 10);
     state = loadState(currentKey);
     enforceSundayRule();
 
