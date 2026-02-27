@@ -283,3 +283,20 @@
   opacity: .6;
   padding-bottom: 10px;
 }
+
+/* =========================
+   FIX: doppio bordo picker
+   ========================= */
+
+/* quando il picker è aperto, la card calendario sotto NON deve avere bordo */
+.cinsRoot.isPickerOn {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* sicurezza extra: se il bordo è su header/body */
+.cinsRoot.isPickerOn .cinsHeader,
+.cinsRoot.isPickerOn .cinsBody {
+  border: none !important;
+  box-shadow: none !important;
+}
