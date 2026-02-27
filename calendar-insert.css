@@ -38,7 +38,11 @@
   line-height: 1;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
-.ntBtn:active{ transform: scale(.96); filter: brightness(1.08); background: rgba(255,255,255,.14); }
+.ntBtn:active{
+  transform: scale(.96);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.14);
+}
 
 .cinsTitleBtn{
   border:none;
@@ -79,24 +83,18 @@
 
 .cinsW{
   width: 100%;
-  /* niente cerchio */
-  aspect-ratio: auto;
+  aspect-ratio: 1 / 1;
   display:flex;
   align-items:center;
   justify-content:center;
-
-  border-radius: 0;
-  border: none;
-  background: transparent;
-
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
   font-size: 12px;
   font-weight: 900;
   color: var(--muted);
   user-select:none;
   pointer-events:none;
-
-  /* un filo di “aria” come il calendario */
-  padding: 2px 0;
 }
 
 /* grid */
@@ -110,11 +108,11 @@
   padding: 6px;
 }
 
-/* giorni: TONDI */
+/* giorni */
 .cinsDay{
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 999px; /* tondo */
+  border-radius: 999px;
   border: 1px solid rgba(255,255,255,.14);
   background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
   display:flex;
@@ -125,7 +123,11 @@
   overflow:hidden;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
-.cinsDay:active{ transform: scale(.98); filter: brightness(1.07); background: rgba(255,255,255,.10); }
+.cinsDay:active{
+  transform: scale(.98);
+  filter: brightness(1.07);
+  background: rgba(255,255,255,.10);
+}
 
 .cinsDay.isOff{
   opacity: .28;
@@ -140,92 +142,42 @@
   z-index: 2;
 }
 
-/* TODAY — ring coerente con lo sfondo */
-.cinsDay.isToday::after{
-  content:"";
-  position:absolute;
-  inset: 0px;
-  border-radius: inherit;
-
+/* TODAY */
+.cinsDay.isToday{
+  border-color: rgba(255,255,255,.22);
   background:
-    linear-gradient(
-      135deg,
-      rgba(173,130,255,.9),   /* viola */
-      rgba(88,210,255,.9)     /* turchese */
-    );
-
-  /* effetto vetro */
-  box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,.35),
-    0 0 18px rgba(140,180,255,.38);
-
-  z-index: 1;
+    linear-gradient(180deg, rgba(160,180,255,.45), rgba(120,160,255,.25));
 }
 
 /* dots */
 .cinsDots{
   position:absolute;
-  bottom: 4px;                 /* più in basso del numero */
+  bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;               /* ✅ ORIZZONTALE */
-  flex-direction: row;         /* sicurezza */
-  align-items: center;
-  justify-content: center;
+  display:flex;
+  gap: 4px;
   z-index: 3;
-  pointer-events: none;
 }
 
 .cinsDot{
   width: 7px;
   height: 7px;
-  border-radius: 999px;
-  opacity: 1;
+  border-radius: 50%;
 }
 
-/* ✅ sovrapposizione ORIZZONTALE */
-.cinsDot + .cinsDot{
-  margin-left: -3px;           /* overlap laterale */
-}
-
-/* colori */
-.cinsDot.premium{
-  background: var(--accent2);  /* blu */
-}
-
-.cinsDot.premiumExtra{
-  background: var(--accent1);  /* viola/fucsia */
-}
-
-/* =========================
-   Giorno con dati salvati — dot premium
-   ========================= */
-
-.cinsDay.hasData::before{
-  content:"";
-  position:absolute;
-  right: 10px;
-  bottom: 10px;
-
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-
+.cinsDot.base{
   background: var(--accent2);
-  box-shadow:
-    0 0 0 3px rgba(255,255,255,.10),
-    0 2px 6px rgba(0,0,0,.25);
+}
 
-  opacity: .95;
-  z-index: 3;
-  pointer-events:none;
+.cinsDot.extra{
+  background: linear-gradient(135deg, #c94cff, #7b5cff);
 }
 
 /* =========================
-   PICKER (mese/anno) - VISUAL COME TABS
+   PICKER (mese / anno)
    ========================= */
 
-/* overlay: niente "grigio duro", solo un velo soft + blur */
 .cinsPickerLayer{
   position:absolute;
   inset:0;
@@ -238,28 +190,21 @@
   justify-content:center;
   padding: 14px;
 }
-.cinsPickerLayer.isOn{ display:flex; }
 
-/* quando picker è on: nascondo calendario sotto (niente pasticcio) */
+.cinsPickerLayer.isOn{
+  display:flex;
+}
+
 .cinsRoot.isPickerOn .cinsHeader,
 .cinsRoot.isPickerOn .cinsBody{
   visibility: hidden;
 }
 
-/* card del picker: stessa “glass card” delle tabs */
+/* CARD PICKER */
 .cinsPickerCard{
-  display: flex;
-  flex-direction: column;
   width: 100%;
   height: 100%;
   max-width: 520px;
-  padding-bottom: 16px; /* così la hint non “tocca” il bordo */
-}
-
-.cinsPickerCard .ntBtn{
-  background: rgba(255,255,255,0.10);
-  color: rgba(255,255,255,0.9);
-}
 
   border-radius: var(--rCard);
   border: 1px solid rgba(255,255,255,.14);
@@ -273,44 +218,24 @@
   box-shadow: var(--shadow);
 
   padding: 16px;
-  display:flex;
-  flex-direction: column;
+
+  display:flex;                 /* 🔴 FONDAMENTALE */
+  flex-direction: column;       /* 🔴 FONDAMENTALE */
+
   gap: 12px;
-
-  /* per swipe down */
   touch-action: none;
-}
-/* hint (in basso, piccolo, centrato) */
-.cinsSwipeHint{
-  margin-top: auto;                 /* spinge in basso */
-  width: 100% !important;           /* forza la larghezza (iOS fix) */
-  display: block !important;
-
-  text-align: center !important;    /* forza centratura testo */
-  font-size: 12px !important;       /* piccolo */
-  line-height: 1.15 !important;
-  font-weight: 800 !important;
-  letter-spacing: .2px !important;
-
-  opacity: .60 !important;
-  padding: 10px 12px 12px;          /* aria e distanza dal bordo */
 }
 
 .cinsPickerTop{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .cinsPickerTitle{
-  flex: 1px;
   font-weight: 1000;
-  font-size: 17px;
-  white-space: nowrap;
-  overflow: hidden
-  text-overflow: ellipsis;
-  color: rgba(255,255,255,0.8); /* più pulito */
+  letter-spacing:.2px;
 }
 
 .cinsYearRow{
@@ -324,7 +249,6 @@
 .cinsYearVal{
   font-weight: 1000;
   letter-spacing:.2px;
-  color: rgba(255,255,255,0.95);
 }
 
 .cinsMonthGrid{
@@ -335,31 +259,29 @@
   align-content: start;
 }
 
-/* pulsanti mesi: stesso feel dei < > X */
 .cinsPickBtn{
   height: 44px;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
-  color: rgba(255,255,255,0.9);
-  background: rgba(255,255,255,0.12);
-}
+  background: rgba(255,255,255,.10);
+  color: var(--text);
   font-weight: 1000;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
 .cinsPickBtn:active{
   transform: scale(.97);
   filter: brightness(1.08);
-  background: linear-gradient(135deg, var(--accent3), var(--accent2));
-  color: #fff;
-}
+  background: rgba(255,255,255,.14);
 }
 
-/* hint */
+/* ==== SWIPE HINT – IN BASSO, PICCOLA, CENTRATA ==== */
 .cinsSwipeHint{
-  margin-top: 2px;
-  text-align:center;
+  margin-top: auto;       /* 🔥 spinge in basso */
+  width: 100%;
+  text-align: center;
   font-size: 12px;
-  color: var(--muted);
-  font-weight: 850;
-  opacity: 0.65;
+  font-weight: 700;
+  color: var(--text);
+  opacity: .6;
+  padding-bottom: 10px;
 }
