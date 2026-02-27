@@ -157,12 +157,15 @@
 /* dots */
 .cinsDots{
   position:absolute;
-  bottom: 4px;
+  bottom: 4px;                 /* più in basso del numero */
   left: 50%;
   transform: translateX(-50%);
-  display:flex;
-  gap: 0;                /* niente gap, li gestiamo noi */
+  display: flex;               /* ✅ ORIZZONTALE */
+  flex-direction: row;         /* sicurezza */
+  align-items: center;
+  justify-content: center;
   z-index: 3;
+  pointer-events: none;
 }
 
 .cinsDot{
@@ -172,13 +175,19 @@
   opacity: 1;
 }
 
-/* sovrapposizione leggera */
+/* ✅ sovrapposizione ORIZZONTALE */
 .cinsDot + .cinsDot{
-  margin-left: -3px;     /* ✅ overlap */
+  margin-left: -3px;           /* overlap laterale */
 }
 
-.cinsDot.premium{ background: var(--accent2); }
-.cinsDot.premiumExtra{ background: var(--accent1); }
+/* colori */
+.cinsDot.premium{
+  background: var(--accent2);  /* blu */
+}
+
+.cinsDot.premiumExtra{
+  background: var(--accent1);  /* viola/fucsia */
+}
 
 /* =========================
    Giorno con dati salvati — dot premium
