@@ -7,188 +7,211 @@
   height:100%;
   display:flex;
   flex-direction:column;
-  gap: 12px;
+  gap:12px;
   min-height:0;
-  position: relative;
+  position:relative;
 }
 
-/* Header */
+/* =========================
+   Header
+   ========================= */
+
 .cinsHeader{
   display:grid;
   grid-template-columns: auto 1fr auto;
   align-items:center;
-  gap: 10px;
+  gap:10px;
 }
 
 .cinsLeft{
   display:flex;
-  gap: 8px;
+  gap:8px;
   align-items:center;
 }
 
 .ntBtn{
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  border: none;
-  background: rgba(255,255,255,.10);
-  color: var(--text);
-  font-weight: 900;
-  font-size: 16px;
-  line-height: 1;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  width:38px;
+  height:38px;
+  border-radius:14px;
+  border:none;
+  background:rgba(255,255,255,.10);
+  color:var(--text);
+  font-weight:900;
+  font-size:16px;
+  line-height:1;
+  transition:transform .12s ease, filter .12s ease, background .12s ease;
 }
 .ntBtn:active{
-  transform: scale(.96);
-  filter: brightness(1.08);
-  background: rgba(255,255,255,.14);
+  transform:scale(.96);
+  filter:brightness(1.08);
+  background:rgba(255,255,255,.14);
 }
 
 .cinsTitleBtn{
   border:none;
   background:transparent;
-  color: var(--text);
-  font-weight: 1000;
-  letter-spacing: .2px;
-  font-size: clamp(14px, 3.6vw, 17px);
-  padding: 10px 10px;
-  border-radius: 14px;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  color:var(--text);
+  font-weight:1000;
+  letter-spacing:.2px;
+  font-size:clamp(14px,3.6vw,17px);
+  padding:10px;
+  border-radius:14px;
   text-align:center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
-.cinsTitleBtn:active{
-  transform: scale(.96);
-  filter: brightness(1.08);
-  background: rgba(255,255,255,.10);
-}
+
+/* =========================
+   Body
+   ========================= */
 
 .cinsBody{
   flex:1;
   min-height:0;
   display:flex;
   flex-direction:column;
-  gap: 10px;
+  gap:10px;
 }
 
 /* Weekdays */
 .cinsWeekdays{
   display:grid;
-  grid-template-columns: repeat(7, minmax(0,1fr));
-  gap: 8px;
-  padding: 0 6px;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+  padding:0 6px;
 }
 
 .cinsW{
-  width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio:1/1;
   display:flex;
   align-items:center;
   justify-content:center;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.05);
-  font-size: 12px;
-  font-weight: 900;
-  color: var(--muted);
-  user-select:none;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+  font-size:12px;
+  font-weight:900;
+  color:var(--muted);
   pointer-events:none;
 }
 
-/* grid */
+/* =========================
+   Grid giorni
+   ========================= */
+
 .cinsGrid{
   flex:1;
   min-height:0;
   display:grid;
-  grid-template-columns: repeat(7, minmax(0,1fr));
-  grid-template-rows: repeat(6, minmax(0, 1fr));
-  gap: 8px;
-  padding: 6px;
+  grid-template-columns:repeat(7,1fr);
+  grid-template-rows:repeat(6,1fr);
+  gap:8px;
+  padding:6px;
 }
 
-/* giorni */
 .cinsDay{
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+  aspect-ratio:1/1;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(
+    180deg,
+    rgba(255,255,255,.08),
+    rgba(255,255,255,.05)
+  );
   display:flex;
   align-items:center;
   justify-content:center;
-  position: relative;
-  min-width: 0;
+  position:relative;
   overflow:hidden;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
-}
-.cinsDay:active{
-  transform: scale(.98);
-  filter: brightness(1.07);
-  background: rgba(255,255,255,.10);
 }
 
 .cinsDay.isOff{
-  opacity: .28;
-  pointer-events: none;
+  opacity:.28;
+  pointer-events:none;
 }
 
 .cinsNum{
-  font-weight: 1000;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-  position: relative;
-  z-index: 2;
-}
-
-/* TODAY */
-.cinsDay.isToday{
-  border-color: rgba(255,255,255,.22);
-  background:
-    linear-gradient(180deg, rgba(160,180,255,.45), rgba(120,160,255,.25));
-}
-
-/* dots */
-.cinsDots{
-  position:absolute;
-  bottom: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  display:flex;
-  gap: 4px;
-  z-index: 3;
-}
-
-.cinsDot{
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-}
-
-.cinsDot.base{
-  background: var(--accent2);
-}
-
-.cinsDot.extra{
-  background: linear-gradient(135deg, #c94cff, #7b5cff);
+  font-weight:1000;
+  font-variant-numeric:tabular-nums;
+  color:var(--text);
+  position:relative;
+  z-index:2;
 }
 
 /* =========================
-   PICKER (mese / anno)
+   OGGI — FIX DEFINITIVO
+   ========================= */
+
+.cinsDay.isToday{
+  border-color:rgba(255,255,255,.28);
+}
+
+/* overlay PIENO — niente rimpicciolimenti */
+.cinsDay.isToday::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:linear-gradient(
+    135deg,
+    rgba(120,160,255,.45),
+    rgba(180,140,255,.45)
+  );
+  opacity:.85;
+  z-index:1;
+}
+
+.cinsDay.isToday .cinsNum{
+  color:#fff;
+}
+
+/* =========================
+   Dots
+   ========================= */
+
+.cinsDots{
+  position:absolute;
+  bottom:8px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:6px;
+  z-index:3;
+}
+
+.cinsDot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+}
+
+.cinsDot.base{
+  background:var(--accent2);
+}
+
+.cinsDot.extra{
+  background:linear-gradient(
+    135deg,
+    var(--accent1),
+    var(--accent3)
+  );
+}
+
+/* =========================
+   Picker mese/anno
    ========================= */
 
 .cinsPickerLayer{
   position:absolute;
   inset:0;
-  border-radius: var(--rCard);
-  background: rgba(0,0,0,.12);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border-radius:var(--rCard);
+  background:rgba(0,0,0,.12);
+  backdrop-filter:blur(10px);
   display:none;
   align-items:center;
   justify-content:center;
-  padding: 14px;
+  padding:14px;
 }
 
 .cinsPickerLayer.isOn{
@@ -197,106 +220,85 @@
 
 .cinsRoot.isPickerOn .cinsHeader,
 .cinsRoot.isPickerOn .cinsBody{
-  visibility: hidden;
+  visibility:hidden;
 }
 
-/* CARD PICKER */
+/* CARD — NIENTE DOPPIO BORDO */
 .cinsPickerCard{
-  width: 100%;
-  height: 100%;
-  max-width: 520px;
-
-  border-radius: var(--rCard);
-  border: none; /* ✅ RIMOSSO DOPPIO BORDO */
-
+  width:100%;
+  height:100%;
+  max-width:520px;
+  border-radius:var(--rCard);
+  border:1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.06));
-
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
-  box-shadow: var(--shadow);
-
-  padding: 16px;
+    radial-gradient(
+      140% 220% at 25% 0%,
+      rgba(255,255,255,.12),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.11),
+      rgba(255,255,255,.06)
+    );
+  backdrop-filter:blur(var(--blur));
+  box-shadow:var(--shadow);
+  padding:16px;
   display:flex;
-  flex-direction: column;
-  gap: 12px;
-  touch-action: none;
+  flex-direction:column;
+  gap:12px;
 }
 
+/* Header picker */
 .cinsPickerTop{
-  display:flex;
+  display:grid;
+  grid-template-columns:1fr auto;
   align-items:center;
-  justify-content:space-between;
-  gap: 10px;
 }
 
 .cinsPickerTitle{
-  font-weight: 1000;
-  letter-spacing:.2px;
+  font-weight:1000;
 }
 
+/* Anno */
 .cinsYearRow{
-  display:flex;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
   align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  margin: 6px 0 10px;
+  gap:10px;
+  margin:6px 0 10px;
 }
 
 .cinsYearVal{
-  font-weight: 1000;
-  letter-spacing:.2px;
+  text-align:center;
+  font-weight:1000;
 }
 
+/* Mesi */
 .cinsMonthGrid{
   display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  flex: 1;
-  align-content: start;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
 }
 
 .cinsPickBtn{
-  height: 44px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.10);
-  color: var(--text);
-  font-weight: 1000;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
-}
-.cinsPickBtn:active{
-  transform: scale(.97);
-  filter: brightness(1.08);
-  background: rgba(255,255,255,.14);
-}
-
-/* ==== SWIPE HINT – IN BASSO, PICCOLA, CENTRATA ==== */
-.cinsSwipeHint{
-  margin-top: auto;       /* 🔥 spinge in basso */
-  width: 100%;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text);
-  opacity: .6;
-  padding-bottom: 10px;
+  height:44px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.10);
+  color:var(--text);
+  font-weight:1000;
 }
 
 /* =========================
-   FIX: doppio bordo picker
+   Swipe hint — FINALE
    ========================= */
 
-/* quando il picker è aperto, la card calendario sotto NON deve avere bordo */
-.cinsRoot.isPickerOn {
-  border: none !important;
-  box-shadow: none !important;
-}
-
-/* sicurezza extra: se il bordo è su header/body */
-.cinsRoot.isPickerOn .cinsHeader,
-.cinsRoot.isPickerOn .cinsBody {
-  border: none !important;
-  box-shadow: none !important;
+.cinsSwipeHint{
+  margin-top:auto;
+  padding-top:10px;
+  text-align:center;
+  font-size:11px;
+  opacity:.55;
+  font-weight:800;
 }
