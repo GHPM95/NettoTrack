@@ -253,6 +253,7 @@
   width: 100%;
   height: 100%;
   max-width: 520px;
+  padding-bottom: 16px; /* così la hint non “tocca” il bordo */
 }
 
 .cinsPickerCard .ntBtn{
@@ -279,15 +280,20 @@
   /* per swipe down */
   touch-action: none;
 }
+/* hint (in basso, piccolo, centrato) */
 .cinsSwipeHint{
-  margin-top: auto;        /* ← lo spinge in basso */
-  padding-top: 12px;
-  text-align: center;
+  margin-top: auto;                 /* spinge in basso */
+  width: 100% !important;           /* forza la larghezza (iOS fix) */
+  display: block !important;
 
-  font-size: 12px;
-  font-weight: 700;
-  opacity: 0.6;
-  letter-spacing: .2px;
+  text-align: center !important;    /* forza centratura testo */
+  font-size: 12px !important;       /* piccolo */
+  line-height: 1.15 !important;
+  font-weight: 800 !important;
+  letter-spacing: .2px !important;
+
+  opacity: .60 !important;
+  padding: 10px 12px 12px;          /* aria e distanza dal bordo */
 }
 
 .cinsPickerTop{
