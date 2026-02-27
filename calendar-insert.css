@@ -141,10 +141,6 @@
 }
 
 /* TODAY — ring coerente con lo sfondo */
-.cinsDay.isToday{
-  border-color: transparent;
-}
-
 .cinsDay.isToday::after{
   content:"";
   position:absolute;
