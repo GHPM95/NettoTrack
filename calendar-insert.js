@@ -285,15 +285,36 @@
     !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday))
   );
 
+  // "normale" = almeno un turno significativo che NON è extra
+  const hasNormal = !!model?.shifts?.some((s) => {
+    const meaningful =
+      !!(s?.from || s?.to) ||
+      Number(s?.pauseMin || 0) > 0 ||
+      !!s?.pausePaid ||
+      !!(s?.shiftType && s.shiftType !== "none") ||
+      ((s?.advA && s.advA !== "-") || (s?.advB && s.advB !== "-")) ||
+      !!(s?.note && String(s.note).trim().length);
+
+    const extra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
+    return meaningful && !extra;
+  });
+
   const dots = document.createElement("div");
   dots.className = "cinsDots";
 
-  // ✅ 1 SOLO DOT:
-  // - blu se NON extra
-  // - viola/fucsia se extra
-  const d = document.createElement("div");
-  d.className = "cinsDot " + (hasExtra ? "premiumExtra" : "premium");
-  dots.appendChild(d);
+  // 🔵 blu se c'è almeno un turno normale
+  if (hasNormal) {
+    const base = document.createElement("div");
+    base.className = "cinsDot premium";
+    dots.appendChild(base);
+  }
+
+  // 🟣 viola se c'è almeno un turno extra
+  if (hasExtra) {
+    const extra = document.createElement("div");
+    extra.className = "cinsDot premiumExtra";
+    dots.appendChild(extra);
+  }
 
   btn.appendChild(dots);
 }
