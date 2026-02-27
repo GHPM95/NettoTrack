@@ -281,15 +281,15 @@
 }
 .cinsSwipeHint{
   margin-top: auto;        /* ← lo spinge in basso */
-  padding-top: 8px;
+  padding-top: 12px;
   text-align: center;
 
   font-size: 12px;
   font-weight: 700;
   opacity: 0.6;
-
   letter-spacing: .2px;
-  .cinsSwipeHint{
+  
+.cinsSwipeHint{
   text-transform: none; /* NON uppercase */
 }
 }
