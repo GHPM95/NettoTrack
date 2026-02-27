@@ -207,7 +207,7 @@
   max-width: 520px;
 
   border-radius: var(--rCard);
-  border: 1px solid rgba(255,255,255,.14);
+  border: none; /* ✅ RIMOSSO DOPPIO BORDO */
 
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
@@ -218,10 +218,8 @@
   box-shadow: var(--shadow);
 
   padding: 16px;
-
-  display:flex;                 /* 🔴 FONDAMENTALE */
-  flex-direction: column;       /* 🔴 FONDAMENTALE */
-
+  display:flex;
+  flex-direction: column;
   gap: 12px;
   touch-action: none;
 }
