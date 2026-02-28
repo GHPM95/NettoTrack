@@ -474,6 +474,17 @@
   color: rgba(255,255,255,.90);
 }
 
+/* Freccia: su/giù in base allo stato dell'accordion */
+.deAdvChevron{
+  display: inline-block;
+  transition: transform .16s ease, opacity .16s ease;
+  transform: translateY(1px); /* tuo allineamento */
+}
+
+/* Quando è aperto (aria-expanded=true) la freccia va SU */
+.deAdvToggle[aria-expanded="true"] .deAdvChevron{
+  transform: translateY(1px) rotate(180deg);
+}
 .deAdvPanel{ display:none; }
 .deAdvPanel.isOn{ display:block; }
 
