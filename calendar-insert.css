@@ -142,7 +142,9 @@
 /* =========================
    TODAY — PULSANTE SELEZIONATO (CHIARO, LEGGIBILE)
    ========================= */
-
+.cinsDay.isToday .cinsDot{
+  box-shadow: 0 0 0 1.5px rgba(255,255,255,.65);
+}
 .cinsDay.isToday{
   position: relative;
   border-radius: 999px;
