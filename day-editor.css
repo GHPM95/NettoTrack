@@ -293,11 +293,15 @@
 .deSelect{
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 46px;          /* spazio per le frecce */
+  padding-right: 56px; /* spazio per le 2 frecce */
+
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+
   background:
     radial-gradient(120% 160% at 30% 0%, rgba(255,255,255,.10), transparent 60%),
     linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
-  background-color: transparent;
+
   color: var(--text);
   font-weight: 900;
 }
@@ -310,28 +314,29 @@
 .deFieldSelect::after{
   content:"";
   position:absolute;
-  right: 20px;
+  right: 18px;
   top: 50%;
   width:0;
   height:0;
   pointer-events:none;
-  opacity: .75; /* più soft, come Impostazioni avanzate */
+  opacity:.75;
+  transform: translateY(-50%);
 }
 
-/* freccia SU */
+/* ▲ su */
 .deFieldSelect::before{
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-bottom: 5px solid rgba(255,255,255,.85);
-  transform: translateY(-5px);
+  margin-top: -5px; /* vicino */
 }
 
-/* freccia GIÙ */
+/* ▼ giù */
 .deFieldSelect::after{
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-top: 5px solid rgba(255,255,255,.85);
-  transform: translateY(5px);
+  margin-top: 5px;  /* vicino */
 }
 
 /* Textarea */
