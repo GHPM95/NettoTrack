@@ -293,7 +293,9 @@
 .deSelect{
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 56px; /* spazio per le 2 frecce */
+
+  height: 46px;
+  padding-right: 56px; /* spazio icona */
 
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
@@ -315,28 +317,27 @@
   content:"";
   position:absolute;
   right: 18px;
-  top: 50%;
+
   width:0;
   height:0;
   pointer-events:none;
-  opacity:.75;
-  transform: translateY(-50%);
+  opacity:.85;
 }
 
-/* ▲ su */
+/* ▲ */
 .deFieldSelect::before{
+  top: calc(50% - 4px);
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
-  border-bottom: 5px solid rgba(255,255,255,.85);
-  margin-top: -5px; /* vicino */
+  border-bottom: 5px solid rgba(255,255,255,.9);
 }
 
-/* ▼ giù */
+/* ▼ */
 .deFieldSelect::after{
+  top: calc(50% + 4px);
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
-  border-top: 5px solid rgba(255,255,255,.85);
-  margin-top: 5px;  /* vicino */
+  border-top: 5px solid rgba(255,255,255,.9);
 }
 
 /* Textarea */
