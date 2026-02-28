@@ -95,9 +95,12 @@
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-  padding: 10px;
-  min-height:0;
-  overflow:hidden;
+
+  padding: 0 14px;          /* tolgo padding verticale */
+  height: 64px;             /* altezza fissa pulita */
+  display: flex;
+  align-items: center;      /* CENTRATURA VERTICALE VERA */
+
   transition: filter .12s ease, transform .12s ease;
 }
 .cviewRow:active{ transform: scale(.995); filter: brightness(1.05); }
@@ -108,7 +111,7 @@
   align-items:center;
   justify-content:space-between;
   gap: 12px;
-  min-width: 0;            /* IMPORTANTISSIMO: abilita ellipsis nei figli */
+  width:100%;
 }
 
 .cviewLeftTxt{
