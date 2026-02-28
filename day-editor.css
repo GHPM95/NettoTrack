@@ -150,10 +150,6 @@
   );
 }
 
-/* =========================
-   FIX ORARI (Da / A) — MAI tagliati, MAI sovrapposti
-   ========================= */
-
 /* invece di grid per gli orari: flex “a prova di iOS” */
 .deGrid--time{
   display: flex;
@@ -346,6 +342,7 @@
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  position: relative;
 }
 .deChip:active{
   transform: scale(.97);
@@ -354,10 +351,50 @@
 }
 
 .deChip.isOn{
-  border-color: rgba(42,233,255,.45);
+  /* stesso linguaggio del “today” del calendario */
+  border: none;
+  overflow: hidden;
+
   background:
-    radial-gradient(140% 220% at 25% 0%, rgba(42,233,255,.22), transparent 55%),
-    linear-gradient(90deg, rgba(42,233,255,.28), rgba(124,92,255,.22), rgba(255,79,216,.18));
+    radial-gradient(
+      circle at 30% 25%,
+      rgba(255,255,255,.22),
+      transparent 55%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(130,170,255,.92),
+      rgba(170,130,255,.92)
+    );
+
+  /* bordo interno discreto (niente bordo fantasma) */
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
+
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.22);
+}
+
+/* patina glass sopra (coerente con la UI) */
+.deChip.isOn::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.18),
+    rgba(255,255,255,.06)
+  );
+  pointer-events:none;
+}
+
+/* testo sopra la patina */
+.deChip.isOn{
+  z-index: 0;
+}
+.deChip.isOn > *{
+  position: relative;
+  z-index: 1;
 }
 
 .deChipMini{
