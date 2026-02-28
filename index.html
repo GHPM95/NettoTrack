@@ -2,21 +2,22 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#3b2b6a" />
-
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>NettoTrack</title>
 
-  <!-- CSS (cache-bust) -->
-  <link rel="stylesheet" href="./ui.css?v=20260223-1" />
-  <link rel="stylesheet" href="./calendar-insert.css?v=20260223-1" />
-  <link rel="stylesheet" href="./calendar-view.css?v=20260223-1" />
-  <link rel="stylesheet" href="./day-editor.css?v=20260223-1" />
+  <!-- Core UI -->
+  <link rel="stylesheet" href="ui.css" />
+
+  <!-- Calendar modules -->
+  <link rel="stylesheet" href="calendar-insert.css" />
+  <link rel="stylesheet" href="calendar-view.css" />
+
+  <!-- Day editor -->
+  <link rel="stylesheet" href="day-editor.css" />
 </head>
 
 <body>
+  <!-- Background FX (stesso naming del tuo ui.css) -->
   <div class="bgFX" aria-hidden="true">
     <div class="blob b1"></div>
     <div class="blob b2"></div>
@@ -25,46 +26,62 @@
   </div>
 
   <div class="appRoot" id="appRoot">
+    <!-- TOP BAR -->
     <header class="topBar" id="topBar">
-      <button class="menuBtn" id="menuBtn" aria-label="Apri menu" type="button">≡</button>
+      <button id="menuBtn" class="menuBtn" type="button" aria-label="Menu">≡</button>
 
       <div class="brand" id="brand">
         <div class="brandName">NettoTrack</div>
         <div class="brandSub">Il tuo stipendio, nel tempo.</div>
       </div>
 
-      <div class="topRightSpacer"></div>
+      <!-- spacer per allineamento (ui.css lo usa) -->
+      <div class="topRightSpacer" aria-hidden="true"></div>
     </header>
 
-    <main class="stage" id="stage">
+    <!-- MENU OVERLAY + DRAWER + CLOSE BTN (ui.css/ui.js li aspettano così) -->
+    <div id="menuOverlay" class="menuOverlay" aria-hidden="true"></div>
+    <aside id="menuDrawer" class="menuDrawer" aria-hidden="true"></aside>
+    <button id="menuCloseBtn" class="menuCloseBtn" type="button" aria-label="Chiudi menu">×</button>
+
+    <!-- STAGE -->
+    <main class="stage">
       <section class="cardsViewport" id="cardsViewport" aria-label="Cards">
         <div class="cardsTrack" id="cardsTrack">
-          <article class="card slide isActive" data-slide-id="home" data-title="Home" aria-label="Home">
-            <div class="cardInner" id="homeMount"></div>
+
+          <!-- HOME slide (sempre presente) -->
+          <article class="card slide" data-slide-id="home" data-title="Home">
+            <div class="cardInner">
+              <div class="cardMount" id="homeMount">
+                <!-- Placeholder home (puoi lasciarlo vuoto) -->
+              </div>
+            </div>
           </article>
+
+          <!-- Le altre slide vengono aggiunte dinamicamente da ui.js:
+               calInsertMount, calViewMount, dayEditorMount -->
         </div>
       </section>
 
-      <div class="dotsWrap" id="dotsWrap" aria-label="Navigazione cards">
+      <!-- DOTS -->
+      <div class="dotsWrap" aria-label="Navigazione card">
         <div class="dotsPill" id="dotsPill"></div>
       </div>
     </main>
 
-    <footer class="bottomBar" id="bottomBar" aria-label="Barra inferiore">
+    <!-- BOTTOM BAR -->
+    <div class="bottomBar" aria-hidden="true">
       <div class="bottomBarGlass"></div>
-    </footer>
+    </div>
   </div>
 
-  <div class="menuOverlay" id="menuOverlay" aria-hidden="true"></div>
-  <aside class="menuDrawer" id="menuDrawer" aria-hidden="true"></aside>
-  <button class="menuCloseBtn" id="menuCloseBtn" aria-label="Chiudi menu" type="button">×</button>
+  <!-- Scripts (ordine importante) -->
+  <script src="calendar-core.js"></script>
+  <script src="ui.js"></script>
+  <script src="menu.js"></script>
 
-  <!-- JS (cache-bust) -->
-  <script src="./ui.js?v=20260223-1"></script>
-  <script src="./menu.js?v=20260223-1"></script>
-  <script src="./calendar-core.js?v=20260223-1"></script>
-  <script src="./calendar-insert.js?v=20260223-1"></script>
-  <script src="./day-editor.js?v=20260223-1"></script>
-  <script src="./calendar-view.js?v=20260223-1"></script>
+  <script src="calendar-insert.js"></script>
+  <script src="calendar-view.js"></script>
+  <script src="day-editor.js"></script>
 </body>
 </html>
