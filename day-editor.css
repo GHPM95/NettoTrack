@@ -318,10 +318,10 @@
     12px 12px;
 
   background-position:
-    left top,
-    left top,
-    right 14px center,
-    right 14px calc(50% + 8px);
+  left top,
+  left top,
+  right 14px calc(50% - 8px), /* ▲ su */
+  right 14px calc(50% + 8px); /* ▼ giù */
 
   color: var(--text);
   font-weight: 900;
