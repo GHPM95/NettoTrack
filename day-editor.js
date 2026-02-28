@@ -461,7 +461,7 @@ currentKey = null;
 </div>
 
 <div class="deGrid">
-  <label class="deField deFieldSelect">
+   <label class="deField">
     <span class="deFieldLbl">Pausa (min)</span>
     <input
       class="deInput"
@@ -474,7 +474,7 @@ currentKey = null;
     >
   </label>
 
-  <label class="deField">
+  <label class="deField deFieldSelect">
     <span class="deFieldLbl">Pausa pagata</span>
     <select class="deSelect" data-k="pausePaid">
       <option value="false" ${s.pausePaid ? "" : "selected"}>No</option>
