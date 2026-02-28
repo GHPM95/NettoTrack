@@ -143,79 +143,58 @@
    TODAY — bordo RIEMPITO + SFUMATO (Premium Glass)
    Mettere in fondo al file
    ========================= */
+
 .cinsDay.isToday{
   position: relative;
   border-radius: 999px;
-  background: linear-gradient(
-    135deg,
-    rgba(173,130,255,.32),
-    rgba(88,210,255,.32)
-  );
   overflow: hidden;
+
+  /* centro: vetro leggermente colorato (non “pallina”) */
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.16), transparent 55%),
+    linear-gradient(135deg, rgba(173,130,255,.18), rgba(88,210,255,.18));
 }
 
-/* RING SFUMATO REALE (ATTACCATO) */
+/* ring sfumato VERO ma soft (non plasticoso) */
 .cinsDay.isToday::before{
   content:"";
   position:absolute;
   inset:0;
   border-radius: inherit;
 
+  /* gradient più “smooth”, senza stacchi netti */
   background: conic-gradient(
-    from 210deg,
+    from 225deg,
     rgba(88,210,255,.95),
-    rgba(173,130,255,.90),
+    rgba(120,190,255,.90) 20%,
+    rgba(173,130,255,.92) 55%,
+    rgba(150,140,255,.85) 75%,
     rgba(88,210,255,.95)
   );
 
-  /* crea il ring */
-  -webkit-mask:
-    radial-gradient(circle,
-      transparent 63%,
-      #000 64%
-    );
-          mask:
-    radial-gradient(circle,
-      transparent 63%,
-      #000 64%);
+  /* ring sottile e attaccato */
+  -webkit-mask: radial-gradient(circle, transparent 70%, #000 71%);
+          mask: radial-gradient(circle, transparent 70%, #000 71%);
 
-  z-index:1;
+  /* glow elegante, non invasivo */
+  filter: saturate(.95);
+  opacity: .85;
+  z-index: 1;
 }
 
-/* centro glass */
+/* glass sopra al centro (ammorbidisce e integra col resto) */
 .cinsDay.isToday::after{
   content:"";
   position:absolute;
   inset:4px;
   border-radius: inherit;
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,.18),
-    rgba(255,255,255,.06)
-  );
-  z-index:2;
+  background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+  z-index: 2;
 }
 
-/* numero sopra */
-.cinsDay.isToday .cinsNum{
-  position: relative;
-  z-index:3;
-  color:#fff;
-}
-
-/* numero SEMPRE sopra */
-.cinsDay.isToday .cinsNum{
-  position: relative;
-  z-index: 3;
-  color: #ffffff;
-  font-weight: 1000;
-  text-shadow: 0 1px 0 rgba(0,0,0,.25);
-}
-
-/* dot SEMPRE visibili */
-.cinsDay.isToday .cinsDots{
-  z-index: 4;
-}
+/* numero e dot sopra tutto */
+.cinsDay.isToday .cinsNum{ position: relative; z-index: 3; color:#fff; text-shadow: 0 1px 0 rgba(0,0,0,.22); }
+.cinsDay.isToday .cinsDots{ z-index: 4; }
 
 /* =========================
    Dots
