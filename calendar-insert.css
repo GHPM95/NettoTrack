@@ -143,7 +143,7 @@
 .cinsDay.isToday::after{
   content:"";
   position:absolute;
-  inset: 0;
+  inset: 3;
   border-radius: inherit;
 
   background:
@@ -152,6 +152,10 @@
       rgba(173,130,255,.9),
       rgba(88,210,255,.9)
     );
+.cinsDay.isToday{
+  border-color: rgba(56,215,255,.55);
+  box-shadow: 0 0 0 3px rgba(176,87,255,.18), 0 0 18px rgba(56,215,255,.20);
+}
 
   /* 👇 chiave del fix */
   box-shadow:
