@@ -140,7 +140,7 @@
 }
 
 /* =========================
-   TODAY — “Selected” coerente (fill, non ring)
+   TODAY — COME IN FOTO (pieno + glow morbido)
    ========================= */
 
 .cinsDay.isToday{
@@ -148,44 +148,54 @@
   border-radius:999px;
   overflow:hidden;
 
-  /* bordo glass (non protagonista) */
-  border-color: rgba(255,255,255,.20);
-
-  /* FILL “selezionato” coerente col sito */
-  background:
-    radial-gradient(circle at 30% 28%,
-      rgba(255,255,255,.22),
-      transparent 55%
-    ),
-    linear-gradient(135deg,
-      rgba(173,130,255,.55),
-      rgba(88,210,255,.55)
-    );
+  /* lascia il bordo base molto leggero (quasi invisibile) */
+  border-color: rgba(255,255,255,.16);
 }
 
-/* glass overlay sopra il fill: lo integra con la griglia */
-.cinsDay.isToday::after{
+/* riempimento gradiente + glow (il “pulsante selezionato” in foto) */
+.cinsDay.isToday::before{
   content:"";
   position:absolute;
-  inset:0;
+  inset:2px;                 /* bordo interno pulito */
   border-radius:inherit;
+
   background: linear-gradient(
-    180deg,
-    rgba(255,255,255,.18),
-    rgba(255,255,255,.06)
+    135deg,
+    rgba(173,130,255,.95),
+    rgba(88,210,255,.95)
   );
-  opacity:.70;
+
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.20) inset,
+    0 0 16px rgba(120,190,255,.35);
+
   z-index:1;
 }
 
-/* numero e dot davanti, sempre leggibili */
+/* patina glass sopra, come il resto della UI */
+.cinsDay.isToday::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  border-radius:inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.16),
+    rgba(255,255,255,.04)
+  );
+  z-index:2;
+}
+
 .cinsDay.isToday .cinsNum{
   position:relative;
-  z-index:2;
+  z-index:3;
   color:#fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,.28);
+  text-shadow: 0 1px 2px rgba(0,0,0,.25);
 }
-.cinsDay.isToday .cinsDots{ z-index:3; }
+
+.cinsDay.isToday .cinsDots{
+  z-index:4;
+}
 
 /* =========================
    Dots
