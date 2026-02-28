@@ -146,24 +146,22 @@
 .cinsDay.isToday{
   position: relative;
   border-radius: 999px;
-  box-shadow:
-    0 0 0 1px rgba(173,130,255,.45) inset,
-    0 0 12px rgba(88,210,255,.18);
 
-  /* FILL interno */
+  /* fill interno glass */
   background: linear-gradient(
     135deg,
-    rgba(173,130,255,.38),
-    rgba(88,210,255,.38)
+    rgba(173,130,255,.32),
+    rgba(88,210,255,.32)
   );
 
-  /* ✅ BORDO BLU ATTACCATO */
-  outline: 3px solid rgba(88,210,255,.95);  /* più spesso + più blu */
+  /* ring principale blu */
+  outline: 3px solid rgba(88,210,255,.9);
   outline-offset: -3px;
 
-  /* glow morbido, ma secondario */
+  /* sfumatura viola ATTACCATA (inset) */
   box-shadow:
-    0 0 10px rgba(173,130,255,.30);
+    0 0 0 1.5px rgba(173,130,255,.55) inset,
+    0 0 14px rgba(120,170,255,.30);
 
   overflow: hidden;
 }
