@@ -140,28 +140,23 @@
 }
 
 /* TODAY — ring coerente con lo sfondo */
-.cinsDay.isToday{
-  border-color: transparent;
-}
-
 .cinsDay.isToday::after{
   content:"";
   position:absolute;
-  inset: 2px;
+  inset: 0;
   border-radius: inherit;
 
   background:
     linear-gradient(
       135deg,
-      rgba(173,130,255,.9),   /* viola */
-      rgba(88,210,255,.9)     /* turchese */
+      rgba(173,130,255,.9),
+      rgba(88,210,255,.9)
     );
 
-  /* effetto vetro */
+  /* 👇 chiave del fix */
   box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,.25),
-    0 0 14px rgba(140,180,255,.45);
-
+  0 0 0 2px rgba(255,255,255,.38),
+  0 0 14px rgba(140,180,255,.35);
   z-index: 1;
 }
 
