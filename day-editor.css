@@ -290,13 +290,11 @@
   overflow:hidden;
 }
 
+/* --- SELECT base (glass) --- */
 .deSelect{
   appearance: none;
   -webkit-appearance: none;
-
-  height: 46px;
-  padding-right: 56px; /* spazio icona */
-
+  padding-right: 52px;              /* spazio frecce */
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
 
@@ -308,45 +306,38 @@
   font-weight: 900;
 }
 
+/* --- WRAPPER che contiene il select (come “impostazioni avanzate”) --- */
 .deFieldSelect{
   position: relative;
 }
 
+/* freccia su + giù: PICCOLE e CENTRATE nella box */
 .deFieldSelect::before,
 .deFieldSelect::after{
   content:"";
   position:absolute;
-  right: 18px;
-
-  width:0;
-  height:0;
+  right: 16px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  opacity: .85;
   pointer-events:none;
-  opacity:.85;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px 10px;
 }
 
-/* ▲ */
+/* ▲ (sopra, ma sempre centrato come gruppo) */
 .deFieldSelect::before{
-  top: calc(50% - 4px);
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-bottom: 5px solid rgba(255,255,255,.9);
+  transform: translateY(-7px);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='rgba(255,255,255,0.90)' d='M7 14l5-5 5 5z'/%3E%3C/svg%3E");
 }
 
-/* ▼ */
+/* ▼ (sotto, vicina) */
 .deFieldSelect::after{
-  top: calc(50% + 4px);
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid rgba(255,255,255,.9);
+  transform: translateY(3px);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='rgba(255,255,255,0.90)' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
 }
-
-/* Textarea */
-.deTextarea{
-  padding: 10px 12px;
-  min-height: 90px;
-  resize: none;
-}
-.deTextareaSmall{ min-height: 86px; }
 
 /* Disabled */
 .deInput:disabled,
