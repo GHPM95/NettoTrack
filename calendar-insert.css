@@ -149,19 +149,18 @@
 
   /* FILL INTERNO — torna il colore */
   background: linear-gradient(
-    135deg,
-    rgba(173,130,255,.55),
-    rgba(88,210,255,.55)
-  );
+  135deg,
+  rgba(173,130,255,.38),
+  rgba(88,210,255,.38)
+);
 
   /* BORDO SFUMATO */
   border: 2px solid transparent;
   background-clip: padding-box;
 
   box-shadow:
-    0 0 0 3px rgba(173,130,255,.35),
-    0 0 0 6px rgba(88,210,255,.25),
-    0 0 22px rgba(88,210,255,.30);
+  0 0 0 4px rgba(88,210,255,.45),
+  0 0 18px rgba(173,130,255,.35);
 
   overflow: hidden;
 }
