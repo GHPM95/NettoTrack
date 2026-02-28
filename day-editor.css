@@ -281,6 +281,21 @@
 .deInput{ height: 46px; }
 .deSelect{ height: 46px; }
 
+/* Fix iOS: testo/placeholder textarea coerente e non “rimpicciolito” */
+.deTextarea{
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 900;
+  padding: 12px 12px; /* un filo più comodo, opzionale */
+}
+
+/* placeholder stesso peso/tono */
+.deTextarea::placeholder{
+  font-size: 15px;
+  font-weight: 900;
+  color: rgba(255,255,255,.45);
+}
+
 /* ✅ iOS: input time NON deve mai allargarsi o “sfondare” */
 .deInput[type="time"]{
   display:block;
