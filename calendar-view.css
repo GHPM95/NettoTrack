@@ -131,7 +131,6 @@
   letter-spacing:.1px;
   text-shadow: 0 1px 10px rgba(0,0,0,.25);
 
-  /* Adattamento */
   font-size: clamp(13px, 3.5vw, 16px);
   white-space: nowrap;
   overflow: hidden;
