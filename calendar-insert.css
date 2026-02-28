@@ -140,61 +140,34 @@
 }
 
 /* =========================
-   TODAY — COME IN FOTO (pieno + glow morbido)
+   TODAY — PULSANTE SELEZIONATO (CHIARO, LEGGIBILE)
    ========================= */
 
 .cinsDay.isToday{
-  position:relative;
-  border-radius:999px;
-  overflow:hidden;
-
-  /* lascia il bordo base molto leggero (quasi invisibile) */
-  border-color: rgba(255,255,255,.16);
-}
-
-/* riempimento gradiente + glow (il “pulsante selezionato” in foto) */
-.cinsDay.isToday::before{
-  content:"";
-  position:absolute;
-  inset:2px;                 /* bordo interno pulito */
-  border-radius:inherit;
-
+  border: none;
   background: linear-gradient(
     135deg,
-    rgba(173,130,255,.95),
-    rgba(88,210,255,.95)
+    #b38cff 0%,
+    #6fd3ff 100%
   );
-
   box-shadow:
-    0 0 0 2px rgba(255,255,255,.20) inset,
-    0 0 16px rgba(120,190,255,.35);
-
-  z-index:1;
+    0 8px 22px rgba(111,211,255,.35),
+    inset 0 1px 0 rgba(255,255,255,.35);
 }
 
-/* patina glass sopra, come il resto della UI */
-.cinsDay.isToday::after{
-  content:"";
-  position:absolute;
-  inset:2px;
-  border-radius:inherit;
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,.16),
-    rgba(255,255,255,.04)
-  );
-  z-index:2;
-}
-
+/* numero */
 .cinsDay.isToday .cinsNum{
-  position:relative;
-  z-index:3;
   color:#fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,.25);
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
 }
 
+/* dots sopra e leggibili */
 .cinsDay.isToday .cinsDots{
-  z-index:4;
+  z-index: 3;
+}
+
+.cinsDay.isToday .cinsDot{
+  box-shadow: 0 0 0 1px rgba(0,0,0,.15);
 }
 
 /* =========================
