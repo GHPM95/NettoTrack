@@ -320,8 +320,8 @@
   background-position:
   left top,
   left top,
-  right 14px calc(50% - 8px), /* ▲ su */
-  right 14px calc(50% + 8px); /* ▼ giù */
+  right 14px calc(50% - 9px), /* ▲ su */
+  right 14px calc(50% + 9px); /* ▼ giù */
 
   color: var(--text);
   font-weight: 900;
