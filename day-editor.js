@@ -338,15 +338,20 @@ currentKey = null;
   document.dispatchEvent(new Event("nettotrack:closeDayEditor"));
   });
 
-    $("#deAddShift", mount)?.addEventListener("click", () => {
-      const btn = $("#deAddShift", mount);
-      if (btn && btn.disabled) return;
+ $("#deAddShift", mount)?.addEventListener("click", () => {
+  const btn = $("#deAddShift", mount);
+  if (btn && btn.disabled) return;
 
-      state.shifts.push(makeDefaultShift());
-      markDirty();
-      renderShifts();
-      scheduleBackgroundSave();
-    });
+  state.shifts.unshift(makeDefaultShift()); // nuovo turno in alto
+  markDirty();
+  renderShifts();
+
+  // ✅ TORNA IN ALTO AL NUOVO TURNO
+  const scroller = $("#deShifts", mount);
+  if (scroller) scroller.scrollTo({ top: 0, behavior: "smooth" });
+
+  scheduleBackgroundSave();
+});
 
     $("#deSave", mount)?.addEventListener("click", () => {
       const btn = $("#deSave", mount);
