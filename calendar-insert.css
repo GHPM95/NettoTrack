@@ -140,23 +140,27 @@
 }
 
 /* TODAY — ring coerente con lo sfondo */
+/* TODAY — bordo VISIBILE + fill interno */
+.cinsDay.isToday{
+  border-color: rgba(88,210,255,.65); /* ring base (puoi mettere accent2) */
+}
+
 .cinsDay.isToday::after{
   content:"";
   position:absolute;
-  inset: 0;
+  inset: 3px;                 /* ✅ lascia spazio al bordo */
   border-radius: inherit;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(173,130,255,.9),
-      rgba(88,210,255,.9)
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(173,130,255,.90),
+    rgba(88,210,255,.90)
+  );
 
-  /* 👇 chiave del fix */
   box-shadow:
-  0 0 0 2px rgba(255,255,255,.38),
-  0 0 14px rgba(140,180,255,.35);
+    0 0 0 3px rgba(173,130,255,.18),
+    0 0 18px rgba(88,210,255,.22);
+
   z-index: 1;
 }
 
