@@ -154,7 +154,13 @@
   border: none;
 
   /* RIEMPIMENTO leggero */
-  background: linear-gradient(
+  background:
+  radial-gradient(
+    circle at 30% 25%,
+    rgba(255,255,255,.22),
+    transparent 55%
+  ),
+  linear-gradient(
     135deg,
     rgba(130,170,255,.92),
     rgba(170,130,255,.92)
