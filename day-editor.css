@@ -290,11 +290,13 @@
   overflow:hidden;
 }
 
-/* --- SELECT base (glass) --- */
 .deSelect{
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 52px;              /* spazio frecce */
+
+  width: 100%;
+  height: 46px;
+
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,.14);
 
@@ -304,49 +306,8 @@
 
   color: var(--text);
   font-weight: 900;
-}
 
-/* il wrapper diventa riferimento */
-/* wrapper riferimento */
-.deFieldSelect{ position: relative; }
-
-/* select coerente */
-.deFieldSelect .deSelect{
-  height: 46px;
-  line-height: 46px;
-  padding-right: 46px;
-}
-
-/* ---- FRECCE (perfette iOS) ---- */
-.deFieldSelect{
-  --arrRight: 16px;   /* distanza dal bordo destro */
-  --arrSize: 9px;     /* grandezza frecce */
-  --arrGap: 7px;      /* distanza tra su/giù */
-  --arrY: 14px;       /* 🔥 QUESTO è il “centro ottico” (da 12→14) */
-}
-
-.deFieldSelect::before,
-.deFieldSelect::after{
-  content:"";
-  position:absolute;
-  right: var(--arrRight);
-  top: calc(50% + var(--arrY));        /* ✅ centro ottico */
-  width: var(--arrSize);
-  height: var(--arrSize);
-  pointer-events:none;
-  background-repeat:no-repeat;
-  background-size: var(--arrSize) var(--arrSize);
-  opacity: .9;
-}
-
-.deFieldSelect::before{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='rgba(255,255,255,0.9)' d='M7 14l5-5 5 5z'/%3E%3C/svg%3E");
-  transform: translateY(calc(-1 * var(--arrGap)));
-}
-
-.deFieldSelect::after{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='rgba(255,255,255,0.9)' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-  transform: translateY(var(--arrGap));
+  padding: 0 16px;
 }
 
 /* Disabled */
