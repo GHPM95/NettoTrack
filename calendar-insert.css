@@ -146,38 +146,61 @@
 .cinsDay.isToday{
   position: relative;
   border-radius: 999px;
-
-  /* fill interno glass */
   background: linear-gradient(
     135deg,
     rgba(173,130,255,.32),
     rgba(88,210,255,.32)
   );
-
-  /* ring principale blu */
-  outline: 3px solid rgba(88,210,255,.9);
-  outline-offset: -3px;
-
-  /* sfumatura viola ATTACCATA (inset) */
-  box-shadow:
-    0 0 0 1.5px rgba(173,130,255,.55) inset,
-    0 0 14px rgba(120,170,255,.30);
-
   overflow: hidden;
 }
 
-/* overlay glass leggero sopra al fill */
-.cinsDay.isToday::after{
+/* RING SFUMATO REALE (ATTACCATO) */
+.cinsDay.isToday::before{
   content:"";
   position:absolute;
   inset:0;
-  border-radius:inherit;
+  border-radius: inherit;
+
+  background: conic-gradient(
+    from 210deg,
+    rgba(88,210,255,.95),
+    rgba(173,130,255,.90),
+    rgba(88,210,255,.95)
+  );
+
+  /* crea il ring */
+  -webkit-mask:
+    radial-gradient(circle,
+      transparent 63%,
+      #000 64%
+    );
+          mask:
+    radial-gradient(circle,
+      transparent 63%,
+      #000 64%);
+
+  z-index:1;
+}
+
+/* centro glass */
+.cinsDay.isToday::after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border-radius: inherit;
   background: linear-gradient(
     180deg,
     rgba(255,255,255,.18),
     rgba(255,255,255,.06)
   );
-  z-index: 1;
+  z-index:2;
+}
+
+/* numero sopra */
+.cinsDay.isToday .cinsNum{
+  position: relative;
+  z-index:3;
+  color:#fff;
 }
 
 /* numero SEMPRE sopra */
