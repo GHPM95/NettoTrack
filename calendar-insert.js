@@ -254,7 +254,8 @@
     const offset = (firstDay === 0 ? 6 : firstDay - 1); // Monday-based
 
     const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const { y:ty, m:tm, d:td } = todayParts();
+    const t = todayParts();
+    const ty = Number(t.y), tm = Number(t.m), td = Number(t.d);
 
     for (let i = 0; i < 42; i++) {
       const dayNum = i - offset + 1;
