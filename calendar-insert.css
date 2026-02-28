@@ -143,31 +143,55 @@
    TODAY — PULSANTE SELEZIONATO (CHIARO, LEGGIBILE)
    ========================= */
 
+/* =========================
+   TODAY — Cerchio pieno selezionato
+   Bordo + riempimento leggero (blu→viola)
+   ========================= */
+
 .cinsDay.isToday{
+  position: relative;
+  border-radius: 999px;
+  overflow: hidden;
+
+  /* 🔥 elimina il bordo base fantasma */
   border: none;
+
+  /* RIEMPIMENTO leggero */
   background: linear-gradient(
     135deg,
-    #b38cff 0%,
-    #6fd3ff 100%
+    rgba(130,170,255,.85),
+    rgba(170,130,255,.85)
   );
+
+  /* BORDO interno pulito (attaccato, non alone) */
   box-shadow:
-    0 8px 22px rgba(111,211,255,.35),
-    inset 0 1px 0 rgba(255,255,255,.35);
+    inset 0 0 0 2px rgba(255,255,255,.28);
 }
 
-/* numero */
+/* patina glass sopra (coerenza con il resto della UI) */
+.cinsDay.isToday::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.18),
+    rgba(255,255,255,.06)
+  );
+  z-index:1;
+}
+
+/* numero e dot SEMPRE davanti */
 .cinsDay.isToday .cinsNum{
+  position:relative;
+  z-index:2;
   color:#fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+  font-weight:1000;
+  text-shadow: 0 1px 2px rgba(0,0,0,.25);
 }
-
-/* dots sopra e leggibili */
 .cinsDay.isToday .cinsDots{
-  z-index: 3;
-}
-
-.cinsDay.isToday .cinsDot{
-  box-shadow: 0 0 0 1px rgba(0,0,0,.15);
+  z-index:3;
 }
 
 /* =========================
