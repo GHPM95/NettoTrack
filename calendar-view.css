@@ -114,34 +114,20 @@
   width:100%;
 }
 
+/* Testo (nome+data) centrato meglio nella capsula */
 .cviewLeftTxt{
-  display:flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;            /* IMPORTANTISSIMO */
-  flex: 1 1 auto;          /* prende lo spazio disponibile */
+  justify-content: center;   /* centra verticalmente le 2 righe */
+  gap: 0px;                  /* meno “aria” tra nome e data */
 }
 
+/* Compattiamo le altezze delle righe */
 .cviewDayName{
-  font-weight: 1000;
-  letter-spacing:.1px;
-  text-shadow: 0 1px 10px rgba(0,0,0,.25);
-
-  font-size: clamp(13px, 3.5vw, 16px);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.05;
 }
 
 .cviewDayDate{
-  font-size: clamp(11px, 3.1vw, 12px);
-  color: var(--muted);
-  font-weight: 850;
-  opacity: .92;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.05;
+  transform: translateY(-2px); /* alza la data (era troppo bassa) */
 }
 
 /* --- LATO DESTRO: non deve mai stringersi troppo --- */
