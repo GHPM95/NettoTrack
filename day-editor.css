@@ -507,3 +507,7 @@
 .deGrid--time + .deGrid{
   margin-top: 10px; /* prova 10px, se vuoi più aria metti 12/14 */
 }
+
+.deTextareaSmall{
+  min-height: 130px;
+}
