@@ -144,56 +144,63 @@
    Mettere in fondo al file
    ========================= */
 
+/* =========================
+   TODAY — bordo RIEMPITO + SFUMATO (Premium Glass) — FIX BELLO
+   (più contrasto + sfumatura visibile + niente plasticoso)
+   ========================= */
+
 .cinsDay.isToday{
   position: relative;
   border-radius: 999px;
   overflow: hidden;
 
-  /* centro: vetro leggermente colorato (non “pallina”) */
+  /* centro: vetro leggermente colorato (coerente, ma più leggibile) */
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.16), transparent 55%),
-    linear-gradient(135deg, rgba(173,130,255,.18), rgba(88,210,255,.18));
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.18), transparent 58%),
+    linear-gradient(135deg, rgba(173,130,255,.22), rgba(88,210,255,.22));
 }
 
-/* ring sfumato VERO ma soft (non plasticoso) */
+/* ring sfumato: più definito (si vede blu + viola) ma resta elegante */
 .cinsDay.isToday::before{
   content:"";
   position:absolute;
   inset:0;
   border-radius: inherit;
 
-  /* gradient più “smooth”, senza stacchi netti */
   background: conic-gradient(
-    from 225deg,
-    rgba(88,210,255,.95),
-    rgba(120,190,255,.90) 20%,
-    rgba(173,130,255,.92) 55%,
-    rgba(150,140,255,.85) 75%,
-    rgba(88,210,255,.95)
+    from 230deg,
+    rgba(88,210,255,.98),
+    rgba(120,190,255,.92) 18%,
+    rgba(173,130,255,.95) 55%,
+    rgba(150,140,255,.88) 78%,
+    rgba(88,210,255,.98)
   );
 
-  /* ring sottile e attaccato */
-  -webkit-mask: radial-gradient(circle, transparent 70%, #000 71%);
-          mask: radial-gradient(circle, transparent 70%, #000 71%);
+  /* ring leggermente più spesso e più “attaccato” */
+  -webkit-mask: radial-gradient(circle, transparent 67%, #000 68%);
+          mask: radial-gradient(circle, transparent 67%, #000 68%);
 
-  /* glow elegante, non invasivo */
-  filter: saturate(.95);
-  opacity: .85;
+  opacity: .95;
   z-index: 1;
 }
 
-/* glass sopra al centro (ammorbidisce e integra col resto) */
+/* glass sopra al centro (ammorbidisce ma non spegne) */
 .cinsDay.isToday::after{
   content:"";
   position:absolute;
   inset:4px;
   border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+  background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
   z-index: 2;
 }
 
 /* numero e dot sopra tutto */
-.cinsDay.isToday .cinsNum{ position: relative; z-index: 3; color:#fff; text-shadow: 0 1px 0 rgba(0,0,0,.22); }
+.cinsDay.isToday .cinsNum{
+  position: relative;
+  z-index: 3;
+  color:#fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.28);
+}
 .cinsDay.isToday .cinsDots{ z-index: 4; }
 
 /* =========================
