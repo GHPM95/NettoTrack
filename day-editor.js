@@ -425,7 +425,7 @@ currentKey = null;
           </div>
 
           <div class="deGrid" style="margin-bottom:10px;">
-            <label class="deField" style="grid-column:1 / -1;">
+            <label class="deField deFieldSelect" style="grid-column:1 / -1;">
               <span class="deFieldLbl">Fascia</span>
               <select class="deSelect" data-k="shiftType">
                 <option value="none" ${st === "none" ? "selected" : ""}>Senza turno</option>
@@ -461,7 +461,7 @@ currentKey = null;
 </div>
 
 <div class="deGrid">
-  <label class="deField">
+  <label class="deField deFieldSelect">
     <span class="deFieldLbl">Pausa (min)</span>
     <input
       class="deInput"
