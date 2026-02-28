@@ -102,13 +102,6 @@
 }
 .cviewRow:active{ transform: scale(.995); filter: brightness(1.05); }
 
-.cviewRowHead{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-}
-
 /* --- TESTO SINISTRA: deve adattarsi --- */
 .cviewRowHead{
   display:flex;
