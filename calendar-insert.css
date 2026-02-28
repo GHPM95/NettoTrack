@@ -143,11 +143,6 @@
    TODAY — PULSANTE SELEZIONATO (CHIARO, LEGGIBILE)
    ========================= */
 
-/* =========================
-   TODAY — Cerchio pieno selezionato
-   Bordo + riempimento leggero (blu→viola)
-   ========================= */
-
 .cinsDay.isToday{
   position: relative;
   border-radius: 999px;
@@ -159,13 +154,13 @@
   /* RIEMPIMENTO leggero */
   background: linear-gradient(
     135deg,
-    rgba(130,170,255,.85),
-    rgba(170,130,255,.85)
+    rgba(130,170,255,.92),
+    rgba(170,130,255,.92)
   );
 
   /* BORDO interno pulito (attaccato, non alone) */
   box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,.28);
+    inset 0 0 0 2px rgba(255,255,255,.22);
 }
 
 /* patina glass sopra (coerenza con il resto della UI) */
