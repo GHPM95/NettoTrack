@@ -1,6 +1,4 @@
-/* =========================
-   Calendar View (Weekly Agenda)
-   ========================= */
+/* ========================= Calendar View (Weekly Agenda) ========================= */
 
 .cviewRoot{
   width:100%;
@@ -20,8 +18,31 @@
 
 .cviewLeft{
   display:flex;
-  gap: 8px;
+  gap: 12px; /* ✅ frecce più distanti */
   align-items:center;
+}
+
+.cviewNavBtn{
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 1000;
+
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+  backdrop-filter: blur(var(--blur));
+
+  transition: transform .12s ease, filter .12s ease;
+}
+.cviewNavBtn:active{ transform: scale(.96); filter: brightness(1.08); }
+
+.cviewCenter{
+  min-width:0;
+  text-align:center;
 }
 
 .cviewTitle{
@@ -33,6 +54,30 @@
   overflow:hidden;
   text-overflow: ellipsis;
 }
+
+.cviewTotals{
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 850;
+  letter-spacing: .12px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+
+.cviewCloseBtn{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.10);
+  color: var(--text);
+  font-size: 26px;
+  font-weight: 900;
+  transition: transform .12s ease, filter .12s ease;
+}
+.cviewCloseBtn:active{ transform: scale(.96); filter: brightness(1.08); }
 
 /* 7 righe fisse */
 .cviewGrid{
@@ -55,10 +100,7 @@
   overflow:hidden;
   transition: filter .12s ease, transform .12s ease;
 }
-.cviewRow:active{
-  transform: scale(.995);
-  filter: brightness(1.05);
-}
+.cviewRow:active{ transform: scale(.995); filter: brightness(1.05); }
 
 .cviewRowHead{
   display:flex;
@@ -74,15 +116,15 @@
   min-width:0;
 }
 
-.cviewDayName{
-  font-weight: 1000;
-  letter-spacing:.1px;
-}
+.cviewDayName{ font-weight: 1000; letter-spacing:.1px; }
+.cviewDayDate{ font-size: 12px; color: var(--muted); font-weight: 850; }
 
-.cviewDayDate{
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 850;
+/* lato destro */
+.cviewRight{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  justify-content:flex-end;
 }
 
 /* badge ore */
@@ -109,43 +151,74 @@
 
 /* base = bordo cyan */
 .cviewBubble.base{
-  background:
-    linear-gradient(#0000,#0000) padding-box,
-    linear-gradient(90deg, var(--accent2), var(--accent2)) border-box;
+  background: linear-gradient(#0000,#0000) padding-box,
+              linear-gradient(90deg, var(--accent2), var(--accent2)) border-box;
   border: 2px solid transparent;
 }
 
 /* extra = bordo gradiente */
 .cviewBubble.extra{
-  background:
-    linear-gradient(#0000,#0000) padding-box,
-    linear-gradient(90deg, var(--accent2), var(--accent1), var(--accent3)) border-box;
+  background: linear-gradient(#0000,#0000) padding-box,
+              linear-gradient(90deg, var(--accent2), var(--accent1), var(--accent3)) border-box;
   border: 2px solid transparent;
 }
 
-.cviewRow.isEmpty{
-  opacity: .45;
+.cviewEditBtn{
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  color: var(--text);
+  font-weight: 950;
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+  backdrop-filter: blur(var(--blur));
+  transition: transform .12s ease, filter .12s ease;
 }
-.cviewRow.isEmpty .cviewBadges{
-  display:none;
-}
+.cviewEditBtn:active{ transform: scale(.98); filter: brightness(1.08); }
 
-/* dettagli */
+.cviewRow.isEmpty{ opacity: .45; }
+.cviewRow.isEmpty .cviewBadges{ display:none; }
+
+/* dettagli (espandibili) */
 .cviewDetails{
-  display:none;
   margin-top: 8px;
   border-top: 1px solid rgba(255,255,255,.10);
   padding-top: 8px;
+
   color: var(--muted);
   font-weight: 850;
   font-size: 12px;
   line-height: 1.35;
 
+  max-height: 0;
+  opacity: 0;
   overflow:hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  transition: max-height .22s ease, opacity .18s ease;
+}
+.cviewRow.isOpen .cviewDetails{
+  max-height: 140px;
+  opacity: 1;
 }
 
-.cviewRow.isOpen .cviewDetails{
-  display:block;
+/* lista turni */
+.cviewShiftList{
+  margin: 0;
+  padding-left: 16px;
+}
+.cviewShiftLine{
+  margin: 4px 0;
+}
+
+.cviewEmptyTxt{
+  opacity: .9;
+}
+
+.cviewHint{
+  font-size: 11px;
+  color: rgba(255,255,255,.52);
+  font-weight: 800;
+  text-align:center;
+  letter-spacing:.12px;
 }
