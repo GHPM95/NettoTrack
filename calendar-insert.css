@@ -146,6 +146,9 @@
 .cinsDay.isToday{
   position: relative;
   border-radius: 999px;
+  box-shadow:
+    0 0 0 1px rgba(173,130,255,.45) inset,
+    0 0 12px rgba(88,210,255,.18);
 
   /* FILL interno */
   background: linear-gradient(
