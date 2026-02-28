@@ -155,9 +155,8 @@
   );
 
   /* ✅ BORDO BLU ATTACCATO */
-  outline: 2px solid rgba(88,210,255,.9),
-  outline-offset: rgba(173,130,255,.85)
-) 1;
+  outline: 3px solid rgba(88,210,255,.95);  /* più spesso + più blu */
+  outline-offset: -3px;
 
   /* glow morbido, ma secondario */
   box-shadow:
