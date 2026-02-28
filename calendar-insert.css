@@ -155,10 +155,8 @@
   );
 
   /* ✅ BORDO BLU ATTACCATO */
-  border-image: linear-gradient(
-  135deg,
-  rgba(88,210,255,.9),
-  rgba(173,130,255,.85)
+  outline: 2px solid rgba(88,210,255,.9),
+  outline-offset: -2px rgba(173,130,255,.85)
 ) 1;
 
   /* glow morbido, ma secondario */
