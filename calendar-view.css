@@ -109,31 +109,61 @@
   gap: 12px;
 }
 
+/* --- TESTO SINISTRA: deve adattarsi --- */
+.cviewRowHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  min-width: 0;            /* IMPORTANTISSIMO: abilita ellipsis nei figli */
+}
+
 .cviewLeftTxt{
   display:flex;
   flex-direction: column;
   gap: 3px;
-  min-width:0;
+  min-width: 0;            /* IMPORTANTISSIMO */
+  flex: 1 1 auto;          /* prende lo spazio disponibile */
 }
 
-.cviewDayName{ font-weight: 1000; letter-spacing:.1px; }
-.cviewDayDate{ font-size: 12px; color: var(--muted); font-weight: 850; }
+.cviewDayName{
+  font-weight: 1000;
+  letter-spacing:.1px;
+  text-shadow: 0 1px 10px rgba(0,0,0,.25);
+}
 
-/* lato destro */
+  /* Adattamento */
+  font-size: clamp(13px, 3.5vw, 16px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cviewDayDate{
+  font-size: clamp(11px, 3.1vw, 12px);
+  color: var(--muted);
+  font-weight: 850;
+  opacity: .92;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- LATO DESTRO: non deve mai stringersi troppo --- */
 .cviewRight{
   display:flex;
   align-items:center;
   gap: 10px;
   justify-content:flex-end;
+
+  flex: 0 0 auto;          /* non si comprime */
+  min-width: fit-content;  /* resta “solido” */
 }
 
-/* badge ore */
-.cviewBadges{
-  display:flex;
-  align-items:center;
-  gap: 8px;
-  justify-content:flex-end;
-}
+/* Se serve: impedisce che i badge si schiaccino */
+.cviewBadges{ flex: 0 0 auto; }
+.cviewEditBtn{ flex: 0 0 auto; }
 
 .cviewBubble{
   width: 42px;
