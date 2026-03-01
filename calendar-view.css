@@ -121,17 +121,17 @@
 
 /* Compattiamo le altezze delle righe */
 .cviewDayName{
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: .2px;
   line-height: 1.05;
-  font-size: clamp(12px, 3vw, 14px);
+  font-size: clamp(11px, 2.6vw, 12px);
   opacity: 0.75;
 }
 
 .cviewDayDate{
-  font-size: clamp(12px, 3vw, 14px);
+  font-size: clamp(14px, 3.5vw, 16px);
   color: var(--muted);
-  font-weight: 850;
+  font-weight: 900;
   line-height: 1.05;
   transform: translateY(-2px); /* alza la data (era troppo bassa) */
 }
