@@ -10,8 +10,8 @@
   min-height:0;
 
   /* ✅ Colori DOT condivisi (fallback sugli accent se non hai ancora messo ui.css) */
-  --cviewDotBase: var(--ntDotBase, var(--accent2));
-  --cviewDotExtra: var(--ntDotExtra, var(--accent1));
+  --cviewDotBase: var(--ntDotBase, var(--accent2));   /* celeste */
+  --cviewDotExtra: var(--ntDotExtra, var(--accent1)); /* viola */
 }
 
 /* ========================= Header ========================= */
@@ -193,30 +193,29 @@
   font-size: 14px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-
   letter-spacing: -0.2px;
 
-  border: 0;
   color: #fff;
 
-  /* base neutra (verrà sostituita da base/extra) */
-  background: rgba(255,255,255,.12);
-  box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.18);
+  /* ✅ MODELLO UNICO (base/extra identici, cambia solo il colore) */
+  --dotFill: rgba(255,255,255,.20);
+
+  border: 1px solid rgba(255,255,255,.18);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 55%),
+    linear-gradient(135deg, var(--dotFill), var(--dotFill));
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.16);
 }
 
-/* ✅ RIEMPIMENTO COLORE (qui nasce il viola quando è extra) */
+/* BASE: stesso modello, solo colore diverso */
 .cviewBubble.base{
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 55%),
-    linear-gradient(135deg, var(--cviewDotBase), var(--cviewDotBase));
-  box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.22);
+  --dotFill: var(--cviewDotBase);
 }
 
+/* EXTRA: stesso modello, solo colore diverso */
 .cviewBubble.extra{
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 55%),
-    linear-gradient(135deg, var(--cviewDotExtra), var(--cviewDotExtra));
-  box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.22);
+  --dotFill: var(--cviewDotExtra);
 }
 
 /* ========================= Details (expand) ========================= */
