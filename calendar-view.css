@@ -315,3 +315,33 @@
   display:none;
   padding-right:0;
 }
+
+/* FORCE layout interno capsule (se altre regole lo sovrascrivono) */
+.cviewRoot .cviewRowHead{
+  display:flex !important;
+  align-items:center !important;
+  min-width:0 !important;
+}
+
+.cviewRoot .cviewLeftTxt{
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  gap: 2px !important;
+  min-width:0 !important;
+  flex: 1 1 auto !important;
+}
+
+.cviewRoot .cviewDayName,
+.cviewRoot .cviewDayDate{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  min-width:0 !important;
+}
+
+/* se badges vuoti, non devono influenzare */
+.cviewRoot .cviewBadges:empty{
+  display:none !important;
+  padding-right:0 !important;
+}
