@@ -266,3 +266,34 @@
   text-align:center;
   letter-spacing:.12px;
 }
+
+/* ====== CENTRATURA PERFETTA CON/SENZA DOT ====== */
+
+/* La capsula centra la head sempre nello stesso punto */
+.cviewRow{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+/* Head: altezza controllata + padding interno bilanciato */
+.cviewRowHead{
+  min-height: clamp(52px, 6vw, 64px);  /* un pelo più stabile */
+  padding: 0;                          /* niente padding “fantasma” */
+  align-items:center;
+}
+
+/* Sinistra: centra davvero le due righe */
+.cviewLeftTxt{
+  justify-content:center;
+  gap: 2px;
+}
+
+/* Dot: centrati e non influenzano la baseline */
+.cviewBadges{
+  align-items:center;
+}
+
+.cviewBubble{
+  line-height: 1;
+}
