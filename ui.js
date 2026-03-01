@@ -183,49 +183,117 @@
     );
   }
 
-  // ============================
-  // SWIPE / DRAG
+    // ============================
+  // SWIPE / DRAG (FIX iOS: non rubare tap)
   // ============================
   let isDragging = false;
-  let startX = 0;
-  let lastX = 0;
+  let pendingDrag = false;
+
+  let startX = 0, startY = 0;
+  let lastX = 0, lastY = 0;
+
   let capturedPointerId = null;
+
+  // più “tollerante” su iOS: evita che un tap diventi swipe
+  const DRAG_START_PX = 10;   // soglia minima
+  const DRAG_BIAS = 1.15;     // dx deve essere > dy * 1.15 per essere “orizzontale”
+
+  function isInteractiveTarget(el) {
+    if (!el) return false;
+
+    // già previsto: bottoni/inputs e data-no-swipe
+    if (el.closest('button, a, input, textarea, select, label, [role="button"], [data-no-swipe]')) return true;
+
+    // ✅ IMPORTANTISSIMO: tutta la UI “contenuto” dentro le card NON deve avviare swipe
+    // (così i tap su righe/accordion funzionano sempre)
+    if (el.closest(
+      '#calViewMount, #calInsertMount, #dayEditorMount,' +
+      '.cviewRoot, .cviewGrid, .cviewRow, .cviewDetails,' +
+      '.cinsRoot, .cinsGrid, .cinsDay'
+    )) return true;
+
+    return false;
+  }
 
   function onPointerDown(e) {
     if (body.classList.contains("isMenuOpen")) return;
 
-    // ✅ se l’utente sta cliccando un bottone dentro la card, NON avviare swipe
+    // ✅ se tocchi contenuti interattivi → non preparare nemmeno lo swipe
     if (isInteractiveTarget(e.target)) return;
 
-    isDragging = true;
+    pendingDrag = true;
+    isDragging = false;
+
     startX = e.clientX;
+    startY = e.clientY;
     lastX = startX;
+    lastY = startY;
+
     capturedPointerId = e.pointerId;
+  }
+
+  function beginDragIfHorizontalIntent(e) {
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    const adx = Math.abs(dx);
+    const ady = Math.abs(dy);
+
+    // non abbastanza movimento → resta tap
+    if (adx < DRAG_START_PX && ady < DRAG_START_PX) return false;
+
+    // deve essere chiaramente orizzontale
+    if (adx <= ady * DRAG_BIAS) {
+      // gesto verticale o incerto → NON facciamo swipe
+      pendingDrag = false;
+      return false;
+    }
+
+    // ok: inizia lo swipe vero
+    pendingDrag = false;
+    isDragging = true;
 
     try { cardsTrack.setPointerCapture?.(capturedPointerId); } catch {}
     cardsTrack.style.transition = "none";
+
+    return true;
   }
 
   function onPointerMove(e) {
-    if (!isDragging) return;
-    const x = e.clientX;
-    const dx = x - startX;
-    lastX = x;
+    if (!pendingDrag && !isDragging) return;
 
+    lastX = e.clientX;
+    lastY = e.clientY;
+
+    if (pendingDrag) {
+      // decide se iniziare lo swipe solo quando c’è “intenzione”
+      if (!beginDragIfHorizontalIntent(e)) return;
+    }
+
+    if (!isDragging) return;
+
+    const dx = lastX - startX;
     const base = trackXForIndex(activeIndex);
+
     const resistance = 0.55;
     applyTrackX(base + dx * resistance, false);
   }
 
   function endDrag() {
-    if (!isDragging) return;
+    if (!pendingDrag && !isDragging) return;
+
+    const wasDragging = isDragging;
+
+    pendingDrag = false;
     isDragging = false;
 
-    // release capture (se supportato)
     try {
       if (capturedPointerId != null) cardsTrack.releasePointerCapture?.(capturedPointerId);
     } catch {}
     capturedPointerId = null;
+
+    // se NON stavamo davvero trascinando → era un tap: non cambiare slide
+    if (!wasDragging) return;
 
     const slides = getSlides();
     const dx = lastX - startX;
@@ -245,7 +313,7 @@
   cardsViewport.addEventListener("pointermove", onPointerMove, { passive: true });
   cardsViewport.addEventListener("pointerup", endDrag, { passive: true });
   cardsViewport.addEventListener("pointercancel", endDrag, { passive: true });
-
+  
   // ============================
   // DOTS DRAG FEEDBACK
   // ============================
