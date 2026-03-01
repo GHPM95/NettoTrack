@@ -182,20 +182,19 @@
 
 /* Cerchio */
 .cviewBubble{
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
 
   border-radius: 999px;
   display:flex;
   align-items:center;
   justify-content:center;
 
-  font-weight: 1000;
+  font-weight: 900;
+  font-size: 14px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 
-  /* numeri tipo 6.1 più “centrati” */
-  font-size: 15px;
   letter-spacing: -0.2px;
 
   border: 2px solid transparent;
