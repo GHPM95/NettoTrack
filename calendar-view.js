@@ -18,10 +18,11 @@
     const mount = getMount();
     if (!mount) return;
 
+    // se la slide è stata chiusa/riaperta, il mount torna vuoto: rimonta
     if (mounted && isActuallyMounted(mount)) return;
 
     mount.innerHTML = `
-  <div class="cviewRoot" id="cviewRoot" data-no-swipe>
+      <div class="cviewRoot" id="cviewRoot">
         <div class="cviewHeader">
           <div class="cviewLeft">
             <button class="ntBtn" id="cviewPrev" type="button" aria-label="Settimana precedente">‹</button>
@@ -33,23 +34,26 @@
           <button class="ntBtn" id="cviewClose" type="button" aria-label="Chiudi">×</button>
         </div>
 
-        <div class="cviewGrid" id="cviewGrid" data-no-swipe></div>
+        <div class="cviewGrid" id="cviewGrid"></div>
       </div>
     `;
 
-    mount.querySelector("#cviewPrev").addEventListener("click", () => {
+    mount.querySelector("#cviewPrev").addEventListener("click", (e) => {
+      e.stopPropagation();
       weekStart = new Date(weekStart);
       weekStart.setDate(weekStart.getDate() - 7);
       renderWeek();
     });
 
-    mount.querySelector("#cviewNext").addEventListener("click", () => {
+    mount.querySelector("#cviewNext").addEventListener("click", (e) => {
+      e.stopPropagation();
       weekStart = new Date(weekStart);
       weekStart.setDate(weekStart.getDate() + 7);
       renderWeek();
     });
 
-    mount.querySelector("#cviewClose").addEventListener("click", () => {
+    mount.querySelector("#cviewClose").addEventListener("click", (e) => {
+      e.stopPropagation();
       document.dispatchEvent(new Event("nettotrack:closeCalendarView"));
     });
 
@@ -71,24 +75,33 @@
     return hh * 60 + mm;
   }
 
-  function shiftMeta(flags){
-    const f = flags || {};
-    const stra = !!f.straordinario;
-    const fest = !!f.festivo;
-    const dom  = !!f.domenicale;
+  // ✅ Legge sia tags (nuovo) che flags (vecchio)
+  function shiftMeta(shift){
+    const t = shift?.tags || {};
+    const f = shift?.flags || {};
 
-    // Regola: se c'è domenicale (anche insieme a festivo) => scrivi Domenicale
+    const stra = !!(t.overtime || f.straordinario);
+    const fest = !!(t.holiday  || f.festivo);
+    const dom  = !!(t.sunday   || f.domenicale);
+
+    // Regola richiesta: se festivo+domenicale => scrivi Domenicale
     if (dom)  return { label: "Domenicale", dotClass: "domenicale" };
     if (fest) return { label: "Festivo", dotClass: "festivo" };
     if (stra) return { label: "Straordinario", dotClass: "extra" };
     return { label: "Orario base", dotClass: "base" };
   }
 
-  function closeAllRowsExcept(grid, keepRow){
+  function syncAnyOpenFlag(mount){
+    const root = mount?.querySelector("#cviewRoot");
+    const anyOpen = !!mount?.querySelector(".cviewRow.isOpen");
+    root?.classList.toggle("isAnyOpen", anyOpen);
+  }
+
+  function closeAllRowsExcept(mount, keepRow){
+    const grid = mount.querySelector("#cviewGrid");
     const open = grid.querySelectorAll(".cviewRow.isOpen");
-    open.forEach(r => {
-      if (r !== keepRow) r.classList.remove("isOpen");
-    });
+    open.forEach(r => { if (r !== keepRow) r.classList.remove("isOpen"); });
+    syncAnyOpenFlag(mount);
   }
 
   function renderWeek() {
@@ -101,7 +114,6 @@
     if (title) title.textContent = `${fmtDM(weekStart)} – ${fmtDM(end)}`;
 
     const grid = mount.querySelector("#cviewGrid");
-    const rootEl = mount.querySelector("#cviewRoot");
     if (!grid) return;
     grid.innerHTML = "";
 
@@ -111,16 +123,14 @@
 
       const key = dateKey(day.getFullYear(), day.getMonth(), day.getDate());
       const data = loadDay(key);
+
       const totals = data ? dayTotals(data) : { baseHours:0, extraHours:0, hasBase:false, hasExtra:false };
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
-      // ✅ IMPORTANT: evita che ui.js lo prenda come swipe
-      row.setAttribute("data-no-swipe", "");
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
-      head.setAttribute("data-no-swipe", "");
 
       const left = document.createElement("div");
       left.className = "cviewLeftTxt";
@@ -157,22 +167,23 @@
       row.appendChild(head);
 
       // ===== Details (accordion) =====
-      const hasShifts = !!(data?.shifts?.length);
+      const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
+      const meaningful = shifts.filter(s => (s?.from || s?.to)); // evita righe vuote
 
-      if (hasShifts) {
+      if (meaningful.length) {
         const details = document.createElement("div");
         details.className = "cviewDetails";
 
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...data.shifts].sort((a,b) => timeToMin(a?.from) - timeToMin(b?.from));
+        const sorted = [...meaningful].sort((a,b) => timeToMin(a?.from) - timeToMin(b?.from));
 
         sorted.forEach(s => {
           const li = document.createElement("li");
           li.className = "cviewShiftItem";
 
-          const meta = shiftMeta(s?.flags);
+          const meta = shiftMeta(s);
 
           const dot = document.createElement("span");
           dot.className = `cviewShiftDot ${meta.dotClass}`;
@@ -202,32 +213,19 @@
         row.appendChild(details);
 
         // click: apri/chiudi + una riga aperta alla volta
-        row.addEventListener("click", (e) => {
-  // se clicchi dentro i dettagli, non richiudere/riaprire a caso
-  if (e.target.closest(".cviewDetails")) return;
-
-  const willOpen = !row.classList.contains("isOpen");
-  function closeAllRowsExcept(grid, keepRow){
-  const open = grid.querySelectorAll(".cviewRow.isOpen");
-  open.forEach(r => {
-    if (r !== keepRow) r.classList.remove("isOpen");
-  });
-}
-  row.classList.toggle("isOpen", willOpen);
-
-  // ✅ attiva/disattiva scroll solo quando serve
-  const anyOpen = !!grid.querySelector(".cviewRow.isOpen");
-  rootEl?.classList.toggle("isAnyOpen", anyOpen);
-
-  // ✅ quando apro, porto in vista la riga (molto comodo su iPhone)
-  if (willOpen) {
-    row.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }
-});
+        row.addEventListener("click", () => {
+          const willOpen = !row.classList.contains("isOpen");
+          closeAllRowsExcept(mount, row);
+          row.classList.toggle("isOpen", willOpen);
+          syncAnyOpenFlag(mount);
+        });
       }
 
       grid.appendChild(row);
     }
+
+    // dopo il render, riallinea flag scroll UX
+    syncAnyOpenFlag(mount);
   }
 
   document.addEventListener("nettotrack:calendarViewOpened", () => {
