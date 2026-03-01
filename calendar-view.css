@@ -88,24 +88,20 @@
 }
 .cviewCloseBtn:active{ transform: scale(.96); filter: brightness(1.08); }
 
-/* ========================= List/Grid ========================= */
-.cviewGrid{
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-}
 /* =========================
    UX: niente scroll a riposo, scroll solo quando una riga è aperta
    ========================= */
 
 /* default: NO scroll */
 .cviewGrid{
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
   overflow: hidden;           /* chiuso = niente scroll */
-  min-height: 0;              /* importante su iOS */
+  -webkit-overflow-scrolling: auto;
 }
 
 /* quando almeno una riga è aperta: abilita scroll */
@@ -114,9 +110,6 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* evita che la tendina venga “tagliata” dentro la riga */
-.cviewRow{ overflow: hidden; }
-.cviewRow.isOpen{ overflow: visible; }
 /* ========================= Row (Capsule) ========================= */
 .cviewRow{
   position: relative;
@@ -129,11 +122,13 @@
 
   padding: 12px 16px;
 
+  /* ✅ lascia hidden: così la capsula resta “pulita” */
   overflow:hidden;
+
   transition: filter .12s ease, transform .12s ease;
 
   display:flex;
-  flex-direction: column;   /* ✅ serve per details sotto */
+  flex-direction: column;   /* details sotto */
   justify-content:center;
 }
 .cviewRow:active{ transform: scale(.995); filter: brightness(1.05); }
@@ -147,6 +142,7 @@
   display:flex;
   align-items:center;
   min-width:0;
+  gap: 10px;              /* micro respiro */
 }
 
 /* SINISTRA */
@@ -184,11 +180,14 @@
 }
 
 /* ========================= Dot / Badges ========================= */
+/* ✅ FIX: badge dentro la HEAD (non assoluti) => restano allineati al testo */
 .cviewBadges{
-  position:absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
+  position: static;       /* prima: absolute */
+  top:auto;
+  right:auto;
+  transform:none;
+
+  margin-left: auto;      /* ✅ spinge a destra */
   display:flex;
   align-items:center;
   justify-content:flex-end;
@@ -249,12 +248,13 @@
   max-height: 0;
   opacity: 0;
   overflow:hidden;
-  transition: max-height .22s ease, opacity .18s ease;
+
+  transition: max-height .22s ease, opacity .18s ease, margin-top .18s ease;
 }
 .cviewDetails:empty{ display:none; }
 
 .cviewRow.isOpen .cviewDetails{
-  max-height: 220px; /* ✅ più spazio per più turni */
+  max-height: 220px; /* più spazio per più turni */
   opacity: 1;
 }
 
@@ -286,7 +286,7 @@
   opacity: 1;
 }
 
-/* ✅ Colori dot coerenti col view (base bilanciato incluso) */
+/* Colori dot coerenti col view (base bilanciato incluso) */
 .cviewShiftDot.base{ background: var(--cviewDotBase); }
 .cviewShiftDot.extra{ background: var(--cviewDotExtra); }
 .cviewShiftDot.festivo{ background: var(--ntDotFestivo, var(--accent3)); }
