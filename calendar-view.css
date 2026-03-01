@@ -9,9 +9,9 @@
   gap: 12px;
   min-height:0;
 
-  /* Optical tuning (1 sola manopola) */
-  --optLeftY: 0px;     /* testo su/giù */
-  --optDotY:  0px;    /* dot su/giù (iPhone di solito -1px) */
+  .cviewRoot{
+  --optLeftY: 0px;
+  --optDotY: 2px;
 }
 
 /* ========================= Header ========================= */
