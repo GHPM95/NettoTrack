@@ -121,13 +121,14 @@
 
 /* Compattiamo le altezze delle righe */
 .cviewDayName{
+  font-size: 12
   font-weight: 1000;
   letter-spacing: .1px;
   line-height: 1.05;
 }
 
 .cviewDayDate{
-  font-size: 10px;
+  font-size: 15px;
   color: var(--muted);
   font-weight: 850;
   line-height: 1.05;
