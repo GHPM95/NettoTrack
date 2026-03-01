@@ -292,3 +292,40 @@
 .cviewBubble{
   line-height: 1;
 }
+
+/* ================= OPTICAL ALIGN (FINAL) ================= */
+/* Regola 1 valore e ottieni centratura "perfetta" visiva */
+
+.cviewRoot{
+  --optLeftY: 0px;     /* testo su/giu */
+  --optDotY:  -1px;    /* dot su/giu (iOS di solito vuole -1px) */
+}
+
+/* head sempre uguale */
+.cviewRowHead{
+  height: 62px;                 /* fisso come vuoi tu */
+  display:flex;
+  align-items:center;
+  width:100%;
+  min-width:0;
+}
+
+/* testo: centrato + micro correzione */
+.cviewLeftTxt{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  transform: translateY(var(--optLeftY));
+}
+
+/* dot: centrato + micro correzione */
+.cviewBadges{
+  display:flex;
+  align-items:center;
+  transform: translateY(var(--optDotY));
+}
+
+/* evita che il numero "spinga" il cerchio */
+.cviewBubble{
+  line-height: 1;
+}
