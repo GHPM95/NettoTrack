@@ -18,7 +18,7 @@
 @supports (color: color-mix(in srgb, white 50%, black)) {
   .cviewRoot{
     --cviewDotBase: color-mix(in srgb, var(--ntDotBase, var(--accent2)) 95%, black 5%);
-    /* extra lo lasciamo invariato (già bilanciato) */
+    /* extra invariato */
   }
 }
 
@@ -115,7 +115,8 @@
   transition: filter .12s ease, transform .12s ease;
 
   display:flex;
-  align-items:center;
+  flex-direction: column;   /* ✅ serve per details sotto */
+  justify-content:center;
 }
 .cviewRow:active{ transform: scale(.995); filter: brightness(1.05); }
 
@@ -130,6 +131,7 @@
   min-width:0;
 }
 
+/* SINISTRA */
 .cviewLeftTxt{
   display:flex;
   flex-direction:column;
@@ -212,19 +214,14 @@
     0 6px 16px rgba(0,0,0,.22);
 }
 
-.cviewBubble.base{
-  --dotFill: var(--cviewDotBase);
-}
+.cviewBubble.base{ --dotFill: var(--cviewDotBase); }
+.cviewBubble.extra{ --dotFill: var(--cviewDotExtra); }
 
-.cviewBubble.extra{
-  --dotFill: var(--cviewDotExtra);
-}
-
-/* ========================= Details ========================= */
+/* ========================= Details (accordion) ========================= */
 .cviewDetails{
-  margin-top: 8px;
+  margin-top: 10px;
   border-top: 1px solid rgba(255,255,255,.10);
-  padding-top: 8px;
+  padding-top: 10px;
 
   color: var(--muted);
   font-weight: 850;
@@ -239,32 +236,17 @@
 .cviewDetails:empty{ display:none; }
 
 .cviewRow.isOpen .cviewDetails{
-  max-height: 140px;
+  max-height: 220px; /* ✅ più spazio per più turni */
   opacity: 1;
 }
 
-/* Hint */
-.cviewHint{
-  font-size: 11px;
-  color: rgba(255,255,255,.52);
-  font-weight: 800;
-  text-align:center;
-  letter-spacing:.12px;
-}
-/* ========================= Details list (accordion content) ========================= */
-
-.cviewDetails{
-  margin-top: 10px;
-}
-
-/* lista pulita */
+/* ========================= Details list content ========================= */
 .cviewShiftList{
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* singola riga turno */
 .cviewShiftItem{
   display:flex;
   align-items:center;
@@ -272,12 +254,12 @@
   padding: 8px 2px;
 }
 
-/* divider tra turni (come day editor) */
+/* divider tra turni */
 .cviewShiftItem + .cviewShiftItem{
   border-top: 1px solid rgba(255,255,255,.10);
 }
 
-/* DOT identico al calendario insert */
+/* DOT identico al calendario insert (dimensione fissa QUI) */
 .cviewShiftDot{
   width: 7px;
   height: 7px;
@@ -286,13 +268,12 @@
   opacity: 1;
 }
 
-/* Colori dot (solo colori globali, dimensioni qui) */
-.cviewShiftDot.base{ background: var(--ntDotBase, var(--accent2)); }
-.cviewShiftDot.extra{ background: var(--ntDotExtra, var(--accent1)); }
+/* ✅ Colori dot coerenti col view (base bilanciato incluso) */
+.cviewShiftDot.base{ background: var(--cviewDotBase); }
+.cviewShiftDot.extra{ background: var(--cviewDotExtra); }
 .cviewShiftDot.festivo{ background: var(--ntDotFestivo, var(--accent3)); }
 .cviewShiftDot.domenicale{ background: var(--ntDotDomenicale, var(--accent4)); }
 
-/* testo dettaglio */
 .cviewShiftTxt{
   min-width: 0;
   flex: 1 1 auto;
@@ -309,4 +290,13 @@
 .cviewShiftLbl{
   color: var(--muted);
   font-weight: 900;
+}
+
+/* Hint */
+.cviewHint{
+  font-size: 11px;
+  color: rgba(255,255,255,.52);
+  font-weight: 800;
+  text-align:center;
+  letter-spacing:.12px;
 }
