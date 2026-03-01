@@ -318,3 +318,57 @@
   text-align:center;
   letter-spacing:.12px;
 }
+
+/* ========================= Row Head ========================= */
+.cviewRowHead{
+  position: relative;          /* ✅ ancora i badge qui */
+  width: 100%;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+
+  /* ✅ spazio “riservato” ai bubble a destra */
+  padding-right: 96px;
+}
+
+/* ========================= Badges ========================= */
+.cviewBadges{
+  position: absolute;          /* ✅ ora è relativo alla HEAD */
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.cviewBadges:empty{ display:none; }
+
+/* ========================= Details (accordion) ========================= */
+/* ✅ quando chiusa: NON deve occupare spazio */
+.cviewDetails{
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height .22s ease, opacity .18s ease;
+
+  color: var(--muted);
+  font-weight: 850;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* ✅ quando aperta: aggiungi lo “spazio” e la riga sopra */
+.cviewRow.isOpen .cviewDetails{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,.10);
+
+  max-height: 220px;
+  opacity: 1;
+}
