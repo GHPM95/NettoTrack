@@ -59,10 +59,11 @@
   }
 
   function fmtDM(d) {
-    const dd = String(d.getDate()).padStart(2,"0");
-    const mm = String(d.getMonth()+1).padStart(2,"0");
-    return `${dd}/${mm}`;
-  }
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${dd}/${mm}/${yy}`;
+}
 
   function renderWeek() {
     const mount = getMount();
@@ -106,7 +107,7 @@
 
       const dd = document.createElement("div");
       dd.className = "cviewDayDate";
-      dd.textContent = `${fmtDM(day)}${(y===ty && m===tm && d===td) ? " · Oggi" : ""}`;
+      dd.textContent = fmtDM(day);
 
       left.appendChild(dn);
       left.appendChild(dd);
