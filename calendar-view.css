@@ -47,9 +47,10 @@
 
 .cviewTitle{
   text-align:center;
-  font-weight: 1000;
-  letter-spacing:.2px;
-  font-size: clamp(14px, 3.6vw, 17px);
+  font-weight: 800;
+  letter-spacing:.3px;
+  font-size: clamp(12px, 3vw, 15px);
+  opacity: .9;
   white-space: nowrap;
   overflow:hidden;
   text-overflow: ellipsis;
