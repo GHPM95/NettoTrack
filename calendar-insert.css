@@ -228,13 +228,13 @@
   margin-left: -3px;           /* overlap laterale */
 }
 
-/* colori */
+/* colori (✅ globali) */
 .cinsDot.premium{
-  background: var(--accent2);  /* blu */
+  background: var(--nt-dot-premium);
 }
 
 .cinsDot.premiumExtra{
-  background: var(--accent1);  /* viola/fucsia */
+  background: var(--nt-dot-premiumExtra);
 }
 
 /* =========================
