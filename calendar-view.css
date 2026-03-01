@@ -203,16 +203,18 @@
 
 /* ===== DOT STYLE IDENTICO A INSERT ===== */
 
+./* base = celeste */
 .cviewBubble.base{
   background:
     radial-gradient(circle at 30% 25%, rgba(255,255,255,.25), transparent 55%),
-    var(--ntDotPremium);
+    var(--dot-base);
 }
 
+/* extra = viola */
 .cviewBubble.extra{
   background:
     radial-gradient(circle at 30% 25%, rgba(255,255,255,.25), transparent 55%),
-    var(--ntDotPremiumExtra);
+    var(--dot-extra);
 }
 
 /* bordo interno leggero */
