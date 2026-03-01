@@ -131,23 +131,24 @@
       head.appendChild(left);
       head.appendChild(badges);
 
-      const details = document.createElement("div");
-      details.className = "cviewDetails";
-
-      if (data?.shifts?.length) {
-        const parts = data.shifts.map(s => {
-          const flags = [];
-          if (s?.flags?.straordinario) flags.push("STR");
-          if (s?.flags?.festivo) flags.push("FEST");
-          if (s?.flags?.domenicale) flags.push("DOM");
-          const f = flags.length ? ` (${flags.join(",")})` : "";
-          return `${s.from || "--:--"}–${s.to || "--:--"}${f}`;
-        });
-        details.textContent = parts.join(" · ");
-      }
-
       row.appendChild(head);
-      row.appendChild(details);
+
+if (data?.shifts?.length) {
+  const details = document.createElement("div");
+  details.className = "cviewDetails";
+
+  const parts = data.shifts.map(s => {
+    const flags = [];
+    if (s?.flags?.straordinario) flags.push("STR");
+    if (s?.flags?.festivo) flags.push("FEST");
+    if (s?.flags?.domenicale) flags.push("DOM");
+    const f = flags.length ? ` (${flags.join(",")})` : "";
+    return `${s.from || "--:--"}–${s.to || "--:--"}${f}`;
+  });
+
+  details.textContent = parts.join(" · ");
+  row.appendChild(details);
+}
 
       if (data) {
         row.addEventListener("click", () => {
