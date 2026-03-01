@@ -12,9 +12,8 @@
   position:relative;
 
   /* ✅ Alias colori DOT (globali) con fallback sugli accent */
-  --cinsDotPremium: var(--nt-dot-premium, var(--accent2));
-  --cinsDotPremiumExtra: var(--nt-dot-premiumExtra, var(--accent1));
-}
+  --cinsDotPremium: var(--ntDotBase, var(--accent2));        /* celeste */
+  --cinsDotPremiumExtra: var(--ntDotExtra, var(--accent1));  /* viola */}
 
 /* =========================
    Header
