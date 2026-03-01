@@ -169,37 +169,3 @@
     if (mounted) renderWeek();
   });
 })();
-
-/* Righe tutte uguali: evita altezze “random” */
-.cviewRowHead{
-  min-height: 54px;          /* uguale per tutti */
-  align-items: center;
-  min-width: 0;
-}
-
-.cviewLeftTxt{
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-/* Cerchi ore più integrati nella capsula */
-.cviewBubble{
-  width: 38px;
-  height: 38px;
-  font-size: 15px;
-}
-
-.cviewBadges{
-  padding-right: 6px;   /* rientro dal bordo della capsula */
-  gap: 8px;
-  flex: 0 0 auto;
-}
-
-.cviewDayName,
-.cviewDayDate{
-  display: block;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
