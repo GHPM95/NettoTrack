@@ -11,7 +11,7 @@
 
   /* Optical tuning (1 sola manopola) */
   --optLeftY: 0px;     /* testo su/giù */
-  --optDotY:  -1px;    /* dot su/giù (iPhone di solito -1px) */
+  --optDotY:  0px;    /* dot su/giù (iPhone di solito -1px) */
 }
 
 /* ========================= Header ========================= */
