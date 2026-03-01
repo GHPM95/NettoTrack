@@ -9,9 +9,9 @@
   gap: 12px;
   min-height:0;
 
-  /* ✅ Colori DOT condivisi (fallback sugli accent se non hai ancora messo ui.css) */
-  --cviewDotBase: var(--ntDotBase, var(--accent2));   /* celeste */
-  --cviewDotExtra: var(--ntDotExtra, var(--accent1)); /* viola */
+  /* Colori DOT condivisi (globali da ui.css) */
+  --cviewDotBase: var(--ntDotBase, var(--accent2));
+  --cviewDotExtra: var(--ntDotExtra, var(--accent1));
 }
 
 /* ========================= Header ========================= */
@@ -93,7 +93,7 @@
 
 /* ========================= Row (Capsule) ========================= */
 .cviewRow{
-  position: relative; /* ✅ serve per ancorare i dot assoluti */
+  position: relative;
 
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,.14);
@@ -101,13 +101,11 @@
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
 
-  /* padding bilanciato, spazio reale per dot a destra */
   padding: 12px 16px;
 
   overflow:hidden;
   transition: filter .12s ease, transform .12s ease;
 
-  /* ✅ centra verticalmente il contenuto della riga */
   display:flex;
   align-items:center;
 }
@@ -124,40 +122,33 @@
   min-width:0;
 }
 
-/* SINISTRA: bloccata */
 .cviewLeftTxt{
   display:flex;
   flex-direction:column;
   justify-content:center;
   gap: 2px;
-
   flex: 0 0 auto;
   width: clamp(150px, 45vw, 190px);
-
   min-width:0;
 }
 
-/* Giorno: secondario */
 .cviewDayName{
   font-weight: 700;
   letter-spacing: .2px;
   line-height: 1.05;
   font-size: clamp(11px, 2.6vw, 12px);
   opacity: .6;
-
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width:0;
 }
 
-/* Data: primaria */
 .cviewDayDate{
   color: var(--muted);
   font-weight: 900;
   line-height: 1.05;
   font-size: clamp(12px, 3.2vw, 16px);
-
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -165,13 +156,11 @@
 }
 
 /* ========================= Dot / Badges ========================= */
-/* ✅ Centrati perfetti sulla capsula */
 .cviewBadges{
   position:absolute;
   right: 16px;
   top: 50%;
   transform: translateY(-50%);
-
   display:flex;
   align-items:center;
   justify-content:flex-end;
@@ -179,7 +168,7 @@
 }
 .cviewBadges:empty{ display:none; }
 
-/* Cerchio (dimensioni = SOLO QUI, non globali) */
+/* ========================= BUBBLE PREMIUM ========================= */
 .cviewBubble{
   width: 36px;
   height: 36px;
@@ -197,28 +186,33 @@
 
   color: #fff;
 
-  /* ✅ MODELLO UNICO (base/extra identici, cambia solo il colore) */
   --dotFill: rgba(255,255,255,.20);
 
-  border: 1px solid rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.22);
+
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 55%),
-    linear-gradient(135deg, var(--dotFill), var(--dotFill));
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 55%),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--dotFill) 92%, black 6%),
+      color-mix(in srgb, var(--dotFill) 100%, white 4%)
+    );
+
   box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,.16);
+    inset 0 2px 4px rgba(255,255,255,.22),
+    inset 0 -3px 8px rgba(0,0,0,.18),
+    0 6px 16px rgba(0,0,0,.22);
 }
 
-/* BASE: stesso modello, solo colore diverso */
 .cviewBubble.base{
   --dotFill: var(--cviewDotBase);
 }
 
-/* EXTRA: stesso modello, solo colore diverso */
 .cviewBubble.extra{
   --dotFill: var(--cviewDotExtra);
 }
 
-/* ========================= Details (expand) ========================= */
+/* ========================= Details ========================= */
 .cviewDetails{
   margin-top: 8px;
   border-top: 1px solid rgba(255,255,255,.10);
