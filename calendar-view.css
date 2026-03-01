@@ -89,7 +89,7 @@
 
 /* ========================= Row (Capsule) ========================= */
 .cviewRow{
-  position: relative;
+  position: relative; /* serve per ancorare i dot assoluti */
 
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,.14);
@@ -97,11 +97,13 @@
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
 
+  /* padding bilanciato, spazio reale per dot a destra */
   padding: 12px 16px;
 
   overflow:hidden;
   transition: filter .12s ease, transform .12s ease;
 
+  /* centra verticalmente il contenuto della riga */
   display:flex;
   align-items:center;
 }
@@ -127,7 +129,6 @@
 
   flex: 0 0 auto;
   width: clamp(150px, 45vw, 190px);
-
   min-width:0;
 }
 
@@ -159,9 +160,10 @@
 }
 
 /* ========================= Dot / Badges ========================= */
+/* Centrati perfetti sulla capsula (non sulla head) */
 .cviewBadges{
   position:absolute;
-  right: 16px;
+  right: 16px;      /* uguale al padding right della capsula */
   top: 50%;
   transform: translateY(-50%);
 
@@ -171,11 +173,12 @@
   gap: 8px;
 }
 
+/* se vuoto, non influenza */
 .cviewBadges:empty{
   display:none;
 }
 
-/* Cerchio (dimensioni locali) */
+/* Cerchio (dimensioni locali alla pagina: NON dipendono dai colori globali) */
 .cviewBubble{
   width: 36px;
   height: 36px;
@@ -191,29 +194,20 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.2px;
 
-  border: 2px solid transparent;
-  color: var(--text);
-  background: rgba(255,255,255,.10);
+  /* glass leggero uguale in entrambi */
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    0 10px 26px rgba(0,0,0,.18);
+  color: #fff;
 }
 
-/* base = bordo premium (✅ globale) */
+/* ===== COLORI DOT (GLOBALI) ===== */
 .cviewBubble.base{
-  background: linear-gradient(#0000,#0000) padding-box,
-              linear-gradient(90deg,
-                var(--nt-dot-premium),
-                var(--nt-dot-premium)
-              ) border-box;
-  border: 2px solid transparent;
+  background: var(--ntDotPremium);
 }
 
-/* extra = bordo premium→premiumExtra (✅ globale) */
 .cviewBubble.extra{
-  background: linear-gradient(#0000,#0000) padding-box,
-              linear-gradient(90deg,
-                var(--nt-dot-premium),
-                var(--nt-dot-premiumExtra)
-              ) border-box;
-  border: 2px solid transparent;
+  background: var(--ntDotPremiumExtra);
 }
 
 /* ========================= Details (expand) ========================= */
