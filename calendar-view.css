@@ -14,6 +14,14 @@
   --cviewDotExtra: var(--ntDotExtra, var(--accent1));
 }
 
+/* ✅ Premium balance: abbassa SOLO il celeste di ~5% (se supportato) */
+@supports (color: color-mix(in srgb, white 50%, black)) {
+  .cviewRoot{
+    --cviewDotBase: color-mix(in srgb, var(--ntDotBase, var(--accent2)) 95%, black 5%);
+    /* extra lo lasciamo invariato (già bilanciato) */
+  }
+}
+
 /* ========================= Header ========================= */
 .cviewHeader{
   display:grid;
