@@ -8,6 +8,10 @@
   flex-direction:column;
   gap: 12px;
   min-height:0;
+
+  /* Optical tuning (1 sola manopola) */
+  --optLeftY: 0px;     /* testo su/giù */
+  --optDotY:  -1px;    /* dot su/giù (iPhone di solito -1px) */
 }
 
 /* ========================= Header ========================= */
@@ -20,7 +24,7 @@
 
 .cviewLeft{
   display:flex;
-  gap: 12px; /* frecce distanziate */
+  gap: 12px;
   align-items:center;
 }
 
@@ -32,20 +36,15 @@
   color: var(--text);
   font-size: 22px;
   font-weight: 1000;
-
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
   backdrop-filter: blur(var(--blur));
-
   transition: transform .12s ease, filter .12s ease;
 }
 .cviewNavBtn:active{ transform: scale(.96); filter: brightness(1.08); }
 
-.cviewCenter{
-  min-width:0;
-  text-align:center;
-}
+.cviewCenter{ min-width:0; text-align:center; }
 
 .cviewTitle{
   text-align:center;
@@ -104,19 +103,17 @@
   overflow:hidden;
   transition: filter .12s ease, transform .12s ease;
 
-  /* centra il contenuto nella capsula senza cambiare altezza “a caso” */
+  /* centro stabile: la riga contiene solo head (+details se presenti) */
   display:flex;
   flex-direction:column;
   justify-content:center;
 }
 .cviewRow:active{ transform: scale(.995); filter: brightness(1.05); }
 
-/* Se non ci sono dati */
 .cviewRow.isEmpty{ opacity: .45; }
 .cviewRow.isEmpty .cviewBadges{ display:none; }
 
 /* ========================= Row Head (sinistra bloccata + dot) ========================= */
-/* Head stabile: sinistra fissa, dot possono avvicinarsi senza spostare sinistra */
 .cviewRowHead{
   display:flex;
   align-items:center;
@@ -124,26 +121,22 @@
   min-width:0;
   gap: 12px;
 
-  /* centro sempre uguale per tutte le righe */
-  height: clamp(58px, 7vw, 68px);
+  /* UGUALE ovunque, come vuoi tu */
+  height: 62px;
 }
 
-/* SINISTRA: blocco fisso responsivo (non si muove mai) */
+/* SINISTRA: bloccata (non si muove) */
 .cviewLeftTxt{
   display:flex;
   flex-direction:column;
-  justify-content:center;      /* centra testo nella head */
+  justify-content:center;
   gap: 2px;
 
   flex: 0 0 auto;
   width: clamp(150px, 45vw, 190px);
-}
 
-.cviewBadges{
-  margin-left:auto;
-  display:flex;
-  align-items:center;          /* centra dot nella head */
-  justify-content:flex-end;
+  /* micro correzione ottica (se serve) */
+  transform: translateY(var(--optLeftY));
 }
 
 /* Giorno: secondario */
@@ -160,7 +153,7 @@
   min-width:0;
 }
 
-/* Data: primaria (più importante) */
+/* Data: primaria */
 .cviewDayDate{
   color: var(--muted);
   font-weight: 900;
@@ -173,7 +166,20 @@
   min-width:0;
 }
 
-/* se vuoto, non influenza layout */
+/* DESTRA: dot */
+.cviewBadges{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap: 8px;
+  padding-right: 6px;
+
+  /* micro correzione ottica (questo è quello che ti serve) */
+  transform: translateY(var(--optDotY));
+}
+
+/* se vuoto, non influenza */
 .cviewBadges:empty{
   display:none;
   padding-right:0;
@@ -191,7 +197,7 @@
   justify-content:center;
 
   font-weight: 1000;
-  line-height: 1;
+  line-height: 1; /* evita “spinta” del numero */
   font-variant-numeric: tabular-nums;
 
   border: 2px solid transparent;
@@ -230,27 +236,12 @@
   transition: max-height .22s ease, opacity .18s ease;
 }
 
-/* se non c’è testo dettagli, non deve esistere (non ruba spazio) */
-.cviewDetails:empty{
-  display:none;
-}
+/* se non c’è testo dettagli, non deve esistere */
+.cviewDetails:empty{ display:none; }
 
 .cviewRow.isOpen .cviewDetails{
   max-height: 140px;
   opacity: 1;
-}
-
-/* lista turni (se in futuro la usi) */
-.cviewShiftList{
-  margin: 0;
-  padding-left: 16px;
-}
-.cviewShiftLine{
-  margin: 4px 0;
-}
-
-.cviewEmptyTxt{
-  opacity: .9;
 }
 
 /* Hint */
@@ -260,72 +251,4 @@
   font-weight: 800;
   text-align:center;
   letter-spacing:.12px;
-}
-
-/* ====== CENTRATURA PERFETTA CON/SENZA DOT ====== */
-
-/* La capsula centra la head sempre nello stesso punto */
-.cviewRow{
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-}
-
-/* Head: altezza controllata + padding interno bilanciato */
-.cviewRowHead{
-  min-height: clamp(52px, 6vw, 64px);  /* un pelo più stabile */
-  padding: 0;                          /* niente padding “fantasma” */
-  align-items:center;
-}
-
-/* Sinistra: centra davvero le due righe */
-.cviewLeftTxt{
-  justify-content:center;
-  gap: 2px;
-}
-
-/* Dot: centrati e non influenzano la baseline */
-.cviewBadges{
-  align-items:center;
-}
-
-.cviewBubble{
-  line-height: 1;
-}
-
-/* ================= OPTICAL ALIGN (FINAL) ================= */
-/* Regola 1 valore e ottieni centratura "perfetta" visiva */
-
-.cviewRoot{
-  --optLeftY: 0px;     /* testo su/giu */
-  --optDotY:  -1px;    /* dot su/giu (iOS di solito vuole -1px) */
-}
-
-/* head sempre uguale */
-.cviewRowHead{
-  height: 62px;                 /* fisso come vuoi tu */
-  display:flex;
-  align-items:center;
-  width:100%;
-  min-width:0;
-}
-
-/* testo: centrato + micro correzione */
-.cviewLeftTxt{
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  transform: translateY(var(--optLeftY));
-}
-
-/* dot: centrato + micro correzione */
-.cviewBadges{
-  display:flex;
-  align-items:center;
-  transform: translateY(var(--optDotY));
-}
-
-/* evita che il numero "spinga" il cerchio */
-.cviewBubble{
-  line-height: 1;
 }
