@@ -1,5 +1,5 @@
 (() => {
-  const { dateKey, startOfWeek, loadDay, dayTotals, todayParts } = window.NTCal;
+  const { dateKey, startOfWeek, loadDay, dayTotals } = window.NTCal;
 
   const DAYS = ["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"];
 
@@ -18,7 +18,7 @@
     const mount = getMount();
     if (!mount) return;
 
-    // ✅ FIX: se la card è stata chiusa e rimossa, il mount nuovo è vuoto → rimonta
+    // Se la card è stata chiusa e rimossa, il mount nuovo è vuoto → rimonta
     if (mounted && isActuallyMounted(mount)) return;
 
     mount.innerHTML = `
@@ -59,11 +59,38 @@
   }
 
   function fmtDM(d) {
-  const dd = String(d.getDate()).padStart(2,"0");
-  const mm = String(d.getMonth()+1).padStart(2,"0");
-  const yy = String(d.getFullYear()).slice(-2);
-  return `${dd}/${mm}/${yy}`;
-}
+    const dd = String(d.getDate()).padStart(2,"0");
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const yy = String(d.getFullYear()).slice(-2);
+    return `${dd}/${mm}/${yy}`;
+  }
+
+  function timeToMin(t){
+    if(!t || typeof t !== "string") return 9999;
+    const [hh, mm] = t.split(":").map(n => parseInt(n,10));
+    if(Number.isNaN(hh) || Number.isNaN(mm)) return 9999;
+    return hh * 60 + mm;
+  }
+
+  function shiftMeta(flags){
+    const f = flags || {};
+    const stra = !!f.straordinario;
+    const fest = !!f.festivo;
+    const dom  = !!f.domenicale;
+
+    // Regola: se festivo + domenicale => scrivi (domenicale)
+    if (dom) return { label: "Domenicale", dotClass: "domenicale" };
+    if (fest) return { label: "Festivo", dotClass: "festivo" };
+    if (stra) return { label: "Straordinario", dotClass: "extra" };
+    return { label: "Orario base", dotClass: "base" };
+  }
+
+  function closeAllRowsExcept(grid, keepRow){
+    const open = grid.querySelectorAll(".cviewRow.isOpen");
+    open.forEach(r => {
+      if (r !== keepRow) r.classList.remove("isOpen");
+    });
+  }
 
   function renderWeek() {
     const mount = getMount();
@@ -77,8 +104,6 @@
     const grid = mount.querySelector("#cviewGrid");
     if (!grid) return;
     grid.innerHTML = "";
-
-    const { y:ty, m:tm, d:td } = todayParts();
 
     for (let i=0; i<7; i++) {
       const day = new Date(weekStart);
@@ -130,29 +155,57 @@
 
       head.appendChild(left);
       head.appendChild(badges);
-
       row.appendChild(head);
 
-if (data?.shifts?.length) {
-  const details = document.createElement("div");
-  details.className = "cviewDetails";
+      // ===== Details (accordion) =====
+      const hasShifts = !!(data?.shifts?.length);
+      if (hasShifts) {
+        const details = document.createElement("div");
+        details.className = "cviewDetails";
 
-  const parts = data.shifts.map(s => {
-    const flags = [];
-    if (s?.flags?.straordinario) flags.push("STR");
-    if (s?.flags?.festivo) flags.push("FEST");
-    if (s?.flags?.domenicale) flags.push("DOM");
-    const f = flags.length ? ` (${flags.join(",")})` : "";
-    return `${s.from || "--:--"}–${s.to || "--:--"}${f}`;
-  });
+        const ul = document.createElement("ul");
+        ul.className = "cviewShiftList";
 
-  details.textContent = parts.join(" · ");
-  row.appendChild(details);
-}
+        const sorted = [...data.shifts].sort((a,b) => timeToMin(a?.from) - timeToMin(b?.from));
 
-      if (data) {
+        sorted.forEach(s => {
+          const li = document.createElement("li");
+          li.className = "cviewShiftItem";
+
+          const meta = shiftMeta(s?.flags);
+
+          const dot = document.createElement("span");
+          dot.className = `cviewShiftDot ${meta.dotClass}`;
+
+          const txt = document.createElement("div");
+          txt.className = "cviewShiftTxt";
+
+          const lbl = document.createElement("span");
+          lbl.className = "cviewShiftLbl";
+          lbl.textContent = `${meta.label}: `;
+
+          const from = s?.from || "--:--";
+          const to   = s?.to   || "--:--";
+
+          const t = document.createElement("span");
+          t.textContent = `${from} - ${to}`;
+
+          txt.appendChild(lbl);
+          txt.appendChild(t);
+
+          li.appendChild(dot);
+          li.appendChild(txt);
+          ul.appendChild(li);
+        });
+
+        details.appendChild(ul);
+        row.appendChild(details);
+
+        // click: apri/chiudi (solo se ha turni) + una riga aperta alla volta
         row.addEventListener("click", () => {
-          row.classList.toggle("isOpen");
+          const willOpen = !row.classList.contains("isOpen");
+          closeAllRowsExcept(grid, row);
+          row.classList.toggle("isOpen", willOpen);
         });
       }
 
