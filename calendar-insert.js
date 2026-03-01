@@ -8,12 +8,20 @@
   let y = todayParts().y;
   let m = todayParts().m;
 
+  function getMount(){
+    return document.getElementById("calInsertMount");
+  }
+
+  function isActuallyMounted(mount){
+    return !!(mount && mount.querySelector("#cinsRoot"));
+  }
+
   function mountIfNeeded() {
-    const mount = document.getElementById("calInsertMount");
+    const mount = getMount();
     if (!mount) return;
 
     // se la slide è stata chiusa/riaperta, il mount torna vuoto: rimonta
-    if (mounted && mount.querySelector("#cinsRoot")) return;
+    if (mounted && isActuallyMounted(mount)) return;
 
     mount.innerHTML = `
       <div class="cinsRoot" id="cinsRoot">
@@ -29,14 +37,12 @@
         </div>
 
         <div class="cinsBody">
-          <!-- ✅ NON BUTTON: solo div -->
           <div class="cinsWeekdays" id="cinsWeekdays" aria-hidden="true"></div>
-
           <div class="cinsGrid" id="cinsGrid"></div>
         </div>
 
         <div class="cinsPickerLayer" id="cinsPickerLayer" aria-hidden="true">
-          <div class="cinsPickerCard" id="cinsPickerCard">
+          <div class="cinsPickerCard" id="cinsPickerCard" role="dialog" aria-label="Seleziona mese e anno">
             <div class="cinsPickerTop">
               <div class="cinsPickerTitle">Seleziona mese e anno</div>
               <button class="ntBtn" id="cinsPickerClose" type="button" aria-label="Chiudi selezione">×</button>
@@ -56,150 +62,136 @@
       </div>
     `;
 
-    // ✅ Weekdays = DIV statici (nessun button)
+    // Weekdays = DIV statici
     const wd = mount.querySelector("#cinsWeekdays");
     wd.innerHTML = WDN.map(x => `<div class="cinsW">${x}</div>`).join("");
 
-    // events header
-    mount.querySelector("#cinsPrev").addEventListener("click", () => { stepMonth(-1); });
-    mount.querySelector("#cinsNext").addEventListener("click", () => { stepMonth(+1); });
+    // refs
+    const rootEl = mount.querySelector("#cinsRoot");
+    const layer  = mount.querySelector("#cinsPickerLayer");
+    const card   = mount.querySelector("#cinsPickerCard");
+
+    // -------------------------
+    // Picker open/close (API)
+    // -------------------------
+    function openPicker(on){
+      layer.classList.toggle("isOn", !!on);
+      layer.setAttribute("aria-hidden", on ? "false" : "true");
+      rootEl.classList.toggle("isPickerOn", !!on);
+
+      // reset eventuali drag style
+      card.style.transition = "";
+      card.style.transform = "";
+      card.style.opacity = "";
+
+      if (on) renderPicker();
+    }
+
+    function closePicker(){
+      openPicker(false);
+    }
+
+    // espongo per eventuali chiamate esterne
+    window.closeCinsPicker = closePicker;
+
+    // -------------------------
+    // Header events
+    // -------------------------
+    mount.querySelector("#cinsPrev").addEventListener("click", () => stepMonth(-1));
+    mount.querySelector("#cinsNext").addEventListener("click", () => stepMonth(+1));
     mount.querySelector("#cinsClose").addEventListener("click", () => {
       document.dispatchEvent(new Event("nettotrack:closeCalendarInsert"));
     });
 
     // picker open/close
     mount.querySelector("#cinsTitle").addEventListener("click", () => openPicker(true));
-    mount.querySelector("#cinsPickerClose").addEventListener("click", () => openPicker(false));
+    mount.querySelector("#cinsPickerClose").addEventListener("click", () => closePicker());
 
+    // year step
     mount.querySelector("#cinsYearMinus").addEventListener("click", () => { y -= 1; renderPicker(); });
-    mount.querySelector("#cinsYearPlus").addEventListener("click", () => { y += 1; renderPicker(); });
-// =========================
-// Swipe down per chiudere picker
-// =========================
-(function enablePickerSwipeDown(){
-  const rootEl = document.querySelector('.cinsRoot');
-  if (!rootEl) return;
-
-  const pickerLayer = rootEl.querySelector('.cinsPickerLayer');
-  const pickerCard  = rootEl.querySelector('.cinsPickerCard');
-  if (!pickerLayer || !pickerCard) return;
-
-  let startY = 0;
-  let lastY = 0;
-  let dragging = false;
-
-  function isPickerOpen(){
-    return pickerLayer.classList.contains('isOn') && rootEl.classList.contains('isPickerOn');
-  }
-
-  // 🔧 Devi avere già una funzione "closePicker()" nel tuo file.
-  // Se si chiama diversamente, rinominala qui.
-  function closePickerSafe(){
-    if (typeof window.closeCinsPicker === 'function') {
-      window.closeCinsPicker();
-      return;
-    }
-    // fallback: chiude via classi (non rompe nulla)
-    pickerLayer.classList.remove('isOn');
-    rootEl.classList.remove('isPickerOn');
-  }
-
-  pickerCard.addEventListener('touchstart', (e) => {
-    if (!isPickerOpen()) return;
-    if (!e.touches || !e.touches.length) return;
-    dragging = true;
-    startY = e.touches[0].clientY;
-    lastY = startY;
-    pickerCard.style.transition = 'none';
-  }, { passive: true });
-
-  pickerCard.addEventListener('touchmove', (e) => {
-    if (!dragging || !isPickerOpen()) return;
-    if (!e.touches || !e.touches.length) return;
-
-    lastY = e.touches[0].clientY;
-    const dy = Math.max(0, lastY - startY); // solo verso il basso
-
-    // piccola traslazione + fade leggero
-    pickerCard.style.transform = `translateY(${dy}px)`;
-    const fade = Math.max(0.55, 1 - dy / 420);
-    pickerCard.style.opacity = String(fade);
-  }, { passive: true });
-
-  pickerCard.addEventListener('touchend', () => {
-    if (!dragging) return;
-    dragging = false;
-
-    const dy = Math.max(0, lastY - startY);
-    const shouldClose = dy > 80; // soglia
-
-    pickerCard.style.transition = 'transform .18s ease, opacity .18s ease';
-
-    if (shouldClose) {
-      // reset stile e chiudi
-      pickerCard.style.transform = '';
-      pickerCard.style.opacity = '';
-      closePickerSafe();
-      return;
-    }
-
-    // torna su
-    pickerCard.style.transform = '';
-    pickerCard.style.opacity = '';
-  }, { passive: true });
-
-  // anche clic sul velo scuro chiude (se vuoi tenerlo)
-  pickerLayer.addEventListener('click', (e) => {
-    if (e.target === pickerLayer) closePickerSafe();
-  });
-})();
-    // swipe down (pointer) sul pickerCard
-    const layer = mount.querySelector("#cinsPickerLayer");
-    const card = mount.querySelector("#cinsPickerCard");
-
-    let pDown = false;
-    let x0 = 0, y0 = 0;
-
-    card.addEventListener("pointerdown", (e) => {
-      pDown = true;
-      x0 = e.clientX;
-      y0 = e.clientY;
-      card.setPointerCapture?.(e.pointerId);
-    }, { passive:true });
-
-    card.addEventListener("pointermove", (e) => {
-      if (!pDown) return;
-      const dy = e.clientY - y0;
-      const dx = e.clientX - x0;
-      if (dy > 80 && Math.abs(dx) < 60) {
-        pDown = false;
-        openPicker(false);
-      }
-    }, { passive:true });
-
-    card.addEventListener("pointerup", () => { pDown = false; }, { passive:true });
-    card.addEventListener("pointercancel", () => { pDown = false; }, { passive:true });
+    mount.querySelector("#cinsYearPlus").addEventListener("click",  () => { y += 1; renderPicker(); });
 
     // click fuori card chiude
     layer.addEventListener("click", (e) => {
-      if (e.target === layer) openPicker(false);
+      if (e.target === layer) closePicker();
     });
 
-    // month buttons
+    // -------------------------
+    // Month buttons
+    // -------------------------
     const monthGrid = mount.querySelector("#cinsMonthGrid");
     monthGrid.innerHTML = MONTHS.map((name, idx) => (
       `<button class="cinsPickBtn" data-m="${idx}" type="button">${name.slice(0,3)}</button>`
     )).join("");
+
     monthGrid.querySelectorAll("button").forEach(b => {
       b.addEventListener("click", () => {
         m = Number(b.dataset.m);
-        openPicker(false);
+        closePicker();
         renderMonth();
       });
     });
 
+    // -------------------------
+    // Swipe down to close (solo 1 sistema, stabile)
+    // -------------------------
+    let dragging = false;
+    let startY = 0;
+    let lastY = 0;
+
+    function isPickerOpen(){
+      return layer.classList.contains("isOn") && rootEl.classList.contains("isPickerOn");
+    }
+
+    card.addEventListener("pointerdown", (e) => {
+      if (!isPickerOpen()) return;
+      dragging = true;
+      startY = e.clientY;
+      lastY = startY;
+      card.style.transition = "none";
+      card.setPointerCapture?.(e.pointerId);
+    }, { passive:true });
+
+    card.addEventListener("pointermove", (e) => {
+      if (!dragging || !isPickerOpen()) return;
+      lastY = e.clientY;
+
+      const dy = Math.max(0, lastY - startY); // solo verso il basso
+      card.style.transform = `translateY(${dy}px)`;
+
+      const fade = Math.max(0.55, 1 - dy / 420);
+      card.style.opacity = String(fade);
+    }, { passive:true });
+
+    function endSwipe(){
+      if (!dragging) return;
+      dragging = false;
+
+      const dy = Math.max(0, lastY - startY);
+      const shouldClose = dy > 80;
+
+      card.style.transition = "transform .18s ease, opacity .18s ease";
+      card.style.transform = "";
+      card.style.opacity = "";
+
+      if (shouldClose) closePicker();
+    }
+
+    card.addEventListener("pointerup", endSwipe, { passive:true });
+    card.addEventListener("pointercancel", endSwipe, { passive:true });
+
+    // -------------------------
+    // Render first
+    // -------------------------
     mounted = true;
     renderMonth();
+
+    // =========================
+    // helpers inside mount
+    // =========================
+    function renderPicker(){
+      mount.querySelector("#cinsYearVal").textContent = String(y);
+    }
   }
 
   function stepMonth(delta) {
@@ -209,44 +201,29 @@
     renderMonth();
   }
 
-  function openPicker(on) {
-    const mount = document.getElementById("calInsertMount");
-    if (!mount) return;
-    const layer = mount.querySelector("#cinsPickerLayer");
-    layer.classList.toggle("isOn", !!on);
-    layer.setAttribute("aria-hidden", on ? "false" : "true");
-    mount.querySelector("#cinsRoot")?.classList.toggle("isPickerOn", !!on);
-    if (on) renderPicker();
-  }
-
-  function renderPicker() {
-    const mount = document.getElementById("calInsertMount");
-    if (!mount) return;
-    mount.querySelector("#cinsYearVal").textContent = String(y);
-  }
-  
-
   function hasMeaningfulDayData(model) {
-  if (!model || !Array.isArray(model.shifts) || model.shifts.length === 0) return false;
+    if (!model || !Array.isArray(model.shifts) || model.shifts.length === 0) return false;
 
-  return model.shifts.some((s) => {
-    const hasTimes = !!(s?.from || s?.to);
-    const hasPause = Number(s?.pauseMin || 0) > 0 || !!s?.pausePaid;
-    const hasFascia = !!(s?.shiftType && s.shiftType !== "none");
-    const hasExtra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
-    const hasAdv = (s?.advA && s.advA !== "-") || (s?.advB && s?.advB !== "-");
-    const hasNote = !!(s?.note && String(s.note).trim().length);
-    return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
-  });
-}
+    return model.shifts.some((s) => {
+      const hasTimes = !!(s?.from || s?.to);
+      const hasPause = Number(s?.pauseMin || 0) > 0 || !!s?.pausePaid;
+      const hasFascia = !!(s?.shiftType && s.shiftType !== "none");
+      const hasExtra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
+      const hasAdv = (s?.advA && s.advA !== "-") || (s?.advB && s?.advB !== "-");
+      const hasNote = !!(s?.note && String(s.note).trim().length);
+      return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
+    });
+  }
 
   function renderMonth() {
-    const mount = document.getElementById("calInsertMount");
+    const mount = getMount();
     if (!mount) return;
 
-    mount.querySelector("#cinsTitle").textContent = `${MONTHS[m]} ${y}`;
+    const titleBtn = mount.querySelector("#cinsTitle");
+    if (titleBtn) titleBtn.textContent = `${MONTHS[m]} ${y}`;
 
     const grid = mount.querySelector("#cinsGrid");
+    if (!grid) return;
     grid.innerHTML = "";
 
     const first = new Date(y, m, 1);
@@ -282,44 +259,41 @@
         const model = saved || draft;
 
         if (hasMeaningfulDayData(model)) {
-  const hasExtra = !!model?.shifts?.some((s) =>
-    !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday))
-  );
+          const hasExtra = !!model?.shifts?.some((s) =>
+            !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday))
+          );
 
-  // "normale" = almeno un turno significativo che NON è extra
-  const hasNormal = !!model?.shifts?.some((s) => {
-    const meaningful =
-      !!(s?.from || s?.to) ||
-      Number(s?.pauseMin || 0) > 0 ||
-      !!s?.pausePaid ||
-      !!(s?.shiftType && s.shiftType !== "none") ||
-      ((s?.advA && s.advA !== "-") || (s?.advB && s.advB !== "-")) ||
-      !!(s?.note && String(s.note).trim().length);
+          const hasNormal = !!model?.shifts?.some((s) => {
+            const meaningful =
+              !!(s?.from || s?.to) ||
+              Number(s?.pauseMin || 0) > 0 ||
+              !!s?.pausePaid ||
+              !!(s?.shiftType && s.shiftType !== "none") ||
+              ((s?.advA && s.advA !== "-") || (s?.advB && s?.advB !== "-")) ||
+              !!(s?.note && String(s.note).trim().length);
 
-    const extra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
-    return meaningful && !extra;
-  });
+            const extra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
+            return meaningful && !extra;
+          });
 
-  const dots = document.createElement("div");
-  dots.className = "cinsDots";
+          const dots = document.createElement("div");
+          dots.className = "cinsDots";
 
-  // 🔵 blu se c'è almeno un turno normale
-  if (hasNormal) {
-    const base = document.createElement("div");
-    base.className = "cinsDot premium";
-    dots.appendChild(base);
-  }
+          if (hasNormal) {
+            const base = document.createElement("div");
+            base.className = "cinsDot premium";
+            dots.appendChild(base);
+          }
 
-  // 🟣 viola se c'è almeno un turno extra
-  if (hasExtra) {
-    const extra = document.createElement("div");
-    extra.className = "cinsDot premiumExtra";
-    dots.appendChild(extra);
-  }
+          if (hasExtra) {
+            const extra = document.createElement("div");
+            extra.className = "cinsDot premiumExtra";
+            dots.appendChild(extra);
+          }
 
-  btn.appendChild(dots);
-}
-        
+          btn.appendChild(dots);
+        }
+
         btn.addEventListener("click", () => {
           window.NettoTrackUI?.openDayEditor(key);
         });
@@ -337,7 +311,7 @@
   });
 
   document.addEventListener("nettotrack:dataChanged", () => {
-    const mount = document.getElementById("calInsertMount");
+    const mount = getMount();
     if (!mount || !mount.querySelector("#cinsRoot")) return;
     renderMonth();
   });
