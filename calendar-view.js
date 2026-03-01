@@ -207,7 +207,12 @@
   if (e.target.closest(".cviewDetails")) return;
 
   const willOpen = !row.classList.contains("isOpen");
-  closeAllRowsExcept(grid, row);
+  function closeAllRowsExcept(grid, keepRow){
+  const open = grid.querySelectorAll(".cviewRow.isOpen");
+  open.forEach(r => {
+    if (r !== keepRow) r.classList.remove("isOpen");
+  });
+}
   row.classList.toggle("isOpen", willOpen);
 
   // ✅ attiva/disattiva scroll solo quando serve
