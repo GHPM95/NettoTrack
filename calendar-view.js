@@ -31,6 +31,7 @@
   // ✅ “significativo” come insert: NON solo from/to
   function isMeaningfulShift(s){
     if(!s) return false;
+
     const hasTimes = !!(s.from || s.to);
 
     const pauseMin = Number(s.pauseMin || 0);
@@ -40,7 +41,10 @@
 
     const tags = s.tags || {};
     const flags = s.flags || {};
-    const hasExtra = !!(tags.overtime || tags.holiday || tags.sunday || flags.straordinario || flags.festivo || flags.domenicale);
+    const hasExtra = !!(
+      tags.overtime || tags.holiday || tags.sunday ||
+      flags.straordinario || flags.festivo || flags.domenicale
+    );
 
     const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
     const hasNote = !!(s.note && String(s.note).trim().length);
@@ -57,7 +61,7 @@
     const fest = !!(t.holiday  || f.festivo);
     const dom  = !!(t.sunday   || f.domenicale);
 
-    // regola: se c’è domenicale (anche insieme a festivo) => Domenicale
+    // Regola richiesta: se c’è domenicale (anche insieme a festivo) => Domenicale
     if (dom)  return { label: "Domenicale", dotClass: "domenicale" };
     if (fest) return { label: "Festivo", dotClass: "festivo" };
     if (stra) return { label: "Straordinario", dotClass: "extra" };
@@ -149,7 +153,7 @@
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
 
-      // ✅ BLOCCA SWIPE UI
+      // ✅ BLOCCA SWIPE UI (il tuo ui.js lo rispetta)
       row.setAttribute("data-no-swipe", "");
       row.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
