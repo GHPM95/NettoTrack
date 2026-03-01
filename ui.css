@@ -12,12 +12,21 @@
   --accent3: #FF4FD8; /* rosa */
   --accent4: #FFB84A;
 
-    :root{
-  /* Dot colors (global) */
-  --dot-base: var(--accent2);                 /* celeste */
-  --dot-extra: var(--accent1);                /* viola */
+  /* =========================
+     DOT COLORS (GLOBAL)
+     Cambi SOLO qui e si aggiornano Insert + View + dettagli
+     ========================= */
+
+  /* usati da calendar insert + calendar view */
+  --ntDotBase: var(--accent2);  /* celeste */
+  --ntDotExtra: var(--accent1); /* viola */
+
+  /* se in futuro vuoi differenziare festivo/domenicale nei dettagli */
+  --ntDotFestivo: var(--accent3);
+  --ntDotDomenicale: var(--accent4);
+
+  /* se ti serve una grad per indicatori/pill */
   --dot-grad: linear-gradient(90deg, var(--accent2), var(--accent1), var(--accent3));
-}
 
   --rCard: 28px;
   --blur: 18px;
