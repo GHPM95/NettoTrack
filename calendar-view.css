@@ -8,10 +8,6 @@
   flex-direction:column;
   gap: 12px;
   min-height:0;
-
-  /* Optical tuning */
-  --optLeftY: 0px;
-  --optDotY: 2px; /* parti da 0: niente clipping. poi al massimo 1px */
 }
 
 /* ========================= Header ========================= */
@@ -93,38 +89,36 @@
 
 /* ========================= Row (Capsule) ========================= */
 .cviewRow{
+  position: relative; /* ✅ serve per ancorare i dot assoluti */
+
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,.14);
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
 
-  /* un pelo più padding = niente clipping del dot */
-  padding: 12px;
+  /* padding bilanciato, spazio reale per dot a destra */
+  padding: 12px 16px;
 
-  min-height:0;
   overflow:hidden;
   transition: filter .12s ease, transform .12s ease;
 
+  /* ✅ centra verticalmente il contenuto della riga */
   display:flex;
-  flex-direction:column;
-  justify-content:center;
+  align-items:center;
 }
 .cviewRow:active{ transform: scale(.995); filter: brightness(1.05); }
 
 .cviewRow.isEmpty{ opacity: .45; }
 .cviewRow.isEmpty .cviewBadges{ display:none; }
 
-/* ========================= Row Head (sinistra bloccata + dot) ========================= */
+/* ========================= Row Head ========================= */
+/* La head ora non deve “decidere” il centro: lo decide la capsula */
 .cviewRowHead{
+  width:100%;
   display:flex;
   align-items:center;
-  width:100%;
   min-width:0;
-  gap: 12px;
-
-  /* altezza fissa + un filo più alta = niente tagli */
-  height: 66px;
 }
 
 /* SINISTRA: bloccata */
@@ -137,7 +131,7 @@
   flex: 0 0 auto;
   width: clamp(150px, 45vw, 190px);
 
-  transform: translateY(var(--optLeftY));
+  min-width:0;
 }
 
 /* Giorno: secondario */
@@ -167,30 +161,29 @@
   min-width:0;
 }
 
-/* DESTRA: dot */
+/* ========================= Dot / Badges ========================= */
+/* ✅ Centrati perfetti sulla capsula (non sulla head) */
 .cviewBadges{
-  margin-left:auto;
+  position:absolute;
+  right: 16px;      /* uguale al padding right della capsula */
+  top: 50%;
+  transform: translateY(-50%);
+
   display:flex;
   align-items:center;
   justify-content:flex-end;
   gap: 8px;
-  padding-right: 6px;
-
-  /* tienilo piccolo per evitare clipping */
-  transform: translateY(var(--optDotY));
 }
 
 /* se vuoto, non influenza */
 .cviewBadges:empty{
   display:none;
-  padding-right:0;
 }
 
-/* Dot/cerchi */
+/* Cerchio */
 .cviewBubble{
   width: 42px;
   height: 42px;
-  font-size: 16px;
 
   border-radius: 999px;
   display:flex;
@@ -200,6 +193,10 @@
   font-weight: 1000;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+
+  /* numeri tipo 6.1 più “centrati” */
+  font-size: 15px;
+  letter-spacing: -0.2px;
 
   border: 2px solid transparent;
   color: var(--text);
