@@ -346,3 +346,21 @@
   display:none !important;
   padding-right:0 !important;
 }
+/* ================== CENTER CONTENT INSIDE CAPSULES (REAL) ================== */
+
+/* La capsula diventa un contenitore che centra la head */
+.cviewRow{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;   /* centra verticalmente il contenuto */
+}
+
+/* La head deve occupare tutta la larghezza */
+.cviewRowHead{
+  width: 100%;
+}
+
+/* Se non ci sono dettagli, non devono esistere (non rubano spazio) */
+.cviewDetails:empty{
+  display: none !important;
+}
