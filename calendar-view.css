@@ -251,3 +251,62 @@
   text-align:center;
   letter-spacing:.12px;
 }
+/* ========================= Details list (accordion content) ========================= */
+
+.cviewDetails{
+  margin-top: 10px;
+}
+
+/* lista pulita */
+.cviewShiftList{
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* singola riga turno */
+.cviewShiftItem{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 2px;
+}
+
+/* divider tra turni (come day editor) */
+.cviewShiftItem + .cviewShiftItem{
+  border-top: 1px solid rgba(255,255,255,.10);
+}
+
+/* DOT identico al calendario insert */
+.cviewShiftDot{
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  opacity: 1;
+}
+
+/* Colori dot (solo colori globali, dimensioni qui) */
+.cviewShiftDot.base{ background: var(--ntDotBase, var(--accent2)); }
+.cviewShiftDot.extra{ background: var(--ntDotExtra, var(--accent1)); }
+.cviewShiftDot.festivo{ background: var(--ntDotFestivo, var(--accent3)); }
+.cviewShiftDot.domenicale{ background: var(--ntDotDomenicale, var(--accent4)); }
+
+/* testo dettaglio */
+.cviewShiftTxt{
+  min-width: 0;
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  color: var(--text);
+  opacity: .92;
+  font-weight: 850;
+  font-size: 12px;
+}
+
+.cviewShiftLbl{
+  color: var(--muted);
+  font-weight: 900;
+}
