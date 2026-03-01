@@ -21,7 +21,7 @@
     if (mounted && isActuallyMounted(mount)) return;
 
     mount.innerHTML = `
-      <div class="cviewRoot" id="cviewRoot">
+  <div class="cviewRoot" id="cviewRoot" data-no-swipe>
         <div class="cviewHeader">
           <div class="cviewLeft">
             <button class="ntBtn" id="cviewPrev" type="button" aria-label="Settimana precedente">‹</button>
@@ -101,6 +101,7 @@
     if (title) title.textContent = `${fmtDM(weekStart)} – ${fmtDM(end)}`;
 
     const grid = mount.querySelector("#cviewGrid");
+    const rootEl = mount.querySelector("#cviewRoot");
     if (!grid) return;
     grid.innerHTML = "";
 
@@ -202,13 +203,22 @@
 
         // click: apri/chiudi + una riga aperta alla volta
         row.addEventListener("click", (e) => {
-          // evita bubbling “strano” se in futuro metti bottoni dentro
-          e.stopPropagation();
+  // se clicchi dentro i dettagli, non richiudere/riaprire a caso
+  if (e.target.closest(".cviewDetails")) return;
 
-          const willOpen = !row.classList.contains("isOpen");
-          closeAllRowsExcept(grid, row);
-          row.classList.toggle("isOpen", willOpen);
-        });
+  const willOpen = !row.classList.contains("isOpen");
+  closeAllRowsExcept(grid, row);
+  row.classList.toggle("isOpen", willOpen);
+
+  // ✅ attiva/disattiva scroll solo quando serve
+  const anyOpen = !!grid.querySelector(".cviewRow.isOpen");
+  rootEl?.classList.toggle("isAnyOpen", anyOpen);
+
+  // ✅ quando apro, porto in vista la riga (molto comodo su iPhone)
+  if (willOpen) {
+    row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+});
       }
 
       grid.appendChild(row);
