@@ -89,7 +89,7 @@
 
 /* ========================= Row (Capsule) ========================= */
 .cviewRow{
-  position: relative; /* ✅ serve per ancorare i dot assoluti */
+  position: relative;
 
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,.14);
@@ -97,13 +97,11 @@
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
 
-  /* padding bilanciato, spazio reale per dot a destra */
   padding: 12px 16px;
 
   overflow:hidden;
   transition: filter .12s ease, transform .12s ease;
 
-  /* ✅ centra verticalmente il contenuto della riga */
   display:flex;
   align-items:center;
 }
@@ -177,7 +175,7 @@
   display:none;
 }
 
-/* Cerchio (dimensioni RESTANO LOCALI qui) */
+/* Cerchio (dimensioni locali) */
 .cviewBubble{
   width: 36px;
   height: 36px;
@@ -191,33 +189,29 @@
   font-size: 14px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-
   letter-spacing: -0.2px;
 
   border: 2px solid transparent;
   color: var(--text);
-
-  /* ✅ colore globale */
-  background: var(--nt-dot-bg, rgba(255,255,255,.10));
+  background: rgba(255,255,255,.10);
 }
 
-/* base = bordo cyan (✅ colori globali) */
+/* base = bordo premium (✅ globale) */
 .cviewBubble.base{
   background: linear-gradient(#0000,#0000) padding-box,
               linear-gradient(90deg,
-                var(--nt-dot-base-a, var(--accent2)),
-                var(--nt-dot-base-b, var(--accent2))
+                var(--nt-dot-premium),
+                var(--nt-dot-premium)
               ) border-box;
   border: 2px solid transparent;
 }
 
-/* extra = bordo gradiente (✅ colori globali) */
+/* extra = bordo premium→premiumExtra (✅ globale) */
 .cviewBubble.extra{
   background: linear-gradient(#0000,#0000) padding-box,
               linear-gradient(90deg,
-                var(--nt-dot-extra-a, var(--accent2)),
-                var(--nt-dot-extra-b, var(--accent1)),
-                var(--nt-dot-extra-c, var(--accent3))
+                var(--nt-dot-premium),
+                var(--nt-dot-premiumExtra)
               ) border-box;
   border: 2px solid transparent;
 }
