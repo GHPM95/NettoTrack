@@ -33,7 +33,7 @@
           <button class="ntBtn" id="cviewClose" type="button" aria-label="Chiudi">×</button>
         </div>
 
-        <div class="cviewGrid" id="cviewGrid"></div>
+        <div class="cviewGrid" id="cviewGrid" data-no-swipe></div>
       </div>
     `;
 
@@ -66,10 +66,7 @@
 
   function timeToMin(t){
     if(!t || typeof t !== "string") return 9999;
-    const m = t.match(/^(\d{1,2}):(\d{2})$/);
-    if (!m) return 9999;
-    const hh = parseInt(m[1],10);
-    const mm = parseInt(m[2],10);
+    const [hh, mm] = t.split(":").map(n => parseInt(n,10));
     if(Number.isNaN(hh) || Number.isNaN(mm)) return 9999;
     return hh * 60 + mm;
   }
@@ -80,36 +77,17 @@
     const fest = !!f.festivo;
     const dom  = !!f.domenicale;
 
-    // Regola: se festivo + domenicale => scrivi (domenicale)
-    if (dom) return { label: "Domenicale", dotClass: "domenicale" };
+    // Regola: se c'è domenicale (anche insieme a festivo) => scrivi Domenicale
+    if (dom)  return { label: "Domenicale", dotClass: "domenicale" };
     if (fest) return { label: "Festivo", dotClass: "festivo" };
     if (stra) return { label: "Straordinario", dotClass: "extra" };
     return { label: "Orario base", dotClass: "base" };
   }
 
   function closeAllRowsExcept(grid, keepRow){
-    grid.querySelectorAll(".cviewRow.isOpen").forEach(r => {
+    const open = grid.querySelectorAll(".cviewRow.isOpen");
+    open.forEach(r => {
       if (r !== keepRow) r.classList.remove("isOpen");
-    });
-  }
-
-  function bindOpen(row, head, grid){
-    const toggle = () => {
-      const willOpen = !row.classList.contains("isOpen");
-      closeAllRowsExcept(grid, row);
-      row.classList.toggle("isOpen", willOpen);
-    };
-
-    // iOS-friendly: pointerdown prima, click come fallback
-    head.addEventListener("pointerdown", (e) => { e.preventDefault(); toggle(); }, { passive:false });
-    head.addEventListener("click", (e) => { e.preventDefault(); toggle(); });
-
-    // anche tastiera (se mai userai)
-    row.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        toggle();
-      }
     });
   }
 
@@ -130,21 +108,18 @@
       const day = new Date(weekStart);
       day.setDate(day.getDate() + i);
 
-      const y = day.getFullYear();
-      const m = day.getMonth();
-      const d = day.getDate();
-      const key = dateKey(y, m, d);
-
+      const key = dateKey(day.getFullYear(), day.getMonth(), day.getDate());
       const data = loadDay(key);
       const totals = data ? dayTotals(data) : { baseHours:0, extraHours:0, hasBase:false, hasExtra:false };
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
-      row.setAttribute("role","button");
-      row.setAttribute("tabindex","0");
+      // ✅ IMPORTANT: evita che ui.js lo prenda come swipe
+      row.setAttribute("data-no-swipe", "");
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
+      head.setAttribute("data-no-swipe", "");
 
       const left = document.createElement("div");
       left.className = "cviewLeftTxt";
@@ -176,17 +151,12 @@
         badges.appendChild(b);
       }
 
-      // ✅ IMPORTANT: badges non devono “mangiarsi” il tap
-      badges.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
-      badges.addEventListener("click", (e) => e.stopPropagation());
-
       head.appendChild(left);
       head.appendChild(badges);
       row.appendChild(head);
 
       // ===== Details (accordion) =====
-      const shiftsArr = (data && Array.isArray(data.shifts)) ? data.shifts : [];
-      const hasShifts = shiftsArr.length > 0;
+      const hasShifts = !!(data?.shifts?.length);
 
       if (hasShifts) {
         const details = document.createElement("div");
@@ -195,7 +165,7 @@
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...shiftsArr].sort((a,b) => timeToMin(a?.from) - timeToMin(b?.from));
+        const sorted = [...data.shifts].sort((a,b) => timeToMin(a?.from) - timeToMin(b?.from));
 
         sorted.forEach(s => {
           const li = document.createElement("li");
@@ -211,13 +181,13 @@
 
           const lbl = document.createElement("span");
           lbl.className = "cviewShiftLbl";
-          lbl.textContent = `(${meta.label})`;
+          lbl.textContent = `${meta.label}: `;
 
           const from = s?.from || "--:--";
           const to   = s?.to   || "--:--";
 
           const t = document.createElement("span");
-          t.textContent = `: ${from} - ${to}`;
+          t.textContent = `${from} - ${to}`;
 
           txt.appendChild(lbl);
           txt.appendChild(t);
@@ -230,8 +200,15 @@
         details.appendChild(ul);
         row.appendChild(details);
 
-        // ✅ bind tap SOLO sulla head (zona affidabile) ma con una sola riga aperta
-        bindOpen(row, head, grid);
+        // click: apri/chiudi + una riga aperta alla volta
+        row.addEventListener("click", (e) => {
+          // evita bubbling “strano” se in futuro metti bottoni dentro
+          e.stopPropagation();
+
+          const willOpen = !row.classList.contains("isOpen");
+          closeAllRowsExcept(grid, row);
+          row.classList.toggle("isOpen", willOpen);
+        });
       }
 
       grid.appendChild(row);
