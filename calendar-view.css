@@ -111,6 +111,7 @@
   justify-content:space-between;
   gap: 12px;
   width:100%;
+  
 }
 
 /* Testo (nome+data) centrato meglio nella capsula */
@@ -237,4 +238,49 @@
   font-weight: 800;
   text-align:center;
   letter-spacing:.12px;
+}
+
+/* ================= RESPONSIVE STABLE ROWS ================= */
+
+/* Altezza riga fluida ma controllata */
+.cviewRowHead{
+  min-height: clamp(50px, 6vw, 64px);
+  align-items: center;
+  min-width: 0;
+}
+
+/* Cerchi ore scalano col display */
+.cviewBubble{
+  width: clamp(34px, 5vw, 42px);
+  height: clamp(34px, 5vw, 42px);
+  font-size: clamp(13px, 2.8vw, 16px);
+}
+
+.cviewBadges{
+  padding-right: clamp(4px, 1vw, 8px);
+  gap: clamp(6px, 1.5vw, 10px);
+  flex: 0 0 auto;
+}
+
+.cviewLeftTxt{
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.cviewDayName{
+  font-weight: 800;
+  font-size: clamp(11px, 2.8vw, 14px);
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cviewDayDate{
+  font-weight: 900;
+  font-size: clamp(12px, 3.2vw, 16px);
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
