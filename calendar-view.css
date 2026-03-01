@@ -284,3 +284,34 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* --- Allineamento testo dentro capsule --- */
+.cviewRowHead{
+  display:flex;
+  align-items:center;   /* centra verticalmente */
+  min-width:0;
+}
+
+/* Colonna sinistra: centra davvero e permette ellipsis */
+.cviewLeftTxt{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;  /* QUESTO è il punto che ti manca */
+  gap: 2px;
+  min-width:0;
+  flex: 1 1 auto;
+}
+
+/* Testo che si adatta sempre */
+.cviewDayName,
+.cviewDayDate{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  min-width:0;
+}
+
+/* Se non ci sono ore, il contenitore a destra non deve influenzare */
+.cviewBadges:empty{
+  display:none;
+  padding-right:0;
+}
