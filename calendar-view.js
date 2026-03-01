@@ -28,31 +28,6 @@
     return hh * 60 + mm;
   }
 
-  // ✅ “significativo” come insert: NON solo from/to
-  function isMeaningfulShift(s){
-    if(!s) return false;
-
-    const hasTimes = !!(s.from || s.to);
-
-    const pauseMin = Number(s.pauseMin || 0);
-    const hasPause = pauseMin > 0 || !!s.pausePaid;
-
-    const hasFascia = !!(s.shiftType && s.shiftType !== "none");
-
-    const tags = s.tags || {};
-    const flags = s.flags || {};
-    const hasExtra = !!(
-      tags.overtime || tags.holiday || tags.sunday ||
-      flags.straordinario || flags.festivo || flags.domenicale
-    );
-
-    const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
-    const hasNote = !!(s.note && String(s.note).trim().length);
-
-    return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
-  }
-
-  // ✅ Legge sia tags (nuovo) che flags (vecchio)
   function shiftMeta(shift){
     const t = shift?.tags || {};
     const f = shift?.flags || {};
@@ -61,7 +36,6 @@
     const fest = !!(t.holiday  || f.festivo);
     const dom  = !!(t.sunday   || f.domenicale);
 
-    // Regola richiesta: se c’è domenicale (anche insieme a festivo) => Domenicale
     if (dom)  return { label: "Domenicale", dotClass: "domenicale" };
     if (fest) return { label: "Festivo", dotClass: "festivo" };
     if (stra) return { label: "Straordinario", dotClass: "extra" };
@@ -85,20 +59,19 @@
     const mount = getMount();
     if (!mount) return;
 
-    // se la slide è stata chiusa/riaperta, il mount torna vuoto: rimonta
     if (mounted && isActuallyMounted(mount)) return;
 
     mount.innerHTML = `
       <div class="cviewRoot" id="cviewRoot">
         <div class="cviewHeader">
           <div class="cviewLeft">
-            <button class="ntBtn" id="cviewPrev" type="button" aria-label="Settimana precedente">‹</button>
-            <button class="ntBtn" id="cviewNext" type="button" aria-label="Settimana successiva">›</button>
+            <button class="ntBtn" id="cviewPrev" type="button">‹</button>
+            <button class="ntBtn" id="cviewNext" type="button">›</button>
           </div>
 
           <div class="cviewTitle" id="cviewTitle"></div>
 
-          <button class="ntBtn" id="cviewClose" type="button" aria-label="Chiudi">×</button>
+          <button class="ntBtn" id="cviewClose" type="button">×</button>
         </div>
 
         <div class="cviewGrid" id="cviewGrid"></div>
@@ -152,14 +125,10 @@
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
-
-      // ✅ BLOCCA SWIPE UI (il tuo ui.js lo rispetta)
       row.setAttribute("data-no-swipe", "");
-      row.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
-      head.setAttribute("data-no-swipe", "");
 
       const left = document.createElement("div");
       left.className = "cviewLeftTxt";
@@ -195,20 +164,20 @@
       head.appendChild(badges);
       row.appendChild(head);
 
-      // ===== Details (accordion) =====
+      // ===== DETAILS =====
       const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
-      const meaningful = shifts.filter(isMeaningfulShift);
 
-      if (meaningful.length) {
+      if (shifts.length) {
         const details = document.createElement("div");
         details.className = "cviewDetails";
-        details.setAttribute("data-no-swipe", "");
-        details.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...meaningful].sort((a,b) => timeToMin(a?.from) - timeToMin(b?.from));
+        const sorted = [...shifts].sort((a,b) =>
+          timeToMin(a?.from ?? a?.start ?? a?.time?.from) -
+          timeToMin(b?.from ?? b?.start ?? b?.time?.from)
+        );
 
         sorted.forEach(s => {
           const li = document.createElement("li");
@@ -226,8 +195,8 @@
           lbl.className = "cviewShiftLbl";
           lbl.textContent = `${meta.label}: `;
 
-          const from = s?.from || "--:--";
-          const to   = s?.to   || "--:--";
+          const from = s?.from ?? s?.start ?? s?.time?.from ?? "--:--";
+          const to   = s?.to   ?? s?.end   ?? s?.time?.to   ?? "--:--";
 
           const t = document.createElement("span");
           t.textContent = `${from} - ${to}`;
@@ -243,16 +212,12 @@
         details.appendChild(ul);
         row.appendChild(details);
 
-        // click: apri/chiudi + una riga aperta alla volta
         row.addEventListener("click", (e) => {
           e.stopPropagation();
-
           const willOpen = !row.classList.contains("isOpen");
           closeAllRowsExcept(mount, row);
           row.classList.toggle("isOpen", willOpen);
           syncAnyOpenFlag(mount);
-
-          if (willOpen) row.scrollIntoView({ block: "nearest", behavior: "smooth" });
         });
       }
 
