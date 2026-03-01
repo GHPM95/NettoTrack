@@ -42,23 +42,16 @@
     return { label: "Orario base", dotClass: "base" };
   }
 
-  function syncAnyOpenFlag(mount){
-    const root = mount?.querySelector("#cviewRoot");
-    const anyOpen = !!mount?.querySelector(".cviewRow.isOpen");
-    root?.classList.toggle("isAnyOpen", anyOpen);
-  }
-
   function closeAllRowsExcept(mount, keepRow){
     const grid = mount.querySelector("#cviewGrid");
-    const open = grid.querySelectorAll(".cviewRow.isOpen");
-    open.forEach(r => { if (r !== keepRow) r.classList.remove("isOpen"); });
-    syncAnyOpenFlag(mount);
+    grid.querySelectorAll(".cviewRow.isOpen").forEach(r => {
+      if (r !== keepRow) r.classList.remove("isOpen");
+    });
   }
 
   function mountIfNeeded() {
     const mount = getMount();
     if (!mount) return;
-
     if (mounted && isActuallyMounted(mount)) return;
 
     mount.innerHTML = `
@@ -68,27 +61,24 @@
             <button class="ntBtn" id="cviewPrev" type="button">‹</button>
             <button class="ntBtn" id="cviewNext" type="button">›</button>
           </div>
-
           <div class="cviewTitle" id="cviewTitle"></div>
-
           <button class="ntBtn" id="cviewClose" type="button">×</button>
         </div>
-
         <div class="cviewGrid" id="cviewGrid"></div>
       </div>
     `;
 
     mount.querySelector("#cviewPrev").addEventListener("click", (e) => {
       e.stopPropagation();
-      weekStart = new Date(weekStart);
       weekStart.setDate(weekStart.getDate() - 7);
+      weekStart = new Date(weekStart);
       renderWeek();
     });
 
     mount.querySelector("#cviewNext").addEventListener("click", (e) => {
       e.stopPropagation();
-      weekStart = new Date(weekStart);
       weekStart.setDate(weekStart.getDate() + 7);
+      weekStart = new Date(weekStart);
       renderWeek();
     });
 
@@ -105,23 +95,26 @@
     const mount = getMount();
     if (!mount) return;
 
+    const grid = mount.querySelector("#cviewGrid");
     const title = mount.querySelector("#cviewTitle");
+
     const end = new Date(weekStart);
     end.setDate(end.getDate() + 6);
-    if (title) title.textContent = `${fmtDM(weekStart)} – ${fmtDM(end)}`;
+    title.textContent = `${fmtDM(weekStart)} – ${fmtDM(end)}`;
 
-    const grid = mount.querySelector("#cviewGrid");
-    if (!grid) return;
     grid.innerHTML = "";
 
-    for (let i=0; i<7; i++) {
+    for (let i = 0; i < 7; i++) {
+
       const day = new Date(weekStart);
       day.setDate(day.getDate() + i);
 
       const key = dateKey(day.getFullYear(), day.getMonth(), day.getDate());
       const data = loadDay(key);
+      const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
 
-      const totals = data ? dayTotals(data) : { baseHours:0, extraHours:0, hasBase:false, hasExtra:false };
+      const totals = data ? dayTotals(data) :
+        { baseHours:0, extraHours:0, hasBase:false, hasExtra:false };
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
@@ -150,13 +143,14 @@
       if (totals.hasBase) {
         const b = document.createElement("div");
         b.className = "cviewBubble base";
-        b.textContent = String(totals.baseHours);
+        b.textContent = totals.baseHours;
         badges.appendChild(b);
       }
+
       if (totals.hasExtra) {
         const b = document.createElement("div");
         b.className = "cviewBubble extra";
-        b.textContent = String(totals.extraHours);
+        b.textContent = totals.extraHours;
         badges.appendChild(b);
       }
 
@@ -165,9 +159,8 @@
       row.appendChild(head);
 
       // ===== DETAILS =====
-      const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
-
       if (shifts.length) {
+
         const details = document.createElement("div");
         details.className = "cviewDetails";
 
@@ -180,6 +173,7 @@
         );
 
         sorted.forEach(s => {
+
           const li = document.createElement("li");
           li.className = "cviewShiftItem";
 
@@ -193,16 +187,16 @@
 
           const lbl = document.createElement("span");
           lbl.className = "cviewShiftLbl";
-          lbl.textContent = `${meta.label}: `;
+          lbl.textContent = meta.label + ": ";
 
           const from = s?.from ?? s?.start ?? s?.time?.from ?? "--:--";
           const to   = s?.to   ?? s?.end   ?? s?.time?.to   ?? "--:--";
 
-          const t = document.createElement("span");
-          t.textContent = `${from} - ${to}`;
+          const timeSpan = document.createElement("span");
+          timeSpan.textContent = `${from} - ${to}`;
 
           txt.appendChild(lbl);
-          txt.appendChild(t);
+          txt.appendChild(timeSpan);
 
           li.appendChild(dot);
           li.appendChild(txt);
@@ -217,14 +211,11 @@
           const willOpen = !row.classList.contains("isOpen");
           closeAllRowsExcept(mount, row);
           row.classList.toggle("isOpen", willOpen);
-          syncAnyOpenFlag(mount);
         });
       }
 
       grid.appendChild(row);
     }
-
-    syncAnyOpenFlag(mount);
   }
 
   document.addEventListener("nettotrack:calendarViewOpened", () => {
@@ -236,4 +227,5 @@
   document.addEventListener("nettotrack:dataChanged", () => {
     if (mounted) renderWeek();
   });
+
 })();
