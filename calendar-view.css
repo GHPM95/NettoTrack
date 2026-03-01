@@ -124,20 +124,26 @@
   min-width:0;
   gap: 12px;
 
-  /* altezza fluida ma controllata (responsiva) */
-  min-height: clamp(58px, 7vw, 68px);
+  /* centro sempre uguale per tutte le righe */
+  height: clamp(58px, 7vw, 68px);
 }
 
 /* SINISTRA: blocco fisso responsivo (non si muove mai) */
 .cviewLeftTxt{
   display:flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction:column;
+  justify-content:center;      /* centra testo nella head */
   gap: 2px;
 
-  flex: 0 0 auto; /* non si restringe mai */
-  width: clamp(145px, 42vw, 180px);
-  min-width: 0;
+  flex: 0 0 auto;
+  width: clamp(150px, 45vw, 190px);
+}
+
+.cviewBadges{
+  margin-left:auto;
+  display:flex;
+  align-items:center;          /* centra dot nella head */
+  justify-content:flex-end;
 }
 
 /* Giorno: secondario */
@@ -165,17 +171,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-width:0;
-}
-
-/* DESTRA: dot/cerchi – si avvicinano verso sinistra se aumentano, senza spostare la sinistra */
-.cviewBadges{
-  margin-left: auto; /* spinge a destra */
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  gap: clamp(6px, 1.5vw, 10px);
-  padding-right: clamp(3px, 0.6vw, 5px);
-  flex: 0 0 auto;
 }
 
 /* se vuoto, non influenza layout */
