@@ -28,6 +28,26 @@
     return hh * 60 + mm;
   }
 
+  // ✅ “significativo” come insert: NON solo from/to
+  function isMeaningfulShift(s){
+    if(!s) return false;
+    const hasTimes = !!(s.from || s.to);
+
+    const pauseMin = Number(s.pauseMin || 0);
+    const hasPause = pauseMin > 0 || !!s.pausePaid;
+
+    const hasFascia = !!(s.shiftType && s.shiftType !== "none");
+
+    const tags = s.tags || {};
+    const flags = s.flags || {};
+    const hasExtra = !!(tags.overtime || tags.holiday || tags.sunday || flags.straordinario || flags.festivo || flags.domenicale);
+
+    const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
+    const hasNote = !!(s.note && String(s.note).trim().length);
+
+    return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
+  }
+
   // ✅ Legge sia tags (nuovo) che flags (vecchio)
   function shiftMeta(shift){
     const t = shift?.tags || {};
@@ -37,23 +57,17 @@
     const fest = !!(t.holiday  || f.festivo);
     const dom  = !!(t.sunday   || f.domenicale);
 
-    // Regola richiesta: se c'è domenicale (anche insieme a festivo) => Domenicale
+    // regola: se c’è domenicale (anche insieme a festivo) => Domenicale
     if (dom)  return { label: "Domenicale", dotClass: "domenicale" };
-    if (fest) return { label: "Festivo",    dotClass: "festivo" };
+    if (fest) return { label: "Festivo", dotClass: "festivo" };
     if (stra) return { label: "Straordinario", dotClass: "extra" };
     return { label: "Orario base", dotClass: "base" };
   }
 
-  // ✅ evita dettagli “vuoti”: considera valido se ha almeno un orario
-  function hasTimes(s){
-    return !!(s?.from || s?.to);
-  }
-
   function syncAnyOpenFlag(mount){
-    const rootEl = mount?.querySelector("#cviewRoot");
-    const grid = mount?.querySelector("#cviewGrid");
-    const anyOpen = !!grid?.querySelector(".cviewRow.isOpen");
-    rootEl?.classList.toggle("isAnyOpen", anyOpen);
+    const root = mount?.querySelector("#cviewRoot");
+    const anyOpen = !!mount?.querySelector(".cviewRow.isOpen");
+    root?.classList.toggle("isAnyOpen", anyOpen);
   }
 
   function closeAllRowsExcept(mount, keepRow){
@@ -121,7 +135,6 @@
 
     const grid = mount.querySelector("#cviewGrid");
     if (!grid) return;
-
     grid.innerHTML = "";
 
     for (let i=0; i<7; i++) {
@@ -135,7 +148,10 @@
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
-      row.setAttribute("data-no-swipe", ""); // ✅ importante con ui.js
+
+      // ✅ BLOCCA SWIPE UI
+      row.setAttribute("data-no-swipe", "");
+      row.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
@@ -177,12 +193,13 @@
 
       // ===== Details (accordion) =====
       const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
-      const meaningful = shifts.filter(hasTimes);
+      const meaningful = shifts.filter(isMeaningfulShift);
 
       if (meaningful.length) {
         const details = document.createElement("div");
         details.className = "cviewDetails";
         details.setAttribute("data-no-swipe", "");
+        details.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
@@ -222,9 +239,9 @@
         details.appendChild(ul);
         row.appendChild(details);
 
+        // click: apri/chiudi + una riga aperta alla volta
         row.addEventListener("click", (e) => {
-          // se clicchi dentro i dettagli, non togglare a caso
-          if (e.target.closest(".cviewDetails")) return;
+          e.stopPropagation();
 
           const willOpen = !row.classList.contains("isOpen");
           closeAllRowsExcept(mount, row);
