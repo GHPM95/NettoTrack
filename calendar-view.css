@@ -125,7 +125,7 @@
   gap: 12px;
 
   /* altezza fluida ma controllata (responsiva) */
-  min-height: clamp(50px, 6vw, 64px);
+  min-height: clamp(58px, 7vw, 68px);
 }
 
 /* SINISTRA: blocco fisso responsivo (non si muove mai) */
