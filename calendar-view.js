@@ -1,5 +1,5 @@
 (() => {
-  const { dateKey, startOfWeek, loadDay, dayTotals } = window.NTCal;
+  const { dateKey, startOfWeek, loadDay, loadDraft, dayTotals } = window.NTCal;
 
   const DAYS = ["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"];
 
@@ -8,10 +8,6 @@
 
   function getMount() {
     return document.getElementById("calViewMount");
-  }
-
-  function isActuallyMounted(mount) {
-    return !!(mount && mount.querySelector("#cviewRoot"));
   }
 
   function fmtDM(d) {
@@ -42,50 +38,40 @@
     return { label: "Orario base", dotClass: "base" };
   }
 
-  function closeAllRowsExcept(mount, keepRow){
-    const grid = mount.querySelector("#cviewGrid");
-    grid.querySelectorAll(".cviewRow.isOpen").forEach(r => {
-      if (r !== keepRow) r.classList.remove("isOpen");
-    });
-  }
-
   function mountIfNeeded() {
     const mount = getMount();
     if (!mount) return;
-    if (mounted && isActuallyMounted(mount)) return;
+    if (mounted && mount.querySelector("#cviewRoot")) return;
 
     mount.innerHTML = `
       <div class="cviewRoot" id="cviewRoot">
         <div class="cviewHeader">
           <div class="cviewLeft">
-            <button class="ntBtn" id="cviewPrev" type="button">‹</button>
-            <button class="ntBtn" id="cviewNext" type="button">›</button>
+            <button class="ntBtn" id="cviewPrev">‹</button>
+            <button class="ntBtn" id="cviewNext">›</button>
           </div>
           <div class="cviewTitle" id="cviewTitle"></div>
-          <button class="ntBtn" id="cviewClose" type="button">×</button>
+          <button class="ntBtn" id="cviewClose">×</button>
         </div>
         <div class="cviewGrid" id="cviewGrid"></div>
       </div>
     `;
 
-    mount.querySelector("#cviewPrev").addEventListener("click", (e) => {
-      e.stopPropagation();
+    mount.querySelector("#cviewPrev").onclick = () => {
       weekStart.setDate(weekStart.getDate() - 7);
       weekStart = new Date(weekStart);
       renderWeek();
-    });
+    };
 
-    mount.querySelector("#cviewNext").addEventListener("click", (e) => {
-      e.stopPropagation();
+    mount.querySelector("#cviewNext").onclick = () => {
       weekStart.setDate(weekStart.getDate() + 7);
       weekStart = new Date(weekStart);
       renderWeek();
-    });
+    };
 
-    mount.querySelector("#cviewClose").addEventListener("click", (e) => {
-      e.stopPropagation();
+    mount.querySelector("#cviewClose").onclick = () => {
       document.dispatchEvent(new Event("nettotrack:closeCalendarView"));
-    });
+    };
 
     mounted = true;
     renderWeek();
@@ -110,15 +96,20 @@
       day.setDate(day.getDate() + i);
 
       const key = dateKey(day.getFullYear(), day.getMonth(), day.getDate());
-      const data = loadDay(key);
+
+      // 🔥 prova saved, altrimenti draft
+      let data = loadDay(key);
+      if (!data) data = loadDraft?.(key);
+
+      console.log("VIEW DEBUG:", key, data);
+
       const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
 
       const totals = data ? dayTotals(data) :
         { baseHours:0, extraHours:0, hasBase:false, hasExtra:false };
 
       const row = document.createElement("div");
-      row.className = "cviewRow" + (!data ? " isEmpty" : "");
-      row.setAttribute("data-no-swipe", "");
+      row.className = "cviewRow";
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
@@ -158,7 +149,6 @@
       head.appendChild(badges);
       row.appendChild(head);
 
-      // ===== DETAILS =====
       if (shifts.length) {
 
         const details = document.createElement("div");
@@ -185,18 +175,10 @@
           const txt = document.createElement("div");
           txt.className = "cviewShiftTxt";
 
-          const lbl = document.createElement("span");
-          lbl.className = "cviewShiftLbl";
-          lbl.textContent = meta.label + ": ";
-
           const from = s?.from ?? s?.start ?? s?.time?.from ?? "--:--";
           const to   = s?.to   ?? s?.end   ?? s?.time?.to   ?? "--:--";
 
-          const timeSpan = document.createElement("span");
-          timeSpan.textContent = `${from} - ${to}`;
-
-          txt.appendChild(lbl);
-          txt.appendChild(timeSpan);
+          txt.innerHTML = `<span class="cviewShiftLbl">${meta.label}:</span> ${from} - ${to}`;
 
           li.appendChild(dot);
           li.appendChild(txt);
@@ -206,12 +188,9 @@
         details.appendChild(ul);
         row.appendChild(details);
 
-        row.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const willOpen = !row.classList.contains("isOpen");
-          closeAllRowsExcept(mount, row);
-          row.classList.toggle("isOpen", willOpen);
-        });
+        row.onclick = () => {
+          row.classList.toggle("isOpen");
+        };
       }
 
       grid.appendChild(row);
