@@ -1,5 +1,6 @@
 /* ========================= Calendar View (Weekly Agenda) ========================= */
 
+/* Root */
 .cviewRoot{
   width:100%;
   height:100%;
@@ -9,6 +10,7 @@
   min-height:0;
 }
 
+/* ========================= Header ========================= */
 .cviewHeader{
   display:grid;
   grid-template-columns: auto 1fr auto;
@@ -18,7 +20,7 @@
 
 .cviewLeft{
   display:flex;
-  gap: 12px; /* ✅ frecce più distanti */
+  gap: 12px; /* frecce distanziate */
   align-items:center;
 }
 
@@ -79,18 +81,18 @@
 }
 .cviewCloseBtn:active{ transform: scale(.96); filter: brightness(1.08); }
 
-/* 7 righe fisse */
+/* ========================= List/Grid ========================= */
 .cviewGrid{
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow: auto;              /* se serve scroll */
+  overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Riga giorno */
+/* ========================= Row (Capsule) ========================= */
 .cviewRow{
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,.14);
@@ -101,68 +103,104 @@
   min-height:0;
   overflow:hidden;
   transition: filter .12s ease, transform .12s ease;
+
+  /* centra il contenuto nella capsula senza cambiare altezza “a caso” */
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 .cviewRow:active{ transform: scale(.995); filter: brightness(1.05); }
 
-/* --- TESTO SINISTRA: deve adattarsi --- */
+/* Se non ci sono dati */
+.cviewRow.isEmpty{ opacity: .45; }
+.cviewRow.isEmpty .cviewBadges{ display:none; }
+
+/* ========================= Row Head (sinistra bloccata + dot) ========================= */
+/* Head stabile: sinistra fissa, dot possono avvicinarsi senza spostare sinistra */
 .cviewRowHead{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  gap: 12px;
   width:100%;
-  
+  min-width:0;
+  gap: 12px;
+
+  /* altezza fluida ma controllata (responsiva) */
+  min-height: clamp(50px, 6vw, 64px);
 }
 
-/* Testo (nome+data) centrato meglio nella capsula */
+/* SINISTRA: blocco fisso responsivo (non si muove mai) */
 .cviewLeftTxt{
-  justify-content: center;   /* centra verticalmente le 2 righe */
-  gap: 0px;                  /* meno “aria” tra nome e data */
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+
+  flex: 0 0 auto; /* non si restringe mai */
+  width: clamp(150px, 45vw, 190px);
+  min-width: 0;
 }
 
-/* Compattiamo le altezze delle righe */
+/* Giorno: secondario */
 .cviewDayName{
   font-weight: 700;
   letter-spacing: .2px;
   line-height: 1.05;
   font-size: clamp(11px, 2.6vw, 12px);
-  opacity: 0.75;
+  opacity: .75;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width:0;
 }
 
+/* Data: primaria (più importante) */
 .cviewDayDate{
-  font-size: clamp(14px, 3.5vw, 16px);
   color: var(--muted);
   font-weight: 900;
   line-height: 1.05;
-  transform: translateY(-2px); /* alza la data (era troppo bassa) */
+  font-size: clamp(12px, 3.2vw, 16px);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width:0;
 }
 
-/* --- LATO DESTRO: non deve mai stringersi troppo --- */
-.cviewRight{
+/* DESTRA: dot/cerchi – si avvicinano verso sinistra se aumentano, senza spostare la sinistra */
+.cviewBadges{
+  margin-left: auto; /* spinge a destra */
   display:flex;
   align-items:center;
-  gap: 10px;
   justify-content:flex-end;
-
-  flex: 0 0 auto;          /* non si comprime */
-  min-width: fit-content;  /* resta “solido” */
+  gap: clamp(6px, 1.5vw, 10px);
+  padding-right: clamp(6px, 1vw, 10px);
+  flex: 0 0 auto;
 }
 
-/* Se serve: impedisce che i badge si schiaccino */
-.cviewBadges{ flex: 0 0 auto; }
-.cviewEditBtn{ flex: 0 0 auto; }
+/* se vuoto, non influenza layout */
+.cviewBadges:empty{
+  display:none;
+  padding-right:0;
+}
 
+/* Dot/cerchi */
 .cviewBubble{
-  width: 42px;
-  height: 42px;
+  width: clamp(34px, 5vw, 42px);
+  height: clamp(34px, 5vw, 42px);
+  font-size: clamp(13px, 2.8vw, 16px);
+
   border-radius: 999px;
   display:flex;
   align-items:center;
   justify-content:center;
+
   font-weight: 1000;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+
   border: 2px solid transparent;
   color: var(--text);
-  font-variant-numeric: tabular-nums;
   background: rgba(255,255,255,.10);
 }
 
@@ -180,25 +218,7 @@
   border: 2px solid transparent;
 }
 
-.cviewEditBtn{
-  height: 42px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  color: var(--text);
-  font-weight: 950;
-  background:
-    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-  backdrop-filter: blur(var(--blur));
-  transition: transform .12s ease, filter .12s ease;
-}
-.cviewEditBtn:active{ transform: scale(.98); filter: brightness(1.08); }
-
-.cviewRow.isEmpty{ opacity: .45; }
-.cviewRow.isEmpty .cviewBadges{ display:none; }
-
-/* dettagli (espandibili) */
+/* ========================= Details (expand) ========================= */
 .cviewDetails{
   margin-top: 8px;
   border-top: 1px solid rgba(255,255,255,.10);
@@ -214,12 +234,18 @@
   overflow:hidden;
   transition: max-height .22s ease, opacity .18s ease;
 }
+
+/* se non c’è testo dettagli, non deve esistere (non ruba spazio) */
+.cviewDetails:empty{
+  display:none;
+}
+
 .cviewRow.isOpen .cviewDetails{
   max-height: 140px;
   opacity: 1;
 }
 
-/* lista turni */
+/* lista turni (se in futuro la usi) */
 .cviewShiftList{
   margin: 0;
   padding-left: 16px;
@@ -232,189 +258,11 @@
   opacity: .9;
 }
 
+/* Hint */
 .cviewHint{
   font-size: 11px;
   color: rgba(255,255,255,.52);
   font-weight: 800;
   text-align:center;
   letter-spacing:.12px;
-}
-
-/* ================= RESPONSIVE STABLE ROWS ================= */
-
-/* Altezza riga fluida ma controllata */
-.cviewRowHead{
-  min-height: clamp(50px, 6vw, 64px);
-  align-items: center;
-  min-width: 0;
-}
-
-/* Cerchi ore scalano col display */
-.cviewBubble{
-  width: clamp(34px, 5vw, 42px);
-  height: clamp(34px, 5vw, 42px);
-  font-size: clamp(13px, 2.8vw, 16px);
-}
-
-.cviewBadges{
-  padding-right: clamp(4px, 1vw, 8px);
-  gap: clamp(6px, 1.5vw, 10px);
-  flex: 0 0 auto;
-}
-
-.cviewLeftTxt{
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.cviewDayName{
-  font-weight: 800;
-  font-size: clamp(11px, 2.8vw, 14px);
-  line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.cviewDayDate{
-  font-weight: 900;
-  font-size: clamp(12px, 3.2vw, 16px);
-  line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-/* --- Allineamento testo dentro capsule --- */
-.cviewRowHead{
-  display:flex;
-  align-items:center;   /* centra verticalmente */
-  min-width:0;
-}
-
-/* Colonna sinistra: centra davvero e permette ellipsis */
-.cviewLeftTxt{
-  display:flex;
-  flex-direction:column;
-  justify-content:center;  /* QUESTO è il punto che ti manca */
-  gap: 2px;
-  min-width:0;
-  flex: 1 1 auto;
-}
-
-/* Testo che si adatta sempre */
-.cviewDayName,
-.cviewDayDate{
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  min-width:0;
-}
-
-/* Se non ci sono ore, il contenitore a destra non deve influenzare */
-.cviewBadges:empty{
-  display:none;
-  padding-right:0;
-}
-
-/* FORCE layout interno capsule (se altre regole lo sovrascrivono) */
-.cviewRoot .cviewRowHead{
-  display:flex !important;
-  align-items:center !important;
-  min-width:0 !important;
-}
-
-.cviewRoot .cviewLeftTxt{
-  display:flex !important;
-  flex-direction:column !important;
-  justify-content:center !important;
-  gap: 2px !important;
-  min-width:0 !important;
-  flex: 1 1 auto !important;
-}
-
-.cviewRoot .cviewDayName,
-.cviewRoot .cviewDayDate{
-  white-space:nowrap !important;
-  overflow:hidden !important;
-  text-overflow:ellipsis !important;
-  min-width:0 !important;
-}
-
-/* se badges vuoti, non devono influenzare */
-.cviewRoot .cviewBadges:empty{
-  display:none !important;
-  padding-right:0 !important;
-}
-/* ================== CENTER CONTENT INSIDE CAPSULES (REAL) ================== */
-
-/* La capsula diventa un contenitore che centra la head */
-.cviewRow{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;   /* centra verticalmente il contenuto */
-}
-
-/* La head deve occupare tutta la larghezza */
-.cviewRowHead{
-  width: 100%;
-}
-
-/* Se non ci sono dettagli, non devono esistere (non rubano spazio) */
-.cviewDetails:empty{
-  display: none !important;
-}
-
-/* ========= SINISTRA BLOCCATA + DOT CHE SCORRONO ========= */
-
-/* Head = 2 colonne: sinistra fissa + destra elastica */
-.cviewRowHead{
-  display: grid !important;
-  grid-template-columns: var(--leftCol) 1fr;
-  align-items: center !important;
-  min-width: 0 !important;
-}
-
-/* Larghezza sinistra responsiva */
-.cviewRoot{
-  --leftCol: clamp(140px, 44vw, 190px);
-}
-
-/* Sinistra non si muove mai */
-.cviewLeftTxt{
-  width: var(--leftCol) !important;
-  max-width: var(--leftCol) !important;
-  min-width: var(--leftCol) !important;
-  justify-content: center;
-  gap: 2px;
-}
-
-/* Testo dentro la colonna fissa: se lungo → ellipsis */
-.cviewDayName,
-.cviewDayDate{
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Destra prende il resto e può “scorrere” verso sinistra */
-.cviewBadges{
-  justify-self: end;
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  gap: clamp(6px, 1.5vw, 10px);
-  padding-right: clamp(6px, 1vw, 10px);
-  min-width: 0;
-}
-
-/* Cerchi ore stabili */
-.cviewBubble{
-  flex: 0 0 auto;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  line-height: 1;
-  width: clamp(34px, 5vw, 42px);
-  height: clamp(34px, 5vw, 42px);
-  font-size: clamp(13px, 2.8vw, 16px);
 }
