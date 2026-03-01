@@ -12,10 +12,13 @@
   --accent3: #FF4FD8; /* rosa */
   --accent4: #FFB84A;
 
-  /* === DOT COLORS (shared: calendar insert + calendar view) === */
-  --nt-dot-premium: var(--accent2);       /* blu/celeste */
-  --nt-dot-premiumExtra: var(--accent1);  /* viola */
-  
+    :root{
+  /* Dot colors (global) */
+  --dot-base: var(--accent2);                 /* celeste */
+  --dot-extra: var(--accent1);                /* viola */
+  --dot-grad: linear-gradient(90deg, var(--accent2), var(--accent1), var(--accent3));
+}
+
   --rCard: 28px;
   --blur: 18px;
 
