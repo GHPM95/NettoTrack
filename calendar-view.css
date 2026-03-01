@@ -113,7 +113,6 @@
 .cviewRow.isEmpty .cviewBadges{ display:none; }
 
 /* ========================= Row Head ========================= */
-/* La head ora non deve “decidere” il centro: lo decide la capsula */
 .cviewRowHead{
   width:100%;
   display:flex;
@@ -162,10 +161,9 @@
 }
 
 /* ========================= Dot / Badges ========================= */
-/* ✅ Centrati perfetti sulla capsula (non sulla head) */
 .cviewBadges{
   position:absolute;
-  right: 16px;      /* uguale al padding right della capsula */
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
 
@@ -175,12 +173,11 @@
   gap: 8px;
 }
 
-/* se vuoto, non influenza */
 .cviewBadges:empty{
   display:none;
 }
 
-/* Cerchio */
+/* Cerchio (dimensioni RESTANO LOCALI qui) */
 .cviewBubble{
   width: 36px;
   height: 36px;
@@ -199,20 +196,29 @@
 
   border: 2px solid transparent;
   color: var(--text);
-  background: rgba(255,255,255,.10);
+
+  /* ✅ colore globale */
+  background: var(--nt-dot-bg, rgba(255,255,255,.10));
 }
 
-/* base = bordo cyan */
+/* base = bordo cyan (✅ colori globali) */
 .cviewBubble.base{
   background: linear-gradient(#0000,#0000) padding-box,
-              linear-gradient(90deg, var(--accent2), var(--accent2)) border-box;
+              linear-gradient(90deg,
+                var(--nt-dot-base-a, var(--accent2)),
+                var(--nt-dot-base-b, var(--accent2))
+              ) border-box;
   border: 2px solid transparent;
 }
 
-/* extra = bordo gradiente */
+/* extra = bordo gradiente (✅ colori globali) */
 .cviewBubble.extra{
   background: linear-gradient(#0000,#0000) padding-box,
-              linear-gradient(90deg, var(--accent2), var(--accent1), var(--accent3)) border-box;
+              linear-gradient(90deg,
+                var(--nt-dot-extra-a, var(--accent2)),
+                var(--nt-dot-extra-b, var(--accent1)),
+                var(--nt-dot-extra-c, var(--accent3))
+              ) border-box;
   border: 2px solid transparent;
 }
 
