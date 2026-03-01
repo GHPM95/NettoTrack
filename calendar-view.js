@@ -14,10 +14,60 @@
     return !!(mount && mount.querySelector("#cviewRoot"));
   }
 
+  function fmtDM(d) {
+    const dd = String(d.getDate()).padStart(2,"0");
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const yy = String(d.getFullYear()).slice(-2);
+    return `${dd}/${mm}/${yy}`;
+  }
+
+  function timeToMin(t){
+    if(!t || typeof t !== "string") return 9999;
+    const [hh, mm] = t.split(":").map(n => parseInt(n,10));
+    if(Number.isNaN(hh) || Number.isNaN(mm)) return 9999;
+    return hh * 60 + mm;
+  }
+
+  // ✅ Legge sia tags (nuovo) che flags (vecchio)
+  function shiftMeta(shift){
+    const t = shift?.tags || {};
+    const f = shift?.flags || {};
+
+    const stra = !!(t.overtime || f.straordinario);
+    const fest = !!(t.holiday  || f.festivo);
+    const dom  = !!(t.sunday   || f.domenicale);
+
+    // Regola richiesta: se c'è domenicale (anche insieme a festivo) => Domenicale
+    if (dom)  return { label: "Domenicale", dotClass: "domenicale" };
+    if (fest) return { label: "Festivo",    dotClass: "festivo" };
+    if (stra) return { label: "Straordinario", dotClass: "extra" };
+    return { label: "Orario base", dotClass: "base" };
+  }
+
+  // ✅ evita dettagli “vuoti”: considera valido se ha almeno un orario
+  function hasTimes(s){
+    return !!(s?.from || s?.to);
+  }
+
+  function syncAnyOpenFlag(mount){
+    const rootEl = mount?.querySelector("#cviewRoot");
+    const grid = mount?.querySelector("#cviewGrid");
+    const anyOpen = !!grid?.querySelector(".cviewRow.isOpen");
+    rootEl?.classList.toggle("isAnyOpen", anyOpen);
+  }
+
+  function closeAllRowsExcept(mount, keepRow){
+    const grid = mount.querySelector("#cviewGrid");
+    const open = grid.querySelectorAll(".cviewRow.isOpen");
+    open.forEach(r => { if (r !== keepRow) r.classList.remove("isOpen"); });
+    syncAnyOpenFlag(mount);
+  }
+
   function mountIfNeeded() {
     const mount = getMount();
     if (!mount) return;
 
+    // se la slide è stata chiusa/riaperta, il mount torna vuoto: rimonta
     if (mounted && isActuallyMounted(mount)) return;
 
     mount.innerHTML = `
@@ -60,109 +110,6 @@
     renderWeek();
   }
 
-  function fmtDM(d) {
-    const dd = String(d.getDate()).padStart(2,"0");
-    const mm = String(d.getMonth()+1).padStart(2,"0");
-    const yy = String(d.getFullYear()).slice(-2);
-    return `${dd}/${mm}/${yy}`;
-  }
-
-  // ---------- TIME HELPERS ----------
-  function pad2(n){ return String(n).padStart(2,"0"); }
-
-  function minToTime(min){
-    if (typeof min !== "number" || !Number.isFinite(min)) return null;
-    const hh = Math.floor(min / 60);
-    const mm = Math.round(min % 60);
-    if (hh < 0 || hh > 48) return null;
-    return `${pad2(hh)}:${pad2(mm)}`;
-  }
-
-  function normalizeTime(v){
-    if (v == null) return null;
-
-    // numero => minuti
-    if (typeof v === "number") return minToTime(v);
-
-    // stringa tipo "7:0" / "07:00"
-    if (typeof v === "string"){
-      const s = v.trim();
-      if (!s) return null;
-
-      // HH:MM
-      const m = s.match(/^(\d{1,2})\s*:\s*(\d{1,2})$/);
-      if (m){
-        const hh = parseInt(m[1],10);
-        const mm = parseInt(m[2],10);
-        if (Number.isFinite(hh) && Number.isFinite(mm)) return `${pad2(hh)}:${pad2(mm)}`;
-      }
-
-      // "420" (minuti) come stringa
-      if (/^\d+$/.test(s)){
-        const n = parseInt(s,10);
-        return minToTime(n);
-      }
-
-      return s; // fallback
-    }
-
-    return null;
-  }
-
-  function timeToMin(t){
-    const nt = normalizeTime(t);
-    if(!nt || typeof nt !== "string") return 9999;
-    const parts = nt.split(":");
-    if (parts.length !== 2) return 9999;
-    const hh = parseInt(parts[0],10);
-    const mm = parseInt(parts[1],10);
-    if(Number.isNaN(hh) || Number.isNaN(mm)) return 9999;
-    return hh * 60 + mm;
-  }
-
-  // Legge from/to anche se nel tuo storage si chiamano in altri modi
-  function getFromTo(s){
-    const from =
-      s?.from ?? s?.start ?? s?.in ?? s?.startTime ?? s?.fromTime ?? s?.timeFrom ?? s?.da;
-    const to =
-      s?.to   ?? s?.end   ?? s?.out ?? s?.endTime   ?? s?.toTime   ?? s?.timeTo   ?? s?.a;
-
-    const nf = normalizeTime(from);
-    const nt = normalizeTime(to);
-
-    return { from: nf, to: nt };
-  }
-
-  // ---------- META (tags/flags) ----------
-  function shiftMeta(shift){
-    const t = shift?.tags || {};
-    const f = shift?.flags || {};
-
-    const stra = !!(t.overtime || f.straordinario);
-    const fest = !!(t.holiday  || f.festivo);
-    const dom  = !!(t.sunday   || f.domenicale);
-
-    if (dom)  return { label: "Domenicale", dotClass: "domenicale" };
-    if (fest) return { label: "Festivo", dotClass: "festivo" };
-    if (stra) return { label: "Straordinario", dotClass: "extra" };
-    return { label: "Orario base", dotClass: "base" };
-  }
-
-  // ---------- UX open/close ----------
-  function syncAnyOpenFlag(mount){
-    const root = mount?.querySelector("#cviewRoot");
-    const anyOpen = !!mount?.querySelector(".cviewRow.isOpen");
-    root?.classList.toggle("isAnyOpen", anyOpen);
-  }
-
-  function closeAllRowsExcept(mount, keepRow){
-    const grid = mount.querySelector("#cviewGrid");
-    const open = grid.querySelectorAll(".cviewRow.isOpen");
-    open.forEach(r => { if (r !== keepRow) r.classList.remove("isOpen"); });
-    syncAnyOpenFlag(mount);
-  }
-
-  // ---------- RENDER ----------
   function renderWeek() {
     const mount = getMount();
     if (!mount) return;
@@ -174,6 +121,7 @@
 
     const grid = mount.querySelector("#cviewGrid");
     if (!grid) return;
+
     grid.innerHTML = "";
 
     for (let i=0; i<7; i++) {
@@ -187,9 +135,11 @@
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
+      row.setAttribute("data-no-swipe", ""); // ✅ importante con ui.js
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
+      head.setAttribute("data-no-swipe", "");
 
       const left = document.createElement("div");
       left.className = "cviewLeftTxt";
@@ -225,27 +175,21 @@
       head.appendChild(badges);
       row.appendChild(head);
 
-      // ===== Details =====
+      // ===== Details (accordion) =====
       const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
-
-      // prendi solo turni “con qualcosa”, non per forza from/to perfetti
-      const meaningful = shifts
-        .map(s => {
-          const { from, to } = getFromTo(s);
-          return { s, from, to };
-        })
-        .filter(x => !!(x.from || x.to));
+      const meaningful = shifts.filter(hasTimes);
 
       if (meaningful.length) {
         const details = document.createElement("div");
         details.className = "cviewDetails";
+        details.setAttribute("data-no-swipe", "");
 
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...meaningful].sort((a,b) => timeToMin(a.from) - timeToMin(b.from));
+        const sorted = [...meaningful].sort((a,b) => timeToMin(a?.from) - timeToMin(b?.from));
 
-        sorted.forEach(({ s, from, to }) => {
+        sorted.forEach(s => {
           const li = document.createElement("li");
           li.className = "cviewShiftItem";
 
@@ -261,8 +205,11 @@
           lbl.className = "cviewShiftLbl";
           lbl.textContent = `${meta.label}: `;
 
+          const from = s?.from || "--:--";
+          const to   = s?.to   || "--:--";
+
           const t = document.createElement("span");
-          t.textContent = `${from || "--:--"} - ${to || "--:--"}`;
+          t.textContent = `${from} - ${to}`;
 
           txt.appendChild(lbl);
           txt.appendChild(t);
@@ -275,11 +222,16 @@
         details.appendChild(ul);
         row.appendChild(details);
 
-        row.addEventListener("click", () => {
+        row.addEventListener("click", (e) => {
+          // se clicchi dentro i dettagli, non togglare a caso
+          if (e.target.closest(".cviewDetails")) return;
+
           const willOpen = !row.classList.contains("isOpen");
           closeAllRowsExcept(mount, row);
           row.classList.toggle("isOpen", willOpen);
           syncAnyOpenFlag(mount);
+
+          if (willOpen) row.scrollIntoView({ block: "nearest", behavior: "smooth" });
         });
       }
 
