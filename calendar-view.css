@@ -136,7 +136,7 @@
   gap: 2px;
 
   flex: 0 0 auto; /* non si restringe mai */
-  width: clamp(150px, 45vw, 190px);
+  width: clamp(145px, 42vw, 180px);
   min-width: 0;
 }
 
@@ -146,7 +146,7 @@
   letter-spacing: .2px;
   line-height: 1.05;
   font-size: clamp(11px, 2.6vw, 12px);
-  opacity: .75;
+  opacity: .65;
 
   white-space: nowrap;
   overflow: hidden;
@@ -174,7 +174,7 @@
   align-items:center;
   justify-content:flex-end;
   gap: clamp(6px, 1.5vw, 10px);
-  padding-right: clamp(6px, 1vw, 10px);
+  padding-right: clamp(4px, 0.8vw, 6px);
   flex: 0 0 auto;
 }
 
