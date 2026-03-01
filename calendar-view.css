@@ -201,13 +201,25 @@
   color: #fff;
 }
 
-/* ===== COLORI DOT (GLOBALI) ===== */
+/* ===== DOT STYLE IDENTICO A INSERT ===== */
+
 .cviewBubble.base{
-  background: var(--ntDotPremium);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.25), transparent 55%),
+    var(--ntDotPremium);
 }
 
 .cviewBubble.extra{
-  background: var(--ntDotPremiumExtra);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.25), transparent 55%),
+    var(--ntDotPremiumExtra);
+}
+
+/* bordo interno leggero */
+.cviewBubble{
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255,255,255,.35),
+    0 8px 22px rgba(0,0,0,.25);
 }
 
 /* ========================= Details (expand) ========================= */
