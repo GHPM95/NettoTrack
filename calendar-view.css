@@ -98,7 +98,25 @@
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
+/* =========================
+   UX: niente scroll a riposo, scroll solo quando una riga è aperta
+   ========================= */
 
+/* default: NO scroll */
+.cviewGrid{
+  overflow: hidden;           /* chiuso = niente scroll */
+  min-height: 0;              /* importante su iOS */
+}
+
+/* quando almeno una riga è aperta: abilita scroll */
+.cviewRoot.isAnyOpen .cviewGrid{
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* evita che la tendina venga “tagliata” dentro la riga */
+.cviewRow{ overflow: hidden; }
+.cviewRow.isOpen{ overflow: visible; }
 /* ========================= Row (Capsule) ========================= */
 .cviewRow{
   position: relative;
