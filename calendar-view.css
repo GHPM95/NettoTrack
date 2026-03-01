@@ -8,6 +8,10 @@
   flex-direction:column;
   gap: 12px;
   min-height:0;
+
+  /* ✅ Colori DOT condivisi (fallback sugli accent se non hai ancora messo ui.css) */
+  --cviewDotBase: var(--ntDotBase, var(--accent2));
+  --cviewDotExtra: var(--ntDotExtra, var(--accent1));
 }
 
 /* ========================= Header ========================= */
@@ -89,7 +93,7 @@
 
 /* ========================= Row (Capsule) ========================= */
 .cviewRow{
-  position: relative; /* serve per ancorare i dot assoluti */
+  position: relative; /* ✅ serve per ancorare i dot assoluti */
 
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,.14);
@@ -103,7 +107,7 @@
   overflow:hidden;
   transition: filter .12s ease, transform .12s ease;
 
-  /* centra verticalmente il contenuto della riga */
+  /* ✅ centra verticalmente il contenuto della riga */
   display:flex;
   align-items:center;
 }
@@ -129,6 +133,7 @@
 
   flex: 0 0 auto;
   width: clamp(150px, 45vw, 190px);
+
   min-width:0;
 }
 
@@ -160,10 +165,10 @@
 }
 
 /* ========================= Dot / Badges ========================= */
-/* Centrati perfetti sulla capsula (non sulla head) */
+/* ✅ Centrati perfetti sulla capsula */
 .cviewBadges{
   position:absolute;
-  right: 16px;      /* uguale al padding right della capsula */
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
 
@@ -172,13 +177,9 @@
   justify-content:flex-end;
   gap: 8px;
 }
+.cviewBadges:empty{ display:none; }
 
-/* se vuoto, non influenza */
-.cviewBadges:empty{
-  display:none;
-}
-
-/* Cerchio (dimensioni locali alla pagina: NON dipendono dai colori globali) */
+/* Cerchio (dimensioni = SOLO QUI, non globali) */
 .cviewBubble{
   width: 36px;
   height: 36px;
@@ -192,36 +193,30 @@
   font-size: 14px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+
   letter-spacing: -0.2px;
 
-  /* glass leggero uguale in entrambi */
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.18),
-    0 10px 26px rgba(0,0,0,.18);
+  border: 0;
   color: #fff;
+
+  /* base neutra (verrà sostituita da base/extra) */
+  background: rgba(255,255,255,.12);
+  box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.18);
 }
 
-/* ===== DOT STYLE IDENTICO A INSERT ===== */
-
-./* base = celeste */
+/* ✅ RIEMPIMENTO COLORE (qui nasce il viola quando è extra) */
 .cviewBubble.base{
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.25), transparent 55%),
-    var(--dot-base);
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 55%),
+    linear-gradient(135deg, var(--cviewDotBase), var(--cviewDotBase));
+  box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.22);
 }
 
-/* extra = viola */
 .cviewBubble.extra{
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.25), transparent 55%),
-    var(--dot-extra);
-}
-
-/* bordo interno leggero */
-.cviewBubble{
-  box-shadow:
-    inset 0 0 0 1.5px rgba(255,255,255,.35),
-    0 8px 22px rgba(0,0,0,.25);
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 55%),
+    linear-gradient(135deg, var(--cviewDotExtra), var(--cviewDotExtra));
+  box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.22);
 }
 
 /* ========================= Details (expand) ========================= */
