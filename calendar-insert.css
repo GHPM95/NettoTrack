@@ -10,6 +10,10 @@
   gap:12px;
   min-height:0;
   position:relative;
+
+  /* ✅ Alias colori DOT (globali) con fallback sugli accent */
+  --cinsDotPremium: var(--nt-dot-premium, var(--accent2));
+  --cinsDotPremiumExtra: var(--nt-dot-premiumExtra, var(--accent1));
 }
 
 /* =========================
@@ -228,13 +232,13 @@
   margin-left: -3px;           /* overlap laterale */
 }
 
-/* colori (✅ globali) */
+/* ✅ colori (globali) */
 .cinsDot.premium{
-  background: var(--nt-dot-premium);
+  background: var(--cinsDotPremium);
 }
 
 .cinsDot.premiumExtra{
-  background: var(--nt-dot-premiumExtra);
+  background: var(--cinsDotPremiumExtra);
 }
 
 /* =========================
