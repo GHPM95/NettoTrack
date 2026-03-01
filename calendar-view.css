@@ -11,7 +11,7 @@
 
   /* Optical tuning */
   --optLeftY: 0px;
-  --optDotY: 0px; /* parti da 0: niente clipping. poi al massimo 1px */
+  --optDotY: 2px; /* parti da 0: niente clipping. poi al massimo 1px */
 }
 
 /* ========================= Header ========================= */
