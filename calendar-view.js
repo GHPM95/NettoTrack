@@ -18,7 +18,6 @@
     const mount = getMount();
     if (!mount) return;
 
-    // Se la card è stata chiusa e rimossa, il mount nuovo è vuoto → rimonta
     if (mounted && isActuallyMounted(mount)) return;
 
     mount.innerHTML = `
@@ -67,7 +66,10 @@
 
   function timeToMin(t){
     if(!t || typeof t !== "string") return 9999;
-    const [hh, mm] = t.split(":").map(n => parseInt(n,10));
+    const m = t.match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return 9999;
+    const hh = parseInt(m[1],10);
+    const mm = parseInt(m[2],10);
     if(Number.isNaN(hh) || Number.isNaN(mm)) return 9999;
     return hh * 60 + mm;
   }
@@ -86,9 +88,28 @@
   }
 
   function closeAllRowsExcept(grid, keepRow){
-    const open = grid.querySelectorAll(".cviewRow.isOpen");
-    open.forEach(r => {
+    grid.querySelectorAll(".cviewRow.isOpen").forEach(r => {
       if (r !== keepRow) r.classList.remove("isOpen");
+    });
+  }
+
+  function bindOpen(row, head, grid){
+    const toggle = () => {
+      const willOpen = !row.classList.contains("isOpen");
+      closeAllRowsExcept(grid, row);
+      row.classList.toggle("isOpen", willOpen);
+    };
+
+    // iOS-friendly: pointerdown prima, click come fallback
+    head.addEventListener("pointerdown", (e) => { e.preventDefault(); toggle(); }, { passive:false });
+    head.addEventListener("click", (e) => { e.preventDefault(); toggle(); });
+
+    // anche tastiera (se mai userai)
+    row.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggle();
+      }
     });
   }
 
@@ -119,6 +140,8 @@
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
+      row.setAttribute("role","button");
+      row.setAttribute("tabindex","0");
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
@@ -153,12 +176,18 @@
         badges.appendChild(b);
       }
 
+      // ✅ IMPORTANT: badges non devono “mangiarsi” il tap
+      badges.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
+      badges.addEventListener("click", (e) => e.stopPropagation());
+
       head.appendChild(left);
       head.appendChild(badges);
       row.appendChild(head);
 
       // ===== Details (accordion) =====
-      const hasShifts = !!(data?.shifts?.length);
+      const shiftsArr = (data && Array.isArray(data.shifts)) ? data.shifts : [];
+      const hasShifts = shiftsArr.length > 0;
+
       if (hasShifts) {
         const details = document.createElement("div");
         details.className = "cviewDetails";
@@ -166,7 +195,7 @@
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...data.shifts].sort((a,b) => timeToMin(a?.from) - timeToMin(b?.from));
+        const sorted = [...shiftsArr].sort((a,b) => timeToMin(a?.from) - timeToMin(b?.from));
 
         sorted.forEach(s => {
           const li = document.createElement("li");
@@ -182,13 +211,13 @@
 
           const lbl = document.createElement("span");
           lbl.className = "cviewShiftLbl";
-          lbl.textContent = `${meta.label}: `;
+          lbl.textContent = `(${meta.label})`;
 
           const from = s?.from || "--:--";
           const to   = s?.to   || "--:--";
 
           const t = document.createElement("span");
-          t.textContent = `${from} - ${to}`;
+          t.textContent = `: ${from} - ${to}`;
 
           txt.appendChild(lbl);
           txt.appendChild(t);
@@ -201,12 +230,8 @@
         details.appendChild(ul);
         row.appendChild(details);
 
-        // click: apri/chiudi (solo se ha turni) + una riga aperta alla volta
-        row.addEventListener("click", () => {
-          const willOpen = !row.classList.contains("isOpen");
-          closeAllRowsExcept(grid, row);
-          row.classList.toggle("isOpen", willOpen);
-        });
+        // ✅ bind tap SOLO sulla head (zona affidabile) ma con una sola riga aperta
+        bindOpen(row, head, grid);
       }
 
       grid.appendChild(row);
