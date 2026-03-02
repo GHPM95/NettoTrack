@@ -2,6 +2,7 @@
    Calendar View (Agenda) — CSS (pulito, NO contenitori)
    - Strip + Summary senza box
    - Frecce: pillow sottili e lunghe (come pill date) ma colori invariati
+   - ✅ FIX: padding laterale wrapper per non tagliare lunedì/domenica
    - Empty state centrato (orizzontale + verticale) senza bordo
    - FIX iOS: track/pagine in px (JS)
    ========================= */
@@ -90,7 +91,7 @@
    ========================= */
 .cviewWeekStrip{
   display:grid;
-  grid-template-columns: 28px 1fr 28px; /* ✅ slim side rails */
+  grid-template-columns: 28px 1fr 28px; /* slim side rails */
   align-items:center;
   gap:10px;
 
@@ -103,17 +104,17 @@
   user-select:none;
 }
 
-/* ✅ Frecce: pillow sottili e lunghe (stessi colori di prima) */
+/* Frecce: pillow sottili e lunghe (stessi colori) */
 .cviewNavBtn{
-  width:28px;              /* sottile */
-  height:52px;             /* lungo tipo pillow */
-  border-radius:18px;      /* capsule */
+  width:28px;
+  height:52px;
+  border-radius:18px;
   border:none;
 
   position:relative;
   overflow:hidden;
 
-  background: rgba(255,255,255,.08); /* stesso look di prima */
+  background: rgba(255,255,255,.08);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
 
   color: var(--text);
@@ -141,9 +142,14 @@
   background: rgba(255,255,255,.12);
 }
 
+/* ✅ Wrapper: evita taglio dei pill ai bordi */
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
+
+  padding-left: 6px;   /* ✅ respiro L */
+  padding-right: 6px;  /* ✅ respiro R */
+
   border-radius:16px;
 }
 
@@ -201,7 +207,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* TODAY (stesso linguaggio) */
+/* TODAY */
 .cviewDayBtn.isToday{
   background: var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
@@ -295,7 +301,7 @@
   display:flex;
   flex-direction:column;
   gap:10px;
-  flex: 1; /* ✅ serve per il centro verticale dell’empty */
+  flex: 1; /* centro verticale empty */
   min-height: 0;
 }
 
@@ -342,7 +348,7 @@
   line-height:1.25;
 }
 
-/* ✅ EMPTY: nessun bordo + centrato in tutto lo spazio */
+/* EMPTY: nessun bordo + centrato */
 .cviewEmpty{
   flex: 1;
   display:flex;
