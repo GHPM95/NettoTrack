@@ -1,287 +1,334 @@
-/* calendar-view.js — Weekly Agenda (accordion affidabile iOS) */
-(() => {
-  const { dateKey, startOfWeek, loadDay, dayTotals } = window.NTCal;
+/* calendar-view.js
+   Calendar View (Agenda)
+   ✅ Legge SOLO i dati salvati (NTCal.loadDay)
+   ❌ NON legge autosave/bozze (loadDraft)
 
-  const DAYS = ["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"];
+   - Frecce: paginazione a blocchi di 7 giorni
+   - Strip: 7 giorni visibili (L M M G V S D + numero)
+   - Oggi: stesso design del calendar insert (token CSS today*)
+   - Selezionato: glass neutro
+   - Riepilogo read-only ordinato per orario
+*/
 
-  let mounted = false;
-  let weekStart = startOfWeek(new Date());
-  let openKey = null; // mantiene la riga aperta
+(function(){
+  const els = {
+    title: document.getElementById('cvTitle'),
+    prev: document.getElementById('cvPrev'),
+    next: document.getElementById('cvNext'),
+    close: document.getElementById('cvClose'),
+    days: document.getElementById('cvDays'),
+    sumDate: document.getElementById('cvSummaryDate'),
+    badges: document.getElementById('cvSummaryBadges'),
+    blocks: document.getElementById('cvBlocks'),
+    notesWrap: document.getElementById('cvNotesWrap'),
+    notesText: document.getElementById('cvNotesText'),
+  };
 
-  function getMount() {
-    return document.getElementById("calViewMount");
+  const state = {
+    pageStart: startOfWeek(new Date()),   // lunedì
+    selected: todayISO(),
+    today: todayISO(),
+  };
+
+  function updateTitle(){
+    const d = isoToDate(state.selected);
+    els.title.textContent = formatMonthYear(d);
   }
 
-  function isActuallyMounted(mount) {
-    return !!(mount && mount.querySelector("#cviewRoot"));
+  function renderWeek(){
+    els.days.innerHTML = '';
+    const start = new Date(state.pageStart);
+
+    for(let i=0;i<7;i++){
+      const d = addDays(start, i);
+      const iso = dateToISO(d);
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'dayBtn';
+      btn.dataset.iso = iso;
+
+      const dow = document.createElement('div');
+      dow.className = 'dayDow';
+      dow.textContent = dowLetter(d);
+
+      const num = document.createElement('div');
+      num.className = 'dayNum';
+      num.textContent = String(d.getDate()).padStart(2,'0');
+
+      btn.appendChild(dow);
+      btn.appendChild(num);
+
+      if(iso === state.today) btn.classList.add('isToday');
+      if(iso === state.selected) btn.classList.add('isSelected');
+
+      btn.addEventListener('click', async () => {
+        state.selected = iso;
+        syncSelectedStyles();
+        updateTitle();
+        await renderSummary(iso);
+      });
+
+      els.days.appendChild(btn);
+    }
+
+    // se il selected non è dentro la pagina, lo allineo al primo giorno visibile
+    if(!isISOInCurrentWeek(state.selected)){
+      state.selected = dateToISO(start);
+      updateTitle();
+    }
+
+    syncSelectedStyles();
   }
 
-  function fmtDM(d) {
-    const dd = String(d.getDate()).padStart(2,"0");
-    const mm = String(d.getMonth()+1).padStart(2,"0");
-    const yy = String(d.getFullYear()).slice(-2);
-    return `${dd}/${mm}/${yy}`;
+  function syncSelectedStyles(){
+    const buttons = els.days.querySelectorAll('.dayBtn');
+    buttons.forEach(b => {
+      const iso = b.dataset.iso;
+      b.classList.toggle('isSelected', iso === state.selected);
+      b.classList.toggle('isToday', iso === state.today);
+      // oggi resta “oggi” anche se selezionato
+      if(iso === state.today && iso === state.selected){
+        b.classList.add('isSelected');
+        b.classList.add('isToday');
+      }
+    });
+  }
+
+  function isISOInCurrentWeek(iso){
+    const start = dateToISO(state.pageStart);
+    const end = dateToISO(addDays(state.pageStart, 6));
+    return iso >= start && iso <= end;
+  }
+
+  /* =========================
+     DATI: SOLO SAVED (NO DRAFT)
+     ========================= */
+  async function loadDaySavedOnly(iso){
+    const cal = window.NTCal;
+    if(!cal || typeof cal.loadDay !== "function"){
+      return { shifts: [], hasOvertime:false, isHoliday:false, isSundayPay:false, advancedOption:"", notes:"" };
+    }
+
+    // ✅ SOLO definitivo
+    let model = null;
+    try { model = cal.loadDay(iso); } catch(_) {}
+
+    const shiftsRaw = Array.isArray(model?.shifts) ? model.shifts : [];
+
+    // Normalizzo nel formato VIEW
+    const shifts = shiftsRaw.map((s) => {
+      const from = typeof s?.from === "string" ? s.from : "";
+      const to   = typeof s?.to   === "string" ? s.to   : "";
+
+      const tags = s?.tags || {};
+      const advA = typeof s?.advA === "string" ? s.advA : "-";
+      const advB = typeof s?.advB === "string" ? s.advB : "-";
+
+      const st = String(s?.shiftType || "none");
+      const typeMap = { morning:"Mattino", afternoon:"Pomeriggio", night:"Notte", none:"" };
+
+      const tagBits = [];
+      if(tags.overtime) tagBits.push("Straordinario");
+      if(tags.holiday)  tagBits.push("Festivo");
+      if(tags.sunday)   tagBits.push("Domenicale");
+
+      const adv = (advA && advA !== "-") ? advA : ((advB && advB !== "-") ? advB : "");
+
+      return {
+        start: from,
+        end: to,
+        type: typeMap[st] || "",
+        tag: tagBits.join(" · "),
+        advanced: adv,
+        note: typeof s?.note === "string" ? s.note : ""
+      };
+    });
+
+    // Flags giorno
+    const hasOvertime = shiftsRaw.some(s => !!s?.tags?.overtime);
+    const isHoliday   = shiftsRaw.some(s => !!s?.tags?.holiday);
+    const isSundayPay = shiftsRaw.some(s => !!s?.tags?.sunday);
+
+    const advancedOption =
+      (shiftsRaw.find(s => s?.advA && s.advA !== "-")?.advA) ||
+      (shiftsRaw.find(s => s?.advB && s.advB !== "-")?.advB) ||
+      "";
+
+    const notes = typeof model?.notes === "string" ? model.notes : "";
+
+    return { shifts, hasOvertime, isHoliday, isSundayPay, advancedOption, notes };
+  }
+
+  /* =========================
+     SUMMARY (READ ONLY)
+     ========================= */
+  async function renderSummary(iso){
+    const d = isoToDate(iso);
+    els.sumDate.textContent = formatLongDate(d);
+
+    const day = await loadDaySavedOnly(iso);
+
+    // badges
+    els.badges.innerHTML = '';
+    const badges = [];
+    if(day.isHoliday) badges.push('Festività');
+    if(day.isSundayPay) badges.push('Domenicale');
+    if(day.hasOvertime) badges.push('Straordinari');
+    if(day.advancedOption) badges.push(String(day.advancedOption));
+
+    badges.forEach(t => {
+      const b = document.createElement('div');
+      b.className = 'badge';
+      b.textContent = t;
+      els.badges.appendChild(b);
+    });
+
+    // turni ordinati per ora
+    const shifts = Array.isArray(day.shifts) ? day.shifts.slice() : [];
+    shifts.sort((a,b) => timeToMin(a.start) - timeToMin(b.start));
+
+    els.blocks.innerHTML = '';
+
+    if(!shifts.length){
+      const empty = document.createElement('div');
+      empty.className = 'emptyState';
+      empty.textContent = 'Nessun turno salvato per questo giorno.';
+      els.blocks.appendChild(empty);
+    }else{
+      shifts.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'block';
+
+        const top = document.createElement('div');
+        top.className = 'blockTop';
+
+        const time = document.createElement('div');
+        time.className = 'blockTime';
+        time.textContent = `${s.start || "—"} – ${s.end || "—"}`;
+
+        const tag = document.createElement('div');
+        tag.className = 'blockTag';
+        tag.textContent = s.tag ? String(s.tag) : '';
+
+        top.appendChild(time);
+        top.appendChild(tag);
+
+        const lines = [];
+        if(s.type) lines.push(`Fascia: ${s.type}`);
+        if(s.advanced) lines.push(`Avanzate: ${s.advanced}`);
+        if(s.note && String(s.note).trim().length) lines.push(`Nota: ${String(s.note).trim()}`);
+
+        card.appendChild(top);
+
+        if(lines.length){
+          const meta = document.createElement('div');
+          meta.className = 'blockMeta';
+          meta.textContent = lines.join(' · ');
+          card.appendChild(meta);
+        }
+
+        els.blocks.appendChild(card);
+      });
+    }
+
+    // note “giorno” (se un domani le aggiungi)
+    const notes = (day.notes || '').trim();
+    if(notes){
+      els.notesWrap.hidden = false;
+      els.notesText.textContent = notes;
+    }else{
+      els.notesWrap.hidden = true;
+      els.notesText.textContent = '';
+    }
+  }
+
+  /* =========================
+     NAV (7 giorni)
+     ========================= */
+  els.prev.addEventListener('click', async () => {
+    state.pageStart = addDays(state.pageStart, -7);
+    state.selected = dateToISO(state.pageStart);
+    updateTitle();
+    renderWeek();
+    await renderSummary(state.selected);
+  });
+
+  els.next.addEventListener('click', async () => {
+    state.pageStart = addDays(state.pageStart, +7);
+    state.selected = dateToISO(state.pageStart);
+    updateTitle();
+    renderWeek();
+    await renderSummary(state.selected);
+  });
+
+  // X: chiudi card (hook)
+  els.close.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('nt:calendarViewClose'));
+  });
+
+  /* =========================
+     INIT
+     ========================= */
+  (async function init(){
+    state.pageStart = startOfWeek(new Date());
+    state.selected = state.today;
+    updateTitle();
+    renderWeek();
+    await renderSummary(state.selected);
+  })();
+
+  /* =========================
+     UTILS
+     ========================= */
+  function todayISO(){ return dateToISO(new Date()); }
+
+  function dateToISO(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const da = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${da}`;
+  }
+
+  function isoToDate(iso){
+    const [y,m,d] = iso.split('-').map(n=>parseInt(n,10));
+    return new Date(y, m-1, d);
+  }
+
+  function addDays(d, n){
+    const x = new Date(d);
+    x.setDate(x.getDate()+n);
+    return x;
+  }
+
+  function startOfWeek(d){
+    const x = new Date(d);
+    const day = x.getDay(); // 0 dom, 1 lun...
+    const diff = (day === 0 ? -6 : 1 - day); // lunedì start
+    x.setDate(x.getDate() + diff);
+    x.setHours(12,0,0,0);
+    return x;
+  }
+
+  function dowLetter(d){
+    const arr = ['D','L','M','M','G','V','S'];
+    return arr[d.getDay()];
+  }
+
+  function formatMonthYear(d){
+    const mesi = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+    return `${mesi[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  function formatLongDate(d){
+    const giorni = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+    const mesi = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+    return `${giorni[d.getDay()]} ${d.getDate()} ${mesi[d.getMonth()]} ${d.getFullYear()}`;
   }
 
   function timeToMin(t){
-    if(!t || typeof t !== "string") return 9999;
-    const [hh, mm] = t.split(":").map(n => parseInt(n,10));
-    if(Number.isNaN(hh) || Number.isNaN(mm)) return 9999;
-    return hh * 60 + mm;
+    if(!t || !t.includes(':')) return 999999;
+    const [h,m] = t.split(':').map(n=>parseInt(n,10));
+    return (h*60)+(m||0);
   }
-
-  // stessa logica "significativo" del Day Editor / Insert
-  function isMeaningfulShift(s){
-    if(!s) return false;
-
-    const hasTimes = !!(s.from || s.to);
-
-    const pauseMin = Number(s.pauseMin || 0);
-    const hasPause = pauseMin > 0 || !!s.pausePaid;
-
-    const hasFascia = !!(s.shiftType && s.shiftType !== "none");
-
-    const t = s.tags || {};
-    const f = s.flags || {};
-    const hasExtra = !!(
-      t.overtime || t.holiday || t.sunday ||
-      f.straordinario || f.festivo || f.domenicale
-    );
-
-    const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
-    const hasNote = !!(s.note && String(s.note).trim().length);
-
-    return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
-  }
-
-  function shiftMeta(shift){
-    const t = shift?.tags || {};
-    const f = shift?.flags || {};
-
-    const stra = !!(t.overtime || f.straordinario);
-    const fest = !!(t.holiday  || f.festivo);
-    const dom  = !!(t.sunday   || f.domenicale);
-
-    if (dom)  return { label: "Domenicale", dotClass: "domenicale" };
-    if (fest) return { label: "Festivo", dotClass: "festivo" };
-    if (stra) return { label: "Straordinario", dotClass: "extra" };
-    return { label: "Orario base", dotClass: "base" };
-  }
-
-  function syncAnyOpenFlag(mount){
-    const root = mount?.querySelector("#cviewRoot");
-    const anyOpen = !!mount?.querySelector(".cviewRow.isOpen");
-    root?.classList.toggle("isAnyOpen", anyOpen);
-  }
-
-  function closeAllRowsExcept(mount, keepRow){
-    const grid = mount.querySelector("#cviewGrid");
-    grid.querySelectorAll(".cviewRow.isOpen").forEach(r => {
-      if (r !== keepRow) r.classList.remove("isOpen");
-    });
-    syncAnyOpenFlag(mount);
-  }
-
-  function mountIfNeeded() {
-    const mount = getMount();
-    if (!mount) return;
-
-    if (mounted && isActuallyMounted(mount)) return;
-
-    mount.innerHTML = `
-      <div class="cviewRoot" id="cviewRoot">
-        <div class="cviewHeader">
-          <div class="cviewLeft">
-            <button class="ntBtn" id="cviewPrev" type="button" aria-label="Settimana precedente">‹</button>
-            <button class="ntBtn" id="cviewNext" type="button" aria-label="Settimana successiva">›</button>
-          </div>
-
-          <div class="cviewTitle" id="cviewTitle"></div>
-
-          <button class="ntBtn" id="cviewClose" type="button" aria-label="Chiudi">×</button>
-        </div>
-
-        <div class="cviewGrid" id="cviewGrid"></div>
-      </div>
-    `;
-
-    mount.querySelector("#cviewPrev").addEventListener("click", (e) => {
-      e.stopPropagation();
-      openKey = null;
-      weekStart = new Date(weekStart);
-      weekStart.setDate(weekStart.getDate() - 7);
-      renderWeek();
-    });
-
-    mount.querySelector("#cviewNext").addEventListener("click", (e) => {
-      e.stopPropagation();
-      openKey = null;
-      weekStart = new Date(weekStart);
-      weekStart.setDate(weekStart.getDate() + 7);
-      renderWeek();
-    });
-
-    mount.querySelector("#cviewClose").addEventListener("click", (e) => {
-      e.stopPropagation();
-      openKey = null;
-      document.dispatchEvent(new Event("nettotrack:closeCalendarView"));
-    });
-
-    mounted = true;
-    renderWeek();
-  }
-
-  function renderWeek() {
-    const mount = getMount();
-    if (!mount) return;
-
-    const title = mount.querySelector("#cviewTitle");
-    const end = new Date(weekStart);
-    end.setDate(end.getDate() + 6);
-    if (title) title.textContent = `${fmtDM(weekStart)} – ${fmtDM(end)}`;
-
-    const grid = mount.querySelector("#cviewGrid");
-    if (!grid) return;
-    grid.innerHTML = "";
-
-    for (let i=0; i<7; i++) {
-      const day = new Date(weekStart);
-      day.setDate(day.getDate() + i);
-
-      const key = dateKey(day.getFullYear(), day.getMonth(), day.getDate());
-      const data = loadDay(key);
-
-      const totals = data ? dayTotals(data) : { baseHours:0, extraHours:0, hasBase:false, hasExtra:false };
-
-      const row = document.createElement("div");
-      row.className = "cviewRow" + (!data ? " isEmpty" : "");
-      row.setAttribute("data-no-swipe", ""); // ui.js lo rispetta
-
-      const head = document.createElement("div");
-      head.className = "cviewRowHead";
-      head.setAttribute("data-no-swipe", "");
-
-      const left = document.createElement("div");
-      left.className = "cviewLeftTxt";
-
-      const dn = document.createElement("div");
-      dn.className = "cviewDayName";
-      dn.textContent = DAYS[i];
-
-      const dd = document.createElement("div");
-      dd.className = "cviewDayDate";
-      dd.textContent = fmtDM(day);
-
-      left.appendChild(dn);
-      left.appendChild(dd);
-
-      const badges = document.createElement("div");
-      badges.className = "cviewBadges";
-
-      if (totals.hasBase) {
-        const b = document.createElement("div");
-        b.className = "cviewBubble base";
-        b.textContent = String(totals.baseHours);
-        badges.appendChild(b);
-      }
-      if (totals.hasExtra) {
-        const b = document.createElement("div");
-        b.className = "cviewBubble extra";
-        b.textContent = String(totals.extraHours);
-        badges.appendChild(b);
-      }
-
-      head.appendChild(left);
-      head.appendChild(badges);
-      row.appendChild(head);
-
-      // ===== DETAILS =====
-      const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
-      const meaningful = shifts.filter(isMeaningfulShift);
-
-      let details = null;
-
-      if (meaningful.length) {
-        details = document.createElement("div");
-        details.className = "cviewDetails";
-        details.setAttribute("data-no-swipe", "");
-
-        const ul = document.createElement("ul");
-        ul.className = "cviewShiftList";
-
-        const sorted = [...meaningful].sort((a,b) =>
-          timeToMin(a?.from ?? a?.start ?? a?.time?.from) -
-          timeToMin(b?.from ?? b?.start ?? b?.time?.from)
-        );
-
-        sorted.forEach(s => {
-          const li = document.createElement("li");
-          li.className = "cviewShiftItem";
-
-          const meta = shiftMeta(s);
-
-          const dot = document.createElement("span");
-          dot.className = `cviewShiftDot ${meta.dotClass}`;
-
-          const txt = document.createElement("div");
-          txt.className = "cviewShiftTxt";
-
-          const lbl = document.createElement("span");
-          lbl.className = "cviewShiftLbl";
-          lbl.textContent = `${meta.label}: `;
-
-          const from = s?.from ?? s?.start ?? s?.time?.from ?? "--:--";
-          const to   = s?.to   ?? s?.end   ?? s?.time?.to   ?? "--:--";
-
-          const t = document.createElement("span");
-          t.textContent = `${from} - ${to}`;
-
-          txt.appendChild(lbl);
-          txt.appendChild(t);
-
-          li.appendChild(dot);
-          li.appendChild(txt);
-          ul.appendChild(li);
-        });
-
-        details.appendChild(ul);
-        row.appendChild(details);
-      }
-
-      row.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (!details) return;
-
-        const willOpen = !row.classList.contains("isOpen");
-        closeAllRowsExcept(mount, row);
-
-        row.classList.toggle("isOpen", willOpen);
-        openKey = willOpen ? key : null;
-
-        syncAnyOpenFlag(mount);
-
-        if (willOpen) {
-          setTimeout(() => row.scrollIntoView({ block: "nearest", behavior: "smooth" }), 30);
-        }
-      });
-
-      // restore
-      if (details && openKey === key) row.classList.add("isOpen");
-
-      grid.appendChild(row);
-    }
-
-    syncAnyOpenFlag(mount);
-  }
-
-  document.addEventListener("nettotrack:calendarViewOpened", () => {
-    mountIfNeeded();
-    weekStart = startOfWeek(new Date());
-    openKey = null;
-    renderWeek();
-  });
-
-  document.addEventListener("nettotrack:dataChanged", () => {
-    if (mounted) renderWeek();
-  });
 })();
