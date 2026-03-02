@@ -187,7 +187,7 @@
         </header>
 
         <section class="cviewWeekStrip" id="cvStrip" aria-label="Selettore giorni settimana">
-          <button class="ntBtn" id="cvPrev" type="button" aria-label="Settimana precedente">‹</button>
+          <button class="cviewNavBtn" id="cvPrev" type="button" aria-label="Settimana precedente">‹</button>
 
           <div class="cviewDaysWrap" id="cvDaysWrap">
             <div class="cviewTrack" id="cvTrack">
@@ -197,7 +197,7 @@
             </div>
           </div>
 
-          <button class="ntBtn" id="cvNext" type="button" aria-label="Settimana successiva">›</button>
+          <button class="cviewNavBtn" id="cvNext" type="button" aria-label="Settimana successiva">›</button>
         </section>
 
         <section class="cviewSummary" aria-label="Riepilogo giornata selezionata">
@@ -230,7 +230,6 @@
 
     attachCarouselHandlers(mount);
 
-    // misura iniziale (poi ricalcolo in open con rAF)
     measure(mount);
     window.addEventListener("resize", () => {
       const m = getMount();
@@ -255,7 +254,6 @@
     wrapW = Math.max(1, Math.round(rect.width));
     baseX = -wrapW;
 
-    // width px
     track.style.width = `${wrapW * 3}px`;
 
     const pages = track.querySelectorAll(".cviewPage");
@@ -462,13 +460,12 @@
 
       track.style.transform = `translate3d(${baseX + dragDx}px, 0, 0)`;
 
-      // preview titolo se ti avvicini a cambiare pagina
       if(wrapW > 0){
         const threshold = Math.max(42, wrapW * 0.18);
         let dirPreview = 0;
 
-        if(dragDx <= -threshold) dirPreview = +1;     // next
-        else if(dragDx >= threshold) dirPreview = -1; // prev
+        if(dragDx <= -threshold) dirPreview = +1;
+        else if(dragDx >= threshold) dirPreview = -1;
 
         if(dirPreview !== liveWeekPreview){
           liveWeekPreview = dirPreview;
@@ -525,7 +522,6 @@
 
     await wait(230);
 
-    // commit: stessa colonna (L/M/M/G/V/S/D)
     const oldStart = pageStartISO;
     const off = selectedOffset;
 
@@ -563,7 +559,6 @@
     const mount = getMount();
     if(!mount) return;
 
-    // iOS: misura e render nel frame successivo (layout stabile)
     requestAnimationFrame(() => {
       measure(mount);
       renderHeaderAndWeeks();
