@@ -1,9 +1,8 @@
 /* =========================
-   Calendar View (Agenda) — CSS (NO contenitori visivi)
-   - Header: titolo + X
-   - Strip: frecce slim + carousel (ma strip SENZA box)
-   - Summary: area scroll SENZA box
-   - FIX iOS: track/pagine in px (width gestita da JS)
+   Calendar View (Agenda) — CSS (pulito, NO contenitori)
+   - Empty state centrato senza bordo
+   - Frecce pillow 38x38 (coerenti coi giorni)
+   - FIX iOS: track/pagine in px (JS)
    ========================= */
 
 :root{
@@ -28,22 +27,19 @@
   --dotSunday: rgba(255,110,180,.95);
 }
 
-/* Root */
 .cviewRoot{
   width:100%;
   height:100%;
   display:flex;
   flex-direction:column;
-  gap:12px;                 /* un filo più compatto */
+  gap:12px;
   min-height:0;
   background:transparent;
   box-sizing:border-box;
 }
 .cviewRoot *{ box-sizing:border-box; }
 
-/* =========================
-   Header: spacer | titolo | X
-   ========================= */
+/* Header */
 .cviewHeader{
   display:grid;
   grid-template-columns: 38px 1fr 38px;
@@ -85,17 +81,14 @@
   background: rgba(255,255,255,.14);
 }
 
-/* =========================
-   Strip (SENZA box)
-   - è solo un layout grid
-   ========================= */
+/* Strip: freccia pillow | carousel | freccia pillow */
 .cviewWeekStrip{
   display:grid;
-  grid-template-columns: 28px 1fr 28px;
+  grid-template-columns: 38px 1fr 38px; /* ✅ frecce come i pill */
   align-items:center;
   gap:10px;
 
-  padding:0;               /* ✅ niente box */
+  padding:0;
   border:none;
   background:transparent;
   backdrop-filter:none;
@@ -104,12 +97,13 @@
   user-select:none;
 }
 
-/* Frecce slim: visivamente leggere ma touch comodo */
+/* Frecce “pillow” (coerenti coi giorni) */
 .cviewNavBtn{
-  width:28px;
-  height:38px;             /* ✅ coerente con gli altri controlli */
-  border-radius:14px;
+  width:38px;
+  height:38px;
+  border-radius:16px; /* uguale ai giorni */
   border:none;
+
   background: rgba(255,255,255,.08);
   color: var(--text);
   font-weight:1000;
@@ -120,236 +114,12 @@
   align-items:center;
   justify-content:center;
 
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  transition: transform .12s ease, filter .12s ease, background .12s ease, box-shadow .12s ease;
 }
 .cviewNavBtn:active{
-  transform: scale(.98);
+  transform: scale(.96);
   filter: brightness(1.08);
   background: rgba(255,255,255,.12);
 }
-
-/* Wrap giorni: solo maschera overflow, niente box */
-.cviewDaysWrap{
-  min-width:0;
-  overflow:hidden;
-  border-radius:16px;       /* utile per non “tagliare” highlights ai bordi */
-}
-
-/* Track (prev|cur|next) — width in px via JS */
-.cviewTrack{
-  display:flex;
-  will-change: transform;
-  transform: translate3d(0,0,0);
-}
-.cviewTrack.isSnap{
-  transition: transform .22s ease;
-}
-.cviewPage{
-  flex:0 0 auto;            /* width in px via JS */
-}
-
-/* 7 giorni */
-.cviewDays{
-  display:grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap:7px;
-  width:100%;
-}
-
-/* Day btn */
-.cviewDayBtn{
-  border:none;
-  background:transparent;
-  color:var(--text);
-  padding:8px 0;
-  border-radius:16px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-  position:relative;
-  cursor:pointer;
-  user-select:none;
-  transition:transform .12s ease, background .12s ease, box-shadow .12s ease;
-  min-width:0;
-}
-.cviewDayBtn:active{ transform:scale(.98); }
-
-.cviewDow{
-  font-size:11px;
-  font-weight:900;
-  color:var(--muted);
-  letter-spacing:.4px;
-}
-.cviewNum{
-  font-size:15px;
-  font-weight:1000;
-  font-variant-numeric: tabular-nums;
-}
-
-/* TODAY */
-.cviewDayBtn.isToday{
-  background: var(--todayFill);
-  box-shadow: inset 0 0 0 1px var(--todayBorder);
-}
-.cviewDayBtn.isToday::after{
-  content:"";
-  position:absolute;
-  inset:6px;
-  border-radius:14px;
-  box-shadow: inset 0 0 0 1px var(--todayInner);
-  pointer-events:none;
-}
-
-/* SELECTED (glass neutro) */
-.cviewDayBtn.isSelected:not(.isToday){
-  background: var(--selFill);
-  box-shadow: inset 0 0 0 1px var(--selBorder);
-}
-.cviewDayBtn.isSelected:not(.isToday)::after{
-  content:"";
-  position:absolute;
-  inset:6px;
-  border-radius:14px;
-  box-shadow: inset 0 0 0 1px var(--selInner);
-  pointer-events:none;
-}
-
-/* Divider sottile (solo una riga, niente box) */
-.cviewDivider{
-  height:1px;
-  width:100%;
-  border-radius:999px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent);
-  margin-top:2px;
-}
-
-/* =========================
-   Summary (SENZA box)
-   - area scroll “pulita”
-   ========================= */
-.cviewSummary{
-  flex:1;
-  min-height:0;
-  padding:0;               /* ✅ niente box */
-  border:none;
-  background:transparent;
-  backdrop-filter:none;
-
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-
-  overflow:auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
-.cviewSummaryTop{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-  padding-top:2px;
-}
-
-.cviewSummaryDate{
-  font-weight:1000;
-  font-size:15px;
-  letter-spacing:.2px;
-}
-
-/* badges restano “pill” pulite */
-.cviewBadges{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-.cviewBadge{
-  font-size:11px;
-  font-weight:1000;
-  color:var(--text);
-  padding:6px 10px;
-  border-radius:999px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.10);
-}
-
-/* righe riepilogo: piccole card (ci stanno bene) */
-.cviewLines{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.cviewLine{
-  display:flex;
-  align-items:flex-start;
-  gap:10px;
-  padding:10px 12px;
-  border-radius:16px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-}
-
-.cviewDot{
-  width:7px;
-  height:7px;
-  border-radius:999px;
-  margin-top:6px;
-  flex:0 0 auto;
-  background: var(--dotBase);
-  box-shadow: 0 0 0 2px rgba(255,255,255,.08);
-}
-.cviewDot.isOver{ background: var(--dotOver); }
-.cviewDot.isHoliday{ background: var(--dotHoliday); }
-.cviewDot.isSunday{ background: var(--dotSunday); }
-
-.cviewLineText{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  min-width:0;
-}
-.cviewLineMain{
-  font-weight:1000;
-  font-size:14px;
-  font-variant-numeric: tabular-nums;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.cviewLineSub{
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.25;
-}
-
-.cviewEmpty{
-  padding:14px;
-  border-radius:16px;
-  border:1px dashed rgba(255,255,255,.14);
-  color:var(--muted);
-  font-weight:900;
-  text-align:center;
-}
-
-/* Note (se usate) */
-.cviewNotes{
-  padding:12px;
-  border-radius:16px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-}
-.cviewNotesTitle{
-  font-weight:1000;
-  font-size:12px;
-  opacity:.9;
-  margin-bottom:6px;
-}
-.cviewNotesText{
-  font-size:13px;
-  color:var(--muted);
-  white-space:pre-wrap;
-}
+/* leggera patina interna per look “pillow” */
+.cviewNavBtn{
