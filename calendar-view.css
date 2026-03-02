@@ -262,8 +262,6 @@
   opacity:1;
 }
 
-.cviewDetails:empty{ display:none; }
-
 /* ========================= Details list content ========================= */
 .cviewShiftList{
   margin:0;
