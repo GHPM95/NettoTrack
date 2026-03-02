@@ -1,11 +1,11 @@
 /* =========================
    calendar-view.js (Agenda)
-   - Monta in #calViewMount (no HTML separato)
+   - Monta in #calViewMount
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
-   - Strip a carousel: prev | current | next (drag live + snap)
-   - Cambio settimana mantiene lo stesso giorno della settimana
-   - Titolo (mese/anno) segue live la settimana in preview durante il drag
-   - Riepilogo con dot piccoli accanto alle ore
+   - Carousel settimane: prev | current | next (drag live + snap)
+   - FIX iOS: track/pagine in pixel (no %)
+   - Cambio settimana mantiene stesso giorno della settimana
+   - Titolo segue live la settimana in preview durante drag
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -14,7 +14,7 @@
 
   let mounted = false;
 
-  // settimana corrente mostrata (lunedi)
+  // settimana corrente mostrata (lunedì)
   let pageStartISO = null;
   // giorno selezionato
   let selectedISO = null;
@@ -26,9 +26,9 @@
   let dragMoved = false;
   let lock = false;
 
-  // misure track
+  // misure track (px)
   let wrapW = 0;
-  let baseX = 0; // posizione centro = -wrapW
+  let baseX = 0; // centro = -wrapW
 
   // title preview
   let liveWeekPreview = 0;  // -1 prev, 0 current, +1 next
@@ -137,7 +137,6 @@
 
       const adv = (advA && advA !== "-") ? advA : ((advB && advB !== "-") ? advB : "");
 
-      // Dot priority: overtime > holiday > sunday > base
       const dotKind =
         tags.overtime ? "over" :
         tags.holiday  ? "holiday" :
@@ -231,22 +230,42 @@
 
     attachCarouselHandlers(mount);
 
+    // misura iniziale (poi ricalcolo in open con rAF)
     measure(mount);
-    window.addEventListener("resize", () => measure(mount), { passive:true });
+    window.addEventListener("resize", () => {
+      const m = getMount();
+      if(!m) return;
+      measure(m);
+      renderHeaderAndWeeks();
+      setTitleForPreviewWeek(0);
+    }, { passive:true });
 
     mounted = true;
   }
 
+  /* =========================
+     FIX iOS: track/pagine in px
+     ========================= */
   function measure(mount){
-    const wrap = $("#cvDaysWrap", mount);
+    const wrap  = $("#cvDaysWrap", mount);
     const track = $("#cvTrack", mount);
     if(!wrap || !track) return;
 
-    wrapW = Math.max(1, Math.round(wrap.getBoundingClientRect().width));
+    const rect = wrap.getBoundingClientRect();
+    wrapW = Math.max(1, Math.round(rect.width));
     baseX = -wrapW;
 
+    // width px
+    track.style.width = `${wrapW * 3}px`;
+
+    const pages = track.querySelectorAll(".cviewPage");
+    pages.forEach(p => {
+      p.style.width = `${wrapW}px`;
+      p.style.flex = "0 0 auto";
+    });
+
     track.classList.remove("isSnap");
-    track.style.transform = `translateX(${baseX}px)`;
+    track.style.transform = `translate3d(${baseX}px, 0, 0)`;
   }
 
   /* =========================
@@ -266,7 +285,7 @@
     const track = $("#cvTrack", mount);
     if(track){
       track.classList.remove("isSnap");
-      track.style.transform = `translateX(${baseX}px)`;
+      track.style.transform = `translate3d(${baseX}px, 0, 0)`;
     }
   }
 
@@ -412,9 +431,8 @@
      ========================= */
   function attachCarouselHandlers(mount){
     const strip = $("#cvStrip", mount);
-    const wrap = $("#cvDaysWrap", mount);
     const track = $("#cvTrack", mount);
-    if(!strip || !wrap || !track) return;
+    if(!strip || !track) return;
 
     const down = (e) => {
       if(lock) return;
@@ -442,15 +460,15 @@
 
       if(Math.abs(dragDx) > 6) dragMoved = true;
 
-      track.style.transform = `translateX(${baseX + dragDx}px)`;
+      track.style.transform = `translate3d(${baseX + dragDx}px, 0, 0)`;
 
-      // preview titolo se ti avvicini alla pagina successiva/precedente
+      // preview titolo se ti avvicini a cambiare pagina
       if(wrapW > 0){
         const threshold = Math.max(42, wrapW * 0.18);
         let dirPreview = 0;
 
-        if(dragDx <= -threshold) dirPreview = +1;
-        else if(dragDx >= threshold) dirPreview = -1;
+        if(dragDx <= -threshold) dirPreview = +1;     // next
+        else if(dragDx >= threshold) dirPreview = -1; // prev
 
         if(dirPreview !== liveWeekPreview){
           liveWeekPreview = dirPreview;
@@ -470,7 +488,7 @@
         await animateAndCommit(dir);
       }else{
         track.classList.add("isSnap");
-        track.style.transform = `translateX(${baseX}px)`;
+        track.style.transform = `translate3d(${baseX}px, 0, 0)`;
         setTimeout(() => track.classList.remove("isSnap"), 260);
 
         liveWeekPreview = 0;
@@ -503,11 +521,11 @@
 
     const targetX = baseX + (dir * -wrapW);
     track.classList.add("isSnap");
-    track.style.transform = `translateX(${targetX}px)`;
+    track.style.transform = `translate3d(${targetX}px, 0, 0)`;
 
     await wait(230);
 
-    // commit: cambia settimana mantenendo lo stesso giorno della settimana
+    // commit: stessa colonna (L/M/M/G/V/S/D)
     const oldStart = pageStartISO;
     const off = selectedOffset;
 
@@ -522,7 +540,7 @@
     await renderSummary(selectedISO);
 
     track.classList.remove("isSnap");
-    track.style.transform = `translateX(${baseX}px)`;
+    track.style.transform = `translate3d(${baseX}px, 0, 0)`;
 
     lock = false;
   }
@@ -543,10 +561,15 @@
     liveWeekPreview = 0;
 
     const mount = getMount();
-    if(mount) measure(mount);
+    if(!mount) return;
 
-    renderHeaderAndWeeks();
-    setTitleForPreviewWeek(0);
+    // iOS: misura e render nel frame successivo (layout stabile)
+    requestAnimationFrame(() => {
+      measure(mount);
+      renderHeaderAndWeeks();
+      setTitleForPreviewWeek(0);
+    });
+
     renderSummary(selectedISO);
   }
 
