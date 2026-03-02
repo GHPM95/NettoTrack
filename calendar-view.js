@@ -14,7 +14,7 @@
 
   let mounted = false;
 
-  let pageStartISO = null;  // lunedì della settimana visibile
+  let pageStartISO = null;  // lunedì settimana visibile
   let selectedISO = null;   // giorno selezionato
 
   // gesture / carousel
@@ -266,9 +266,6 @@
     track.style.transform = `translate3d(${baseX}px, 0, 0)`;
   }
 
-  /* =========================
-     Render: title + 3 weeks
-     ========================= */
   function renderHeaderAndWeeks(){
     const mount = getMount();
     if(!mount) return;
@@ -334,9 +331,6 @@
     }
   }
 
-  /* =========================
-     Summary
-     ========================= */
   async function renderSummary(iso){
     const mount = getMount();
     if(!mount) return;
@@ -424,9 +418,6 @@
     }
   }
 
-  /* =========================
-     Carousel handlers
-     ========================= */
   function attachCarouselHandlers(mount){
     const strip = $("#cvStrip", mount);
     const track = $("#cvTrack", mount);
@@ -520,7 +511,7 @@
     track.classList.add("isSnap");
     track.style.transform = `translate3d(${targetX}px, 0, 0)`;
 
-    await wait(230);
+    await new Promise(r => setTimeout(r, 230));
 
     const oldStart = pageStartISO;
     const off = selectedOffset;
@@ -540,8 +531,6 @@
 
     lock = false;
   }
-
-  function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
 
   function open(){
     mountIfNeeded();
