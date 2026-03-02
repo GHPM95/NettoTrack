@@ -25,48 +25,59 @@
     if(!t || typeof t !== "string") return 9999;
     const m = /^(\d{1,2}):(\d{2})$/.exec(t.trim());
     if(!m) return 9999;
-    const hh = Number(m[1]), mm = Number(m[2]);
-    if(!Number.isFinite(hh) || !Number.isFinite(mm)) return 9999;
+    const hh = parseInt(m[1],10), mm = parseInt(m[2],10);
+    if(Number.isNaN(hh) || Number.isNaN(mm)) return 9999;
     return hh * 60 + mm;
   }
 
-  // prende orari anche se in futuro cambi schema
-  function getFromTo(s){
-    const from =
-      s?.from ?? s?.start ?? s?.time?.from ?? s?.time?.start ?? "";
-    const to =
-      s?.to   ?? s?.end   ?? s?.time?.to   ?? s?.time?.end   ?? "";
-    return {
-      from: (typeof from === "string" ? from : String(from ?? "")).trim(),
-      to:   (typeof to   === "string" ? to   : String(to   ?? "")).trim(),
-    };
+  // ✅ Legge orari anche da vecchi salvataggi
+  function getTime(shift, which){
+    if(!shift) return "";
+    if (which === "from") {
+      return (
+        shift.from ??
+        shift.start ??
+        shift.time?.from ??
+        shift.timeFrom ??
+        ""
+      );
+    }
+    return (
+      shift.to ??
+      shift.end ??
+      shift.time?.to ??
+      shift.timeTo ??
+      ""
+    );
   }
 
-  // “significativo” (stesso concetto dell’insert: non solo from/to)
+  // ✅ “significativo” (compatibile con insert + vecchi dati)
   function isMeaningfulShift(s){
-    if(!s || typeof s !== "object") return false;
+    if(!s) return false;
 
-    const { from, to } = getFromTo(s);
+    const from = String(getTime(s,"from") || "").trim();
+    const to   = String(getTime(s,"to")   || "").trim();
     const hasTimes = !!(from || to);
 
-    const pauseMin = Number(s.pauseMin || 0);
-    const hasPause = pauseMin > 0 || !!s.pausePaid;
+    const pauseMin = Number(s.pauseMin || s.pause || 0);
+    const hasPause = (pauseMin > 0) || !!s.pausePaid;
 
     const hasFascia = !!(s.shiftType && s.shiftType !== "none");
 
-    const t = s.tags || {};
-    const f = s.flags || {};
+    const tags  = s.tags  || {};
+    const flags = s.flags || {};
     const hasExtra = !!(
-      t.overtime || t.holiday || t.sunday ||
-      f.straordinario || f.festivo || f.domenicale
+      tags.overtime || tags.holiday || tags.sunday ||
+      flags.straordinario || flags.festivo || flags.domenicale
     );
 
-    const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
+    const hasAdv  = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
     const hasNote = !!(s.note && String(s.note).trim().length);
 
     return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
   }
 
+  // ✅ Etichetta + dot: domenicale batte festivo
   function shiftMeta(shift){
     const t = shift?.tags || {};
     const f = shift?.flags || {};
@@ -92,6 +103,13 @@
     const open = grid.querySelectorAll(".cviewRow.isOpen");
     open.forEach(r => { if (r !== keepRow) r.classList.remove("isOpen"); });
     syncAnyOpenFlag(mount);
+  }
+
+  function stopSwipeSteal(el){
+    // ✅ blocca davvero pointerdown che altrimenti arriva a cardsViewport (ui.js)
+    el.setAttribute("data-no-swipe", "");
+    el.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
+    el.addEventListener("click", (e) => e.stopPropagation(), { passive:true });
   }
 
   function mountIfNeeded() {
@@ -164,15 +182,11 @@
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
-      row.setAttribute("data-no-swipe", "");
-
-      // blocca swipe UI quando tocchi la riga
-      row.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
+      stopSwipeSteal(row);
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
-      head.setAttribute("data-no-swipe", "");
-      head.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
+      stopSwipeSteal(head);
 
       const left = document.createElement("div");
       left.className = "cviewLeftTxt";
@@ -190,8 +204,7 @@
 
       const badges = document.createElement("div");
       badges.className = "cviewBadges";
-      badges.setAttribute("data-no-swipe", "");
-      badges.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
+      stopSwipeSteal(badges);
 
       if (totals.hasBase) {
         const b = document.createElement("div");
@@ -211,28 +224,18 @@
       row.appendChild(head);
 
       // ===== DETAILS =====
-      const shiftsRaw =
-        (Array.isArray(data?.shifts) && data.shifts) ||
-        (Array.isArray(data?.turni) && data.turni) ||
-        (Array.isArray(data?.items) && data.items) ||
-        [];
-
+      const shiftsRaw = Array.isArray(data?.shifts) ? data.shifts : [];
       const meaningful = shiftsRaw.filter(isMeaningfulShift);
 
       if (meaningful.length) {
         const details = document.createElement("div");
         details.className = "cviewDetails";
-        details.setAttribute("data-no-swipe", "");
-        details.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
+        stopSwipeSteal(details);
 
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...meaningful].sort((a,b) => {
-          const af = getFromTo(a).from;
-          const bf = getFromTo(b).from;
-          return timeToMin(af) - timeToMin(bf);
-        });
+        const sorted = [...meaningful].sort((a,b) => timeToMin(String(getTime(a,"from")||"")) - timeToMin(String(getTime(b,"from")||"")));
 
         sorted.forEach(s => {
           const li = document.createElement("li");
@@ -250,10 +253,11 @@
           lbl.className = "cviewShiftLbl";
           lbl.textContent = `${meta.label}: `;
 
-          const { from, to } = getFromTo(s);
+          const from = String(getTime(s,"from") || "--:--").trim() || "--:--";
+          const to   = String(getTime(s,"to")   || "--:--").trim() || "--:--";
 
           const t = document.createElement("span");
-          t.textContent = `${from || "--:--"} - ${to || "--:--"}`;
+          t.textContent = `${from} - ${to}`;
 
           txt.appendChild(lbl);
           txt.appendChild(t);
@@ -266,6 +270,7 @@
         details.appendChild(ul);
         row.appendChild(details);
 
+        // ✅ toggle accordion (una sola aperta)
         row.addEventListener("click", (e) => {
           e.stopPropagation();
 
@@ -274,8 +279,10 @@
           row.classList.toggle("isOpen", willOpen);
           syncAnyOpenFlag(mount);
 
-          if (willOpen) row.scrollIntoView({ block: "nearest", behavior: "smooth" });
-        });
+          if (willOpen) {
+            row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          }
+        }, { passive:true });
       }
 
       grid.appendChild(row);
