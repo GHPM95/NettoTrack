@@ -1,4 +1,3 @@
-/* calendar-view.js — Weekly Agenda (accordion details) */
 (() => {
   const { dateKey, startOfWeek, loadDay, dayTotals } = window.NTCal;
 
@@ -22,7 +21,7 @@
     return `${dd}/${mm}/${yy}`;
   }
 
-  function parseMin(t){
+  function timeToMin(t){
     if(!t || typeof t !== "string") return 9999;
     const m = /^(\d{1,2}):(\d{2})$/.exec(t.trim());
     if(!m) return 9999;
@@ -32,19 +31,18 @@
     return hh * 60 + mm;
   }
 
-  // ========= UNIVERSAL READERS =========
   function getShiftFrom(s){
-    return String(s?.from ?? s?.start ?? s?.time?.from ?? s?.da ?? "").trim();
+    return (s?.from ?? s?.start ?? s?.time?.from ?? "").toString();
   }
   function getShiftTo(s){
-    return String(s?.to ?? s?.end ?? s?.time?.to ?? s?.a ?? "").trim();
+    return (s?.to ?? s?.end ?? s?.time?.to ?? "").toString();
   }
 
   function isMeaningfulShift(s){
     if(!s) return false;
 
     const from = getShiftFrom(s);
-    const to   = getShiftTo(s);
+    const to = getShiftTo(s);
     const hasTimes = !!(from || to);
 
     const pauseMin = Number(s.pauseMin ?? s.pause ?? 0) || 0;
@@ -79,38 +77,16 @@
     return { label: "Orario base", dotClass: "base" };
   }
 
-  // ========= UX: scroll solo quando aperto =========
   function syncAnyOpenFlag(mount){
     const root = mount?.querySelector("#cviewRoot");
     const anyOpen = !!mount?.querySelector(".cviewRow.isOpen");
     root?.classList.toggle("isAnyOpen", anyOpen);
   }
 
-  function setDetailsOpen(row, open){
-    const details = row.querySelector(".cviewDetails");
-    if (!details) return;
-
-    // reset transizione pulita
-    details.style.transition = "max-height .22s ease, opacity .18s ease";
-
-    if (open) {
-      details.style.opacity = "1";
-      details.style.maxHeight = details.scrollHeight + "px"; // ✅ chiave: altezza reale
-    } else {
-      details.style.opacity = "0";
-      details.style.maxHeight = "0px";
-    }
-  }
-
   function closeAllRowsExcept(mount, keepRow){
     const grid = mount.querySelector("#cviewGrid");
-    const openRows = grid.querySelectorAll(".cviewRow.isOpen");
-    openRows.forEach(r => {
-      if (r !== keepRow) {
-        r.classList.remove("isOpen");
-        setDetailsOpen(r, false);
-      }
-    });
+    const open = grid.querySelectorAll(".cviewRow.isOpen");
+    open.forEach(r => { if (r !== keepRow) r.classList.remove("isOpen"); });
     syncAnyOpenFlag(mount);
   }
 
@@ -185,8 +161,6 @@
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
       row.setAttribute("data-no-swipe", "");
-
-      // blocca swipe UI
       row.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
       const head = document.createElement("div");
@@ -241,14 +215,12 @@
         details.setAttribute("data-no-swipe", "");
         details.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
-        // stato chiuso iniziale (inline, così iOS non fa scherzi)
-        details.style.maxHeight = "0px";
-        details.style.opacity = "0";
-
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...meaningful].sort((a,b) => parseMin(getShiftFrom(a)) - parseMin(getShiftFrom(b)));
+        const sorted = [...meaningful].sort(
+          (a,b) => timeToMin(getShiftFrom(a)) - timeToMin(getShiftFrom(b))
+        );
 
         sorted.forEach(s => {
           const li = document.createElement("li");
@@ -270,7 +242,7 @@
           const to   = getShiftTo(s)   || "--:--";
 
           const t = document.createElement("span");
-          t.textContent = `${from} - ${to}`;
+          t.textContent = (from === "--:--" && to === "--:--") ? "(nessun orario)" : `${from} - ${to}`;
 
           txt.appendChild(lbl);
           txt.appendChild(t);
@@ -288,16 +260,10 @@
 
           const willOpen = !row.classList.contains("isOpen");
           closeAllRowsExcept(mount, row);
-
           row.classList.toggle("isOpen", willOpen);
-          setDetailsOpen(row, willOpen);
           syncAnyOpenFlag(mount);
 
-          // ricontrollo dopo un frame (Safari a volte calcola scrollHeight dopo)
-          if (willOpen) {
-            requestAnimationFrame(() => setDetailsOpen(row, true));
-            row.scrollIntoView({ block: "nearest", behavior: "smooth" });
-          }
+          if (willOpen) row.scrollIntoView({ block: "nearest", behavior: "smooth" });
         });
       }
 
