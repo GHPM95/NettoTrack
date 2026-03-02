@@ -165,6 +165,7 @@
 
       const key = dateKey(day.getFullYear(), day.getMonth(), day.getDate());
       const data = loadDay(key);
+console.log("DEBUG DAY", key, data);
 
       const totals = data ? dayTotals(data) : { baseHours:0, extraHours:0, hasBase:false, hasExtra:false };
 
