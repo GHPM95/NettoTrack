@@ -1,9 +1,9 @@
 /* =========================
    Calendar View (Agenda) — CSS
    - Header: titolo + X (stile Day Editor)
-   - Strip: frecce dentro + carousel settimane (prev/current/next)
+   - Strip: frecce slim side-rails + carousel settimane (prev/current/next)
    - FIX iOS: track/pagine in px (width gestita da JS)
-   - 7 giorni SEMPRE visibili (minmax + gap/padding ridotti)
+   - 7 giorni SEMPRE visibili (minmax)
    - Riepilogo: dot piccoli accanto alle ore
    ========================= */
 
@@ -87,42 +87,47 @@
   background: rgba(255,255,255,.14);
 }
 
-/* Frecce */
-.ntBtn{
-  width:38px;
-  height:38px;
-  border-radius:14px;
-  border:none;
-  background:rgba(255,255,255,.10);
-  color:var(--text);
-  font-weight:900;
-  font-size:18px;
-  line-height:1;
-  transition:transform .12s ease, filter .12s ease, background .12s ease;
-}
-.ntBtn:active{
-  transform:scale(.96);
-  filter:brightness(1.08);
-  background:rgba(255,255,255,.14);
-}
-
 /* =========================
-   Strip: freccia | carousel | freccia
+   Strip: freccia slim | carousel | freccia slim
    ========================= */
 .cviewWeekStrip{
   background:var(--glass);
   border:1px solid var(--line);
   border-radius:var(--radius);
-  padding:8px;                 /* un filo più compatto */
+  padding:8px;
   backdrop-filter: blur(12px);
 
   display:grid;
-  grid-template-columns: 38px 1fr 38px;
-  align-items:center;
-  gap:8px;
+  grid-template-columns: 28px 1fr 28px; /* ✅ più respiro ai 7 giorni */
+  align-items:stretch;                  /* ✅ frecce alte quanto strip */
+  gap:10px;
 
-  touch-action: pan-y;         /* scroll verticale ok */
+  touch-action: pan-y;
   user-select:none;
+}
+
+/* Frecce slim (solo calendar view, non tocca ntBtn globali) */
+.cviewNavBtn{
+  height: 100%;
+  width: 28px;
+  border-radius: 14px;
+  border: none;
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  font-weight: 1000;
+  font-size: 18px;
+  line-height: 1;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+}
+.cviewNavBtn:active{
+  transform: scale(.98);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.12);
 }
 
 .cviewDaysWrap{
@@ -150,7 +155,7 @@
 .cviewDays{
   display:grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap:6px;
+  gap:7px;         /* ✅ un filo più “aria” rispetto a 6 */
   width:100%;
 }
 
@@ -159,7 +164,7 @@
   border:none;
   background:transparent;
   color:var(--text);
-  padding:8px 0;               /* più compatto: 7 sempre visibili */
+  padding:8px 0;
   border-radius:16px;
   display:flex;
   flex-direction:column;
@@ -181,7 +186,7 @@
   letter-spacing:.4px;
 }
 .cviewNum{
-  font-size:15px;              /* leggermente più piccolo */
+  font-size:15px;
   font-weight:1000;
   font-variant-numeric: tabular-nums;
 }
