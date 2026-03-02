@@ -1,5 +1,6 @@
+/* calendar-view.js — Weekly Agenda (accordion dettagli turni) */
 (() => {
-  const { dateKey, startOfWeek, loadDay, loadDraft, dayTotals } = window.NTCal;
+  const { dateKey, startOfWeek, loadDay, dayTotals } = window.NTCal;
 
   const DAYS = ["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"];
 
@@ -16,71 +17,50 @@
     return `${dd}/${mm}/${yy}`;
   }
 
-  function toMinMaybe(t){
-    if (!t || typeof t !== "string") return 9999;
-    const m = /^(\d{1,2}):(\d{2})$/.exec(t.trim());
-    if (!m) return 9999;
-    const hh = Number(m[1]), mm = Number(m[2]);
-    if (!Number.isFinite(hh) || !Number.isFinite(mm)) return 9999;
+  function timeToMin(t){
+    if(!t || typeof t !== "string") return 9999;
+    const [hh, mm] = t.split(":").map(n => parseInt(n,10));
+    if(Number.isNaN(hh) || Number.isNaN(mm)) return 9999;
     return hh * 60 + mm;
   }
 
-  // ---- NORMALIZZA SHIFT (compat: from/to | start/end | time.from/time.to) + tags/flags
-  function normShift(s){
-    if (!s || typeof s !== "object") return null;
-
-    const from = s.from ?? s.start ?? s?.time?.from ?? null;
-    const to   = s.to   ?? s.end   ?? s?.time?.to   ?? null;
-
-    return {
-      raw: s,
-      from: (typeof from === "string" ? from : null),
-      to:   (typeof to === "string" ? to   : null),
-      tags: s.tags || {},
-      flags: s.flags || {},
-      shiftType: s.shiftType,
-      pauseMin: s.pauseMin,
-      pausePaid: s.pausePaid,
-      advA: s.advA,
-      advB: s.advB,
-      note: s.note
-    };
+  // --- leggi orari anche se schema cambia
+  function getFrom(s){
+    return (s?.from ?? s?.start ?? s?.time?.from ?? s?.timeFrom ?? s?.da ?? s?.inizio ?? "");
+  }
+  function getTo(s){
+    return (s?.to ?? s?.end ?? s?.time?.to ?? s?.timeTo ?? s?.a ?? s?.fine ?? "");
   }
 
-  // ---- prende turni da più possibili chiavi (compat)
-  function extractShifts(dayObj){
-    const a =
-      (Array.isArray(dayObj?.shifts) ? dayObj.shifts : null) ||
-      (Array.isArray(dayObj?.turni)  ? dayObj.turni  : null) ||
-      (Array.isArray(dayObj?.items)  ? dayObj.items  : null) ||
-      [];
-    return a.map(normShift).filter(Boolean);
-  }
-
-  // “significativo” come il tuo insert: NON solo from/to
+  // ✅ “significativo” come insert (non solo from/to)
   function isMeaningfulShift(s){
-    if (!s) return false;
+    if(!s || typeof s !== "object") return false;
 
-    const hasTimes = !!(s.from || s.to);
+    const from = getFrom(s);
+    const to   = getTo(s);
 
-    const pauseMin = Number(s.pauseMin || 0);
-    const hasPause = pauseMin > 0 || !!s.pausePaid;
+    const hasTimes = !!(from || to);
 
-    const hasFascia = !!(s.shiftType && s.shiftType !== "none");
+    const pauseMin = Number(s?.pauseMin ?? s?.pause ?? 0);
+    const hasPause = (Number.isFinite(pauseMin) && pauseMin > 0) || !!s?.pausePaid;
 
-    const t = s.tags || {};
-    const f = s.flags || {};
+    const st = s?.shiftType;
+    const hasFascia = !!(st && st !== "none");
+
+    const tags = s?.tags || {};
+    const flags = s?.flags || {};
     const hasExtra = !!(
-      t.overtime || t.holiday || t.sunday ||
-      f.straordinario || f.festivo || f.domenicale
+      tags.overtime || tags.holiday || tags.sunday ||
+      flags.straordinario || flags.festivo || flags.domenicale
     );
 
-    const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
-    const hasNote = !!(s.note && String(s.note).trim().length);
+    const hasAdv = (s?.advA && s.advA !== "-") || (s?.advB && s.advB !== "-");
+    const hasNote = !!(s?.note && String(s.note).trim().length);
 
     return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
   }
 
+  // ✅ label + dot class (regola: domenicale vince su festivo)
   function shiftMeta(s){
     const t = s?.tags || {};
     const f = s?.flags || {};
@@ -89,13 +69,13 @@
     const fest = !!(t.holiday  || f.festivo);
     const dom  = !!(t.sunday   || f.domenicale);
 
-    // Regola: se c’è domenicale (anche insieme a festivo) => Domenicale
     if (dom)  return { label: "Domenicale", dotClass: "domenicale" };
     if (fest) return { label: "Festivo", dotClass: "festivo" };
     if (stra) return { label: "Straordinario", dotClass: "extra" };
     return { label: "Orario base", dotClass: "base" };
   }
 
+  // --- UX: abilita scroll solo quando una riga è aperta (usa il tuo CSS .isAnyOpen)
   function syncAnyOpenFlag(mount){
     const root = mount?.querySelector("#cviewRoot");
     const anyOpen = !!mount?.querySelector(".cviewRow.isOpen");
@@ -174,21 +154,16 @@
       day.setDate(day.getDate() + i);
 
       const key = dateKey(day.getFullYear(), day.getMonth(), day.getDate());
-
-      // ✅ view: prova saved, se non c’è prova draft (così non “sparisce” mai)
-      const saved = loadDay(key);
-      const draft = (typeof loadDraft === "function") ? loadDraft(key) : null;
-      const data = saved || draft;
+      const data = loadDay(key);
 
       const totals = data ? dayTotals(data) : { baseHours:0, extraHours:0, hasBase:false, hasExtra:false };
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
-      row.setAttribute("data-no-swipe", ""); // ✅ il tuo ui.js lo rispetta
+      row.setAttribute("data-no-swipe",""); // il tuo ui.js rispetta [data-no-swipe]
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
-      head.setAttribute("data-no-swipe", "");
 
       const left = document.createElement("div");
       left.className = "cviewLeftTxt";
@@ -211,14 +186,12 @@
         const b = document.createElement("div");
         b.className = "cviewBubble base";
         b.textContent = String(totals.baseHours);
-        b.setAttribute("data-no-swipe", "");
         badges.appendChild(b);
       }
       if (totals.hasExtra){
         const b = document.createElement("div");
         b.className = "cviewBubble extra";
         b.textContent = String(totals.extraHours);
-        b.setAttribute("data-no-swipe", "");
         badges.appendChild(b);
       }
 
@@ -226,21 +199,21 @@
       head.appendChild(badges);
       row.appendChild(head);
 
-      // ===== DETAILS (solo se ci sono turni significativi) =====
-      const shifts = extractShifts(data);
+      // ===== DETAILS (accordion) =====
+      const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
       const meaningful = shifts.filter(isMeaningfulShift);
 
+      // Creiamo details se: ci sono turni significativi
       if (meaningful.length){
         const details = document.createElement("div");
         details.className = "cviewDetails";
-        details.setAttribute("data-no-swipe", "");
 
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...meaningful].sort((a,b) => toMinMaybe(a.from) - toMinMaybe(b.from));
+        const sorted = [...meaningful].sort((a,b) => timeToMin(getFrom(a)) - timeToMin(getFrom(b)));
 
-        for (const s of sorted){
+        sorted.forEach(s => {
           const li = document.createElement("li");
           li.className = "cviewShiftItem";
 
@@ -256,8 +229,8 @@
           lbl.className = "cviewShiftLbl";
           lbl.textContent = `${meta.label}: `;
 
-          const from = s.from || "--:--";
-          const to   = s.to   || "--:--";
+          const from = getFrom(s) || "--:--";
+          const to   = getTo(s)   || "--:--";
 
           const t = document.createElement("span");
           t.textContent = `${from} - ${to}`;
@@ -268,14 +241,23 @@
           li.appendChild(dot);
           li.appendChild(txt);
           ul.appendChild(li);
+        });
+
+        // safety: se per qualche motivo ul è vuota, non lascia “vuoto”
+        if (!ul.children.length){
+          const li = document.createElement("li");
+          li.className = "cviewShiftItem";
+          li.innerHTML = `<div class="cviewShiftTxt">Nessun dettaglio turno trovato.</div>`;
+          ul.appendChild(li);
         }
 
         details.appendChild(ul);
         row.appendChild(details);
 
-        // tap: apri/chiudi (una sola aperta)
+        // tap: apri/chiudi (una aperta alla volta)
         row.addEventListener("click", (e) => {
           e.stopPropagation();
+
           const willOpen = !row.classList.contains("isOpen");
           closeAllRowsExcept(mount, row);
           row.classList.toggle("isOpen", willOpen);
