@@ -2,7 +2,7 @@
    Calendar View (Agenda) — CSS (pulito, NO contenitori)
    - Strip + Summary senza box
    - Frecce: pillow sottili e lunghe (come pill date) ma colori invariati
-   - ✅ FIX: padding laterale wrapper per non tagliare lunedì/domenica
+   - ✅ FIX GIUSTO: espando la maschera verso le frecce senza stringere i giorni
    - Empty state centrato (orizzontale + verticale) senza bordo
    - FIX iOS: track/pagine in px (JS)
    ========================= */
@@ -12,17 +12,14 @@
   --muted: rgba(255,255,255,.62);
   --line: rgba(255,255,255,.10);
 
-  /* TODAY */
   --todayFill: rgba(120,140,255,.22);
   --todayBorder: rgba(180,200,255,.25);
   --todayInner: rgba(170,190,255,.22);
 
-  /* SELECTED (glass neutro) */
   --selFill: rgba(255,255,255,.10);
   --selBorder: rgba(255,255,255,.18);
   --selInner: rgba(255,255,255,.10);
 
-  /* Dot righe riepilogo */
   --dotBase: rgba(120,170,255,.95);
   --dotOver: rgba(180,120,255,.95);
   --dotHoliday: rgba(255,180,90,.95);
@@ -41,9 +38,7 @@
 }
 .cviewRoot *{ box-sizing:border-box; }
 
-/* =========================
-   Header: spacer | titolo | X
-   ========================= */
+/* Header */
 .cviewHeader{
   display:grid;
   grid-template-columns: 38px 1fr 38px;
@@ -85,26 +80,22 @@
   background: rgba(255,255,255,.14);
 }
 
-/* =========================
-   Strip: freccia pillow slim | carousel | freccia pillow slim
-   (strip SENZA contenitore)
-   ========================= */
+/* Strip */
 .cviewWeekStrip{
   display:grid;
-  grid-template-columns: 28px 1fr 28px; /* slim side rails */
+  grid-template-columns: 28px 1fr 28px;
   align-items:center;
   gap:10px;
 
   padding:0;
   border:none;
   background:transparent;
-  backdrop-filter:none;
 
   touch-action: pan-y;
   user-select:none;
 }
 
-/* Frecce: pillow sottili e lunghe (stessi colori) */
+/* Frecce: pillow sottili e lunghe */
 .cviewNavBtn{
   width:28px;
   height:52px;
@@ -142,15 +133,19 @@
   background: rgba(255,255,255,.12);
 }
 
-/* ✅ Wrapper: evita taglio dei pill ai bordi */
+/* ✅ WRAP: espande la maschera verso le frecce (senza comprimere i giorni)
+   - margin negativo = allargo l'area visibile
+   - padding uguale e opposto = i contenuti restano dove erano
+*/
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
-
-  padding-left: 6px;   /* ✅ respiro L */
-  padding-right: 6px;  /* ✅ respiro R */
-
   border-radius:16px;
+
+  margin-left: -8px;
+  margin-right:-8px;
+  padding-left: 8px;
+  padding-right:8px;
 }
 
 /* Track (prev|cur|next) — width in px via JS */
@@ -163,7 +158,7 @@
   transition: transform .22s ease;
 }
 .cviewPage{
-  flex:0 0 auto; /* width in px via JS */
+  flex:0 0 auto;
 }
 
 /* 7 giorni */
@@ -221,7 +216,7 @@
   pointer-events:none;
 }
 
-/* SELECTED (glass neutro) */
+/* SELECTED */
 .cviewDayBtn.isSelected:not(.isToday){
   background: var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
@@ -235,7 +230,7 @@
   pointer-events:none;
 }
 
-/* Divider leggero */
+/* Divider */
 .cviewDivider{
   height:1px;
   width:100%;
@@ -244,9 +239,7 @@
   margin-top:2px;
 }
 
-/* =========================
-   Summary (SENZA box)
-   ========================= */
+/* Summary */
 .cviewSummary{
   flex:1;
   min-height:0;
@@ -254,7 +247,6 @@
   padding:0;
   border:none;
   background:transparent;
-  backdrop-filter:none;
 
   display:flex;
   flex-direction:column;
@@ -301,7 +293,7 @@
   display:flex;
   flex-direction:column;
   gap:10px;
-  flex: 1; /* centro verticale empty */
+  flex: 1;
   min-height: 0;
 }
 
@@ -348,7 +340,7 @@
   line-height:1.25;
 }
 
-/* EMPTY: nessun bordo + centrato */
+/* EMPTY */
 .cviewEmpty{
   flex: 1;
   display:flex;
