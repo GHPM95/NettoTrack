@@ -25,59 +25,40 @@
     if(!t || typeof t !== "string") return 9999;
     const m = /^(\d{1,2}):(\d{2})$/.exec(t.trim());
     if(!m) return 9999;
-    const hh = parseInt(m[1],10), mm = parseInt(m[2],10);
+    const hh = parseInt(m[1],10);
+    const mm = parseInt(m[2],10);
     if(Number.isNaN(hh) || Number.isNaN(mm)) return 9999;
     return hh * 60 + mm;
   }
 
-  // ✅ Legge orari anche da vecchi salvataggi
-  function getTime(shift, which){
-    if(!shift) return "";
-    if (which === "from") {
-      return (
-        shift.from ??
-        shift.start ??
-        shift.time?.from ??
-        shift.timeFrom ??
-        ""
-      );
-    }
-    return (
-      shift.to ??
-      shift.end ??
-      shift.time?.to ??
-      shift.timeTo ??
-      ""
-    );
-  }
+  function getShiftFrom(s){ return (s?.from ?? s?.start ?? s?.time?.from ?? "").toString(); }
+  function getShiftTo(s){   return (s?.to   ?? s?.end   ?? s?.time?.to   ?? "").toString(); }
 
-  // ✅ “significativo” (compatibile con insert + vecchi dati)
   function isMeaningfulShift(s){
     if(!s) return false;
 
-    const from = String(getTime(s,"from") || "").trim();
-    const to   = String(getTime(s,"to")   || "").trim();
+    const from = getShiftFrom(s);
+    const to   = getShiftTo(s);
     const hasTimes = !!(from || to);
 
-    const pauseMin = Number(s.pauseMin || s.pause || 0);
-    const hasPause = (pauseMin > 0) || !!s.pausePaid;
+    const pauseMin = Number(s.pauseMin ?? s.pause ?? 0) || 0;
+    const hasPause = pauseMin > 0 || !!s.pausePaid;
 
     const hasFascia = !!(s.shiftType && s.shiftType !== "none");
 
-    const tags  = s.tags  || {};
+    const tags = s.tags || {};
     const flags = s.flags || {};
     const hasExtra = !!(
       tags.overtime || tags.holiday || tags.sunday ||
       flags.straordinario || flags.festivo || flags.domenicale
     );
 
-    const hasAdv  = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
+    const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
     const hasNote = !!(s.note && String(s.note).trim().length);
 
     return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
   }
 
-  // ✅ Etichetta + dot: domenicale batte festivo
   function shiftMeta(shift){
     const t = shift?.tags || {};
     const f = shift?.flags || {};
@@ -86,6 +67,7 @@
     const fest = !!(t.holiday  || f.festivo);
     const dom  = !!(t.sunday   || f.domenicale);
 
+    // regola: domenicale vince su festivo
     if (dom)  return { label: "Domenicale", dotClass: "domenicale" };
     if (fest) return { label: "Festivo", dotClass: "festivo" };
     if (stra) return { label: "Straordinario", dotClass: "extra" };
@@ -103,13 +85,6 @@
     const open = grid.querySelectorAll(".cviewRow.isOpen");
     open.forEach(r => { if (r !== keepRow) r.classList.remove("isOpen"); });
     syncAnyOpenFlag(mount);
-  }
-
-  function stopSwipeSteal(el){
-    // ✅ blocca davvero pointerdown che altrimenti arriva a cardsViewport (ui.js)
-    el.setAttribute("data-no-swipe", "");
-    el.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
-    el.addEventListener("click", (e) => e.stopPropagation(), { passive:true });
   }
 
   function mountIfNeeded() {
@@ -182,11 +157,13 @@
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
-      stopSwipeSteal(row);
+      row.setAttribute("data-no-swipe", "");
+      row.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
-      stopSwipeSteal(head);
+      head.setAttribute("data-no-swipe", "");
+      head.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
       const left = document.createElement("div");
       left.className = "cviewLeftTxt";
@@ -204,7 +181,6 @@
 
       const badges = document.createElement("div");
       badges.className = "cviewBadges";
-      stopSwipeSteal(badges);
 
       if (totals.hasBase) {
         const b = document.createElement("div");
@@ -223,19 +199,24 @@
       head.appendChild(badges);
       row.appendChild(head);
 
-      // ===== DETAILS =====
-      const shiftsRaw = Array.isArray(data?.shifts) ? data.shifts : [];
-      const meaningful = shiftsRaw.filter(isMeaningfulShift);
+      // DETAILS
+      const rawShifts = (Array.isArray(data?.shifts) ? data.shifts : null)
+                     ?? (Array.isArray(data?.turni) ? data.turni : []);
+
+      const meaningful = rawShifts.filter(isMeaningfulShift);
 
       if (meaningful.length) {
         const details = document.createElement("div");
         details.className = "cviewDetails";
-        stopSwipeSteal(details);
+        details.setAttribute("data-no-swipe", "");
+        details.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...meaningful].sort((a,b) => timeToMin(String(getTime(a,"from")||"")) - timeToMin(String(getTime(b,"from")||"")));
+        const sorted = [...meaningful].sort(
+          (a,b) => timeToMin(getShiftFrom(a)) - timeToMin(getShiftFrom(b))
+        );
 
         sorted.forEach(s => {
           const li = document.createElement("li");
@@ -253,8 +234,8 @@
           lbl.className = "cviewShiftLbl";
           lbl.textContent = `${meta.label}: `;
 
-          const from = String(getTime(s,"from") || "--:--").trim() || "--:--";
-          const to   = String(getTime(s,"to")   || "--:--").trim() || "--:--";
+          const from = getShiftFrom(s) || "--:--";
+          const to   = getShiftTo(s)   || "--:--";
 
           const t = document.createElement("span");
           t.textContent = `${from} - ${to}`;
@@ -270,19 +251,14 @@
         details.appendChild(ul);
         row.appendChild(details);
 
-        // ✅ toggle accordion (una sola aperta)
         row.addEventListener("click", (e) => {
           e.stopPropagation();
-
           const willOpen = !row.classList.contains("isOpen");
           closeAllRowsExcept(mount, row);
           row.classList.toggle("isOpen", willOpen);
           syncAnyOpenFlag(mount);
-
-          if (willOpen) {
-            row.scrollIntoView({ block: "nearest", behavior: "smooth" });
-          }
-        }, { passive:true });
+          if (willOpen) row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        });
       }
 
       grid.appendChild(row);
