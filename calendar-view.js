@@ -1,4 +1,3 @@
-/* calendar-view.js — Weekly Agenda (accordion details) */
 (() => {
   const { dateKey, startOfWeek, loadDay, dayTotals } = window.NTCal;
 
@@ -26,38 +25,40 @@
     if(!t || typeof t !== "string") return 9999;
     const m = /^(\d{1,2}):(\d{2})$/.exec(t.trim());
     if(!m) return 9999;
-    const hh = parseInt(m[1],10);
-    const mm = parseInt(m[2],10);
-    if(Number.isNaN(hh) || Number.isNaN(mm)) return 9999;
+    const hh = Number(m[1]), mm = Number(m[2]);
+    if(!Number.isFinite(hh) || !Number.isFinite(mm)) return 9999;
     return hh * 60 + mm;
   }
 
-  // ====== UNIVERSAL SHIFT READERS ======
-  function getShiftFrom(s){
-    return (s?.from ?? s?.start ?? s?.time?.from ?? "").toString();
-  }
-  function getShiftTo(s){
-    return (s?.to ?? s?.end ?? s?.time?.to ?? "").toString();
+  // prende orari anche se in futuro cambi schema
+  function getFromTo(s){
+    const from =
+      s?.from ?? s?.start ?? s?.time?.from ?? s?.time?.start ?? "";
+    const to =
+      s?.to   ?? s?.end   ?? s?.time?.to   ?? s?.time?.end   ?? "";
+    return {
+      from: (typeof from === "string" ? from : String(from ?? "")).trim(),
+      to:   (typeof to   === "string" ? to   : String(to   ?? "")).trim(),
+    };
   }
 
-  // “significativo” come insert (non solo from/to)
+  // “significativo” (stesso concetto dell’insert: non solo from/to)
   function isMeaningfulShift(s){
-    if(!s) return false;
+    if(!s || typeof s !== "object") return false;
 
-    const from = getShiftFrom(s);
-    const to   = getShiftTo(s);
+    const { from, to } = getFromTo(s);
     const hasTimes = !!(from || to);
 
-    const pauseMin = Number(s.pauseMin ?? s.pause ?? 0) || 0;
+    const pauseMin = Number(s.pauseMin || 0);
     const hasPause = pauseMin > 0 || !!s.pausePaid;
 
     const hasFascia = !!(s.shiftType && s.shiftType !== "none");
 
-    const tags = s.tags || {};
-    const flags = s.flags || {};
+    const t = s.tags || {};
+    const f = s.flags || {};
     const hasExtra = !!(
-      tags.overtime || tags.holiday || tags.sunday ||
-      flags.straordinario || flags.festivo || flags.domenicale
+      t.overtime || t.holiday || t.sunday ||
+      f.straordinario || f.festivo || f.domenicale
     );
 
     const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
@@ -66,7 +67,6 @@
     return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
   }
 
-  // label + dot class (regola: domenicale vince su festivo)
   function shiftMeta(shift){
     const t = shift?.tags || {};
     const f = shift?.flags || {};
@@ -81,7 +81,6 @@
     return { label: "Orario base", dotClass: "base" };
   }
 
-  // UX scroll flag
   function syncAnyOpenFlag(mount){
     const root = mount?.querySelector("#cviewRoot");
     const anyOpen = !!mount?.querySelector(".cviewRow.isOpen");
@@ -99,7 +98,6 @@
     const mount = getMount();
     if (!mount) return;
 
-    // se la slide è stata chiusa/riaperta, il mount torna vuoto: rimonta
     if (mounted && isActuallyMounted(mount)) return;
 
     mount.innerHTML = `
@@ -167,6 +165,8 @@
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
       row.setAttribute("data-no-swipe", "");
+
+      // blocca swipe UI quando tocchi la riga
       row.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
       const head = document.createElement("div");
@@ -190,6 +190,8 @@
 
       const badges = document.createElement("div");
       badges.className = "cviewBadges";
+      badges.setAttribute("data-no-swipe", "");
+      badges.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
       if (totals.hasBase) {
         const b = document.createElement("div");
@@ -209,11 +211,13 @@
       row.appendChild(head);
 
       // ===== DETAILS =====
-      const rawShifts =
-        (Array.isArray(data?.shifts) ? data.shifts : null) ??
-        (Array.isArray(data?.turni)  ? data.turni  : []);
+      const shiftsRaw =
+        (Array.isArray(data?.shifts) && data.shifts) ||
+        (Array.isArray(data?.turni) && data.turni) ||
+        (Array.isArray(data?.items) && data.items) ||
+        [];
 
-      const meaningful = rawShifts.filter(isMeaningfulShift);
+      const meaningful = shiftsRaw.filter(isMeaningfulShift);
 
       if (meaningful.length) {
         const details = document.createElement("div");
@@ -224,7 +228,11 @@
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...meaningful].sort((a,b) => timeToMin(getShiftFrom(a)) - timeToMin(getShiftFrom(b)));
+        const sorted = [...meaningful].sort((a,b) => {
+          const af = getFromTo(a).from;
+          const bf = getFromTo(b).from;
+          return timeToMin(af) - timeToMin(bf);
+        });
 
         sorted.forEach(s => {
           const li = document.createElement("li");
@@ -242,11 +250,10 @@
           lbl.className = "cviewShiftLbl";
           lbl.textContent = `${meta.label}: `;
 
-          const from = getShiftFrom(s) || "--:--";
-          const to   = getShiftTo(s)   || "--:--";
+          const { from, to } = getFromTo(s);
 
           const t = document.createElement("span");
-          t.textContent = `${from} - ${to}`;
+          t.textContent = `${from || "--:--"} - ${to || "--:--"}`;
 
           txt.appendChild(lbl);
           txt.appendChild(t);
@@ -261,10 +268,12 @@
 
         row.addEventListener("click", (e) => {
           e.stopPropagation();
+
           const willOpen = !row.classList.contains("isOpen");
           closeAllRowsExcept(mount, row);
           row.classList.toggle("isOpen", willOpen);
           syncAnyOpenFlag(mount);
+
           if (willOpen) row.scrollIntoView({ block: "nearest", behavior: "smooth" });
         });
       }
