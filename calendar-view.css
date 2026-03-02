@@ -1,16 +1,14 @@
 /* =========================
-   Calendar View (Agenda) — CSS (pulito, NO contenitori)
-   - Strip + Summary senza box
-   - Frecce: pillow sottili e lunghe (come pill date) ma colori invariati
-   - ✅ FIX GIUSTO: espando la maschera verso le frecce senza stringere i giorni
-   - Empty state centrato (orizzontale + verticale) senza bordo
-   - FIX iOS: track/pagine in px (JS)
+   Calendar View (Agenda) — CSS
+   - Strip + Summary puliti
+   - Frecce: pillow sottili e lunghe
+   - Wrap: maschera espansa verso frecce (senza comprimere giorni)
+   - ✅ Capsule: ORA + TAG (dx) / dettagli / note
    ========================= */
 
 :root{
   --text: rgba(255,255,255,.92);
   --muted: rgba(255,255,255,.62);
-  --line: rgba(255,255,255,.10);
 
   --todayFill: rgba(120,140,255,.22);
   --todayBorder: rgba(180,200,255,.25);
@@ -95,7 +93,7 @@
   user-select:none;
 }
 
-/* Frecce: pillow sottili e lunghe */
+/* Frecce */
 .cviewNavBtn{
   width:28px;
   height:52px;
@@ -133,10 +131,7 @@
   background: rgba(255,255,255,.12);
 }
 
-/* ✅ WRAP: espande la maschera verso le frecce (senza comprimere i giorni)
-   - margin negativo = allargo l'area visibile
-   - padding uguale e opposto = i contenuti restano dove erano
-*/
+/* ✅ WRAP: espande maschera verso frecce senza stringere i giorni */
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
@@ -264,31 +259,16 @@
   gap:12px;
   padding-top:2px;
 }
-
 .cviewSummaryDate{
   font-weight:1000;
   font-size:15px;
   letter-spacing:.2px;
 }
 
-/* badges */
-.cviewBadges{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-.cviewBadge{
-  font-size:11px;
-  font-weight:1000;
-  color:var(--text);
-  padding:6px 10px;
-  border-radius:999px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.10);
-}
+/* ✅ niente badges in alto a destra */
+.cviewBadges{ display:none; }
 
-/* righe */
+/* Lista turni */
 .cviewLines{
   display:flex;
   flex-direction:column;
@@ -297,21 +277,23 @@
   min-height: 0;
 }
 
+/* Capsula turno */
 .cviewLine{
   display:flex;
   align-items:flex-start;
   gap:10px;
-  padding:10px 12px;
+  padding:14px 14px;
   border-radius:16px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.10);
 }
 
+/* Dot */
 .cviewDot{
   width:7px;
   height:7px;
   border-radius:999px;
-  margin-top:6px;
+  margin-top:8px;
   flex:0 0 auto;
   background: var(--dotBase);
   box-shadow: 0 0 0 2px rgba(255,255,255,.08);
@@ -323,24 +305,69 @@
 .cviewLineText{
   display:flex;
   flex-direction:column;
-  gap:4px;
+  gap:8px;
+  min-width:0;
+  width:100%;
+}
+
+/* Riga 1: ora + tags a destra (wrap) */
+.cviewLineHeader{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
   min-width:0;
 }
-.cviewLineMain{
+.cviewLineTime{
   font-weight:1000;
-  font-size:14px;
+  font-size:16px;
   font-variant-numeric: tabular-nums;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-}
-.cviewLineSub{
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.25;
+  min-width:0;
 }
 
-/* EMPTY */
+.cviewLineTags{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  align-items:center;
+  max-width:55%;
+}
+.cviewInlineTag{
+  font-size:11px;
+  font-weight:1000;
+  padding:5px 9px;
+  border-radius:999px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.92);
+  white-space:nowrap;
+}
+
+/* Riga 2: dettagli */
+.cviewLineDetails{
+  font-size:13px;
+  color: var(--muted);
+  font-weight:900;
+  line-height:1.25;
+  white-space:pre-wrap;
+}
+
+/* Riga 3: note */
+.cviewLineNote{
+  font-size:13px;
+  color: var(--muted);
+  font-weight:900;
+  line-height:1.25;
+  white-space:pre-wrap;
+  opacity:.92;
+}
+
+/* Empty */
 .cviewEmpty{
   flex: 1;
   display:flex;
@@ -358,7 +385,7 @@
   line-height: 1.25;
 }
 
-/* Note */
+/* Note “giorno” (se mai usate) */
 .cviewNotes{
   padding:12px;
   border-radius:16px;
