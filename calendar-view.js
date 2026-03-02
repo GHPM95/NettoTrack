@@ -14,10 +14,8 @@
 
   let mounted = false;
 
-  // settimana corrente mostrata (lunedì)
-  let pageStartISO = null;
-  // giorno selezionato
-  let selectedISO = null;
+  let pageStartISO = null;  // lunedì della settimana visibile
+  let selectedISO = null;   // giorno selezionato
 
   // gesture / carousel
   let dragging = false;
@@ -200,6 +198,8 @@
           <button class="cviewNavBtn" id="cvNext" type="button" aria-label="Settimana successiva">›</button>
         </section>
 
+        <div class="cviewDivider" aria-hidden="true"></div>
+
         <section class="cviewSummary" aria-label="Riepilogo giornata selezionata">
           <div class="cviewSummaryTop">
             <div class="cviewSummaryDate" id="cvSummaryDate">—</div>
@@ -335,7 +335,7 @@
   }
 
   /* =========================
-     Summary (DOT + testo)
+     Summary
      ========================= */
   async function renderSummary(iso){
     const mount = getMount();
@@ -543,9 +543,6 @@
 
   function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
 
-  /* =========================
-     Open / Close
-     ========================= */
   function open(){
     mountIfNeeded();
 
