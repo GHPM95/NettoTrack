@@ -31,8 +31,8 @@
   /* =====================================================
      NORMALIZE (CRITICO)
      - garantisce shifts[]
-     - garantisce from/to (anche se salvati come start/end o time.from/time.to)
-     - uniforma tags/flags
+     - garantisce from/to anche se salvati come start/end, time.from/time.to, ecc.
+     - allinea tags/flags (nuovo/vecchio)
   ===================================================== */
   function pickTimeFromShift(s) {
     if (!s || typeof s !== "object") return { from: "", to: "" };
@@ -57,15 +57,15 @@
     const tags = (s.tags && typeof s.tags === "object") ? { ...s.tags } : {};
     const flags = (s.flags && typeof s.flags === "object") ? { ...s.flags } : {};
 
-    // se esistono flags vecchi, riempi tags nuovi
+    // flags -> tags
     if (flags.straordinario) tags.overtime = true;
-    if (flags.festivo) tags.holiday = true;
-    if (flags.domenicale) tags.sunday = true;
+    if (flags.festivo)       tags.holiday = true;
+    if (flags.domenicale)    tags.sunday  = true;
 
-    // se esistono tags nuovi, riempi flags vecchi
+    // tags -> flags
     if (tags.overtime) flags.straordinario = true;
-    if (tags.holiday) flags.festivo = true;
-    if (tags.sunday) flags.domenicale = true;
+    if (tags.holiday)  flags.festivo      = true;
+    if (tags.sunday)   flags.domenicale   = true;
 
     const pauseMin = Number(s.pauseMin ?? s.pause ?? 0) || 0;
 
@@ -84,11 +84,12 @@
   function normalizeDayModel(obj) {
     if (!obj || typeof obj !== "object") return null;
 
-    const rawShifts = Array.isArray(obj.shifts) ? obj.shifts : [];
+    // supporto eventuale vecchio nome "turni"
+    const rawShifts = Array.isArray(obj.shifts) ? obj.shifts
+                    : Array.isArray(obj.turni)  ? obj.turni
+                    : [];
 
-    const shifts = rawShifts
-      .map(normalizeShift)
-      .filter(Boolean);
+    const shifts = rawShifts.map(normalizeShift).filter(Boolean);
 
     return { ...obj, shifts };
   }
@@ -103,7 +104,7 @@
       if (raw) return normalizeDayModel(JSON.parse(raw));
     } catch {}
 
-    // 2) chiave nuda
+    // 2) chiave nuda (compat)
     try {
       const raw = localStorage.getItem(k2);
       if (raw) return normalizeDayModel(JSON.parse(raw));
@@ -116,13 +117,9 @@
     const k1 = keyWithPrefix(dateKeyStr);
     const k2 = String(dateKeyStr || "");
 
-    // salva SEMPRE in formato normalizzato
     const model = normalizeDayModel(obj) || obj;
-
-    const raw = (() => {
-      try { return JSON.stringify(model); }
-      catch { return ""; }
-    })();
+    let raw = "";
+    try { raw = JSON.stringify(model); } catch {}
     if (!raw) return;
 
     try { localStorage.setItem(k1, raw); } catch {}
@@ -166,7 +163,6 @@
 
   /* =====================================================
      TIME / ORE
-     (ora usa from/to normalizzati)
   ===================================================== */
   function parseHHMM(str) {
     const m = /^(\d{1,2}):(\d{2})$/.exec(String(str || "").trim());
@@ -178,7 +174,7 @@
   }
 
   function minutesToHours(min) {
-    return Math.round((min / 60) * 10) / 10;
+    return Math.round((min / 60) * 10) / 10; // 1 decimale
   }
 
   function isExtraShift(s) {
@@ -230,8 +226,8 @@
   ===================================================== */
   function startOfWeek(date) {
     const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const day = d.getDay();
-    const diff = (day === 0 ? -6 : 1 - day);
+    const day = d.getDay(); // 0=Sun … 6=Sat
+    const diff = (day === 0 ? -6 : 1 - day); // Monday-based
     d.setDate(d.getDate() + diff);
     d.setHours(0, 0, 0, 0);
     return d;
