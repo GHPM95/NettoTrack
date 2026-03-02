@@ -1,24 +1,41 @@
 /* =========================
    calendar-view.js (Agenda)
-   Monta in #calViewMount
-   ✅ SOLO NTCal.loadDay (salvati)
-   ❌ MAI loadDraft/saveDraft
+   - Monta in #calViewMount (no HTML separato)
+   - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
+   - Strip a carousel: prev | current | next (drag live + snap)
+   - Cambio settimana mantiene lo stesso giorno della settimana
+   - Titolo (mese/anno) segue live la settimana in preview durante il drag
+   - Riepilogo con dot piccoli accanto alle ore
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
   const WDN = ["L","M","M","G","V","S","D"];
+  const $ = (sel, root=document) => root.querySelector(sel);
 
   let mounted = false;
 
-  // stato view
-  let pageStartISO = null;   // lunedì della “pagina”
+  // settimana corrente mostrata (lunedi)
+  let pageStartISO = null;
+  // giorno selezionato
   let selectedISO = null;
 
-  function getMount(){ return document.getElementById("calViewMount"); }
+  // gesture / carousel
+  let dragging = false;
+  let dragStartX = 0;
+  let dragDx = 0;
+  let dragMoved = false;
+  let lock = false;
 
-  function isActuallyMounted(mount){
-    return !!(mount && mount.querySelector("#cviewRoot"));
-  }
+  // misure track
+  let wrapW = 0;
+  let baseX = 0; // posizione centro = -wrapW
+
+  // title preview
+  let liveWeekPreview = 0;  // -1 prev, 0 current, +1 next
+  let selectedOffset = 0;   // 0..6 offset del selected nella settimana corrente
+
+  function getMount(){ return document.getElementById("calViewMount"); }
+  function isActuallyMounted(mount){ return !!(mount && mount.querySelector("#cviewRoot")); }
 
   function todayISO(){
     try{
@@ -35,21 +52,18 @@
     const [y,m,d] = String(iso).split("-").map(n => parseInt(n,10));
     return new Date(y, (m||1)-1, d||1);
   }
-
   function dateToISO(dt){
     return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
   }
-
   function addDaysISO(iso, n){
     const d = isoToDate(iso);
     d.setDate(d.getDate() + n);
     return dateToISO(d);
   }
-
   function startOfWeekISO(iso){
     const d = isoToDate(iso);
-    const day = d.getDay(); // 0 dom, 1 lun
-    const diff = (day === 0 ? -6 : 1 - day); // lunedì start
+    const day = d.getDay(); // 0 dom
+    const diff = (day === 0 ? -6 : 1 - day);
     d.setDate(d.getDate() + diff);
     d.setHours(12,0,0,0);
     return dateToISO(d);
@@ -59,7 +73,6 @@
     const d = isoToDate(iso);
     return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
   }
-
   function formatLongDate(iso){
     const d = isoToDate(iso);
     const giorni = ["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
@@ -73,74 +86,33 @@
     return (h*60) + (m||0);
   }
 
-  /* -------------------------
-     Mount UI
-  ------------------------- */
-  function mountIfNeeded(){
-    const mount = getMount();
-    if (!mount) return;
+  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 
-    if (mounted && isActuallyMounted(mount)) return;
-
-    mount.innerHTML = `
-      <div class="cviewRoot" id="cviewRoot">
-        <header class="cviewHeader">
-          <div class="cviewLeft">
-            <button class="ntBtn" id="cvPrev" type="button" aria-label="Settimana precedente">‹</button>
-            <button class="ntBtn" id="cvNext" type="button" aria-label="Settimana successiva">›</button>
-          </div>
-
-          <div class="cviewTitle" id="cvTitle">—</div>
-
-          <button class="ntBtn" id="cvClose" type="button" aria-label="Chiudi">×</button>
-        </header>
-
-        <section class="cviewWeekStrip" aria-label="Selettore giorni settimana">
-          <div class="cviewDays" id="cvDays"></div>
-        </section>
-
-        <section class="cviewSummary" aria-label="Riepilogo giornata selezionata">
-          <div class="cviewSummaryTop">
-            <div class="cviewSummaryDate" id="cvSummaryDate">—</div>
-            <div class="cviewBadges" id="cvBadges"></div>
-          </div>
-
-          <div class="cviewLines" id="cvLines"></div>
-
-          <div class="cviewNotes" id="cvNotesWrap" hidden>
-            <div class="cviewNotesTitle">Note</div>
-            <div class="cviewNotesText" id="cvNotesText"></div>
-          </div>
-        </section>
-
-        <div class="cviewHint">Swipe down per chiudere</div>
-      </div>
-    `;
-
-    mount.querySelector("#cvClose")?.addEventListener("click", () => {
-      document.dispatchEvent(new Event("nettotrack:closeCalendarView"));
-    });
-
-    mount.querySelector("#cvPrev")?.addEventListener("click", async () => {
-      pageStartISO = addDaysISO(pageStartISO, -7);
-      selectedISO = pageStartISO;
-      renderHeaderAndWeek();
-      await renderSummary(selectedISO);
-    });
-
-    mount.querySelector("#cvNext")?.addEventListener("click", async () => {
-      pageStartISO = addDaysISO(pageStartISO, +7);
-      selectedISO = pageStartISO;
-      renderHeaderAndWeek();
-      await renderSummary(selectedISO);
-    });
-
-    mounted = true;
+  function dayDiffISO(aISO, bISO){
+    const a = isoToDate(aISO); a.setHours(12,0,0,0);
+    const b = isoToDate(bISO); b.setHours(12,0,0,0);
+    return Math.round((a - b) / 86400000);
   }
 
-  /* -------------------------
-     Data: SOLO saved (no draft)
-  ------------------------- */
+  function updateSelectedOffset(){
+    const rawOff = dayDiffISO(selectedISO, pageStartISO);
+    selectedOffset = clamp(rawOff, 0, 6);
+  }
+
+  function setTitleForPreviewWeek(previewDir){
+    const mount = getMount();
+    if(!mount) return;
+    const titleEl = $("#cvTitle", mount);
+    if(!titleEl) return;
+
+    const wkStart = addDaysISO(pageStartISO, previewDir * 7);
+    const previewSelected = addDaysISO(wkStart, selectedOffset);
+    titleEl.textContent = formatMonthYear(previewSelected);
+  }
+
+  /* =========================
+     Data: SOLO saved (NO draft)
+     ========================= */
   function loadDaySavedOnly(iso){
     const cal = window.NTCal;
     if(!cal || typeof cal.loadDay !== "function"){
@@ -152,7 +124,6 @@
 
     const shiftsRaw = Array.isArray(model?.shifts) ? model.shifts : [];
 
-    // normalizzo basandomi sul tuo Day Editor
     const shifts = shiftsRaw.map((s) => {
       const from = typeof s?.from === "string" ? s.from : "";
       const to   = typeof s?.to   === "string" ? s.to   : "";
@@ -166,15 +137,13 @@
 
       const adv = (advA && advA !== "-") ? advA : ((advB && advB !== "-") ? advB : "");
 
-      // priorità dot (se ci sono più flag)
-      // overtime > holiday > sunday > base
+      // Dot priority: overtime > holiday > sunday > base
       const dotKind =
         tags.overtime ? "over" :
         tags.holiday  ? "holiday" :
         tags.sunday   ? "sunday" :
         "base";
 
-      // stringa “extra” sotto (solo se presente)
       const extras = [];
       if(tags.overtime) extras.push("Straordinario");
       if(tags.holiday)  extras.push("Festivo");
@@ -185,12 +154,7 @@
       const note = typeof s?.note === "string" ? s.note : "";
       if(note.trim()) extras.push(`Nota: ${note.trim()}`);
 
-      return {
-        start: from,
-        end: to,
-        dotKind,
-        sub: extras.join(" · "),
-      };
+      return { start: from, end: to, dotKind, sub: extras.join(" · ") };
     });
 
     const badges = {
@@ -207,24 +171,115 @@
     return { shifts, badges, notes };
   }
 
-  /* -------------------------
-     Render Header + Week
-  ------------------------- */
-  function renderHeaderAndWeek(){
+  /* =========================
+     Mount UI
+     ========================= */
+  function mountIfNeeded(){
+    const mount = getMount();
+    if(!mount) return;
+    if(mounted && isActuallyMounted(mount)) return;
+
+    mount.innerHTML = `
+      <div class="cviewRoot" id="cviewRoot">
+        <header class="cviewHeader">
+          <div class="cviewHeaderSpacer" aria-hidden="true"></div>
+          <div class="cviewTitle" id="cvTitle">—</div>
+          <button class="cviewClose" id="cvClose" type="button" aria-label="Chiudi">×</button>
+        </header>
+
+        <section class="cviewWeekStrip" id="cvStrip" aria-label="Selettore giorni settimana">
+          <button class="ntBtn" id="cvPrev" type="button" aria-label="Settimana precedente">‹</button>
+
+          <div class="cviewDaysWrap" id="cvDaysWrap">
+            <div class="cviewTrack" id="cvTrack">
+              <div class="cviewPage"><div class="cviewDays" id="cvDaysPrev"></div></div>
+              <div class="cviewPage"><div class="cviewDays" id="cvDaysCur"></div></div>
+              <div class="cviewPage"><div class="cviewDays" id="cvDaysNext"></div></div>
+            </div>
+          </div>
+
+          <button class="ntBtn" id="cvNext" type="button" aria-label="Settimana successiva">›</button>
+        </section>
+
+        <section class="cviewSummary" aria-label="Riepilogo giornata selezionata">
+          <div class="cviewSummaryTop">
+            <div class="cviewSummaryDate" id="cvSummaryDate">—</div>
+            <div class="cviewBadges" id="cvBadges"></div>
+          </div>
+
+          <div class="cviewLines" id="cvLines"></div>
+
+          <div class="cviewNotes" id="cvNotesWrap" hidden>
+            <div class="cviewNotesTitle">Note</div>
+            <div class="cviewNotesText" id="cvNotesText"></div>
+          </div>
+        </section>
+      </div>
+    `;
+
+    $("#cvClose", mount)?.addEventListener("click", () => {
+      document.dispatchEvent(new Event("nettotrack:closeCalendarView"));
+    });
+
+    $("#cvPrev", mount)?.addEventListener("click", async () => {
+      await animateAndCommit(-1);
+    });
+
+    $("#cvNext", mount)?.addEventListener("click", async () => {
+      await animateAndCommit(+1);
+    });
+
+    attachCarouselHandlers(mount);
+
+    measure(mount);
+    window.addEventListener("resize", () => measure(mount), { passive:true });
+
+    mounted = true;
+  }
+
+  function measure(mount){
+    const wrap = $("#cvDaysWrap", mount);
+    const track = $("#cvTrack", mount);
+    if(!wrap || !track) return;
+
+    wrapW = Math.max(1, Math.round(wrap.getBoundingClientRect().width));
+    baseX = -wrapW;
+
+    track.classList.remove("isSnap");
+    track.style.transform = `translateX(${baseX}px)`;
+  }
+
+  /* =========================
+     Render: title + 3 weeks
+     ========================= */
+  function renderHeaderAndWeeks(){
     const mount = getMount();
     if(!mount) return;
 
-    const titleEl = mount.querySelector("#cvTitle");
-    const daysEl = mount.querySelector("#cvDays");
+    // titolo (stato reale, non preview)
+    const titleEl = $("#cvTitle", mount);
     if(titleEl) titleEl.textContent = formatMonthYear(selectedISO);
 
-    if(!daysEl) return;
-    daysEl.innerHTML = "";
+    renderWeekGrid($("#cvDaysPrev", mount), addDaysISO(pageStartISO, -7));
+    renderWeekGrid($("#cvDaysCur", mount), pageStartISO);
+    renderWeekGrid($("#cvDaysNext", mount), addDaysISO(pageStartISO, +7));
+
+    // reset track al centro (no anim)
+    const track = $("#cvTrack", mount);
+    if(track){
+      track.classList.remove("isSnap");
+      track.style.transform = `translateX(${baseX}px)`;
+    }
+  }
+
+  function renderWeekGrid(host, weekStartISO){
+    if(!host) return;
+    host.innerHTML = "";
 
     const today = todayISO();
 
     for(let i=0;i<7;i++){
-      const iso = addDaysISO(pageStartISO, i);
+      const iso = addDaysISO(weekStartISO, i);
       const d = isoToDate(iso);
 
       const btn = document.createElement("button");
@@ -234,7 +289,6 @@
 
       const dow = document.createElement("div");
       dow.className = "cviewDow";
-      // L M M G V S D (lunedì-start)
       dow.textContent = WDN[(d.getDay() + 6) % 7];
 
       const num = document.createElement("div");
@@ -248,33 +302,41 @@
       if(iso === selectedISO) btn.classList.add("isSelected");
 
       btn.addEventListener("click", async () => {
+        if(dragMoved) return;
+
         selectedISO = iso;
-        renderHeaderAndWeek();
+        // se selezioni un giorno in prev/next, centra quella settimana
+        pageStartISO = startOfWeekISO(selectedISO);
+
+        updateSelectedOffset();
+        liveWeekPreview = 0;
+        setTitleForPreviewWeek(0);
+
+        renderHeaderAndWeeks();
         await renderSummary(selectedISO);
       });
 
-      daysEl.appendChild(btn);
+      host.appendChild(btn);
     }
   }
 
-  /* -------------------------
-     Summary: DOT + “dalle… alle…”
-  ------------------------- */
+  /* =========================
+     Summary (DOT + testo)
+     ========================= */
   async function renderSummary(iso){
     const mount = getMount();
     if(!mount) return;
 
-    const dateEl = mount.querySelector("#cvSummaryDate");
-    const badgesEl = mount.querySelector("#cvBadges");
-    const linesEl = mount.querySelector("#cvLines");
-    const notesWrap = mount.querySelector("#cvNotesWrap");
-    const notesText = mount.querySelector("#cvNotesText");
+    const dateEl = $("#cvSummaryDate", mount);
+    const badgesEl = $("#cvBadges", mount);
+    const linesEl = $("#cvLines", mount);
+    const notesWrap = $("#cvNotesWrap", mount);
+    const notesText = $("#cvNotesText", mount);
 
     if(dateEl) dateEl.textContent = formatLongDate(iso);
 
     const day = loadDaySavedOnly(iso);
 
-    // badges (in alto)
     if(badgesEl){
       badgesEl.innerHTML = "";
       const list = [];
@@ -291,7 +353,6 @@
       });
     }
 
-    // righe turni ordinate
     const shifts = Array.isArray(day.shifts) ? day.shifts.slice() : [];
     shifts.sort((a,b) => timeToMin(a.start) - timeToMin(b.start));
 
@@ -337,7 +398,6 @@
       }
     }
 
-    // note giorno (se un domani le aggiungi)
     const notes = (day.notes || "").trim();
     if(notesWrap && notesText){
       if(notes){
@@ -350,9 +410,139 @@
     }
   }
 
-  /* -------------------------
-     Open / Close hooks
-  ------------------------- */
+  /* =========================
+     Carousel handlers
+     ========================= */
+  function attachCarouselHandlers(mount){
+    const strip = $("#cvStrip", mount);
+    const wrap = $("#cvDaysWrap", mount);
+    const track = $("#cvTrack", mount);
+    if(!strip || !wrap || !track) return;
+
+    const down = (e) => {
+      if(lock) return;
+
+      // se tocchi le frecce, niente drag
+      const t = e.target;
+      if(t && t.closest && t.closest("#cvPrev")) return;
+      if(t && t.closest && t.closest("#cvNext")) return;
+
+      dragging = true;
+      dragMoved = false;
+      dragDx = 0;
+      liveWeekPreview = 0;
+
+      dragStartX = (e.touches ? e.touches[0].clientX : e.clientX);
+
+      track.classList.remove("isSnap");
+      try { track.setPointerCapture?.(e.pointerId); } catch(_) {}
+    };
+
+    const move = (e) => {
+      if(!dragging || lock) return;
+
+      const x = (e.touches ? e.touches[0].clientX : e.clientX);
+      dragDx = x - dragStartX;
+
+      if(Math.abs(dragDx) > 6) dragMoved = true;
+
+      // translate live: centro + dx
+      track.style.transform = `translateX(${baseX + dragDx}px)`;
+
+      // preview titolo (quando ti avvicini a cambiare pagina)
+      if(wrapW > 0){
+        const threshold = Math.max(42, wrapW * 0.18);
+        let dirPreview = 0;
+
+        if(dragDx <= -threshold) dirPreview = +1;     // verso next
+        else if(dragDx >= threshold) dirPreview = -1; // verso prev
+
+        if(dirPreview !== liveWeekPreview){
+          liveWeekPreview = dirPreview;
+          setTitleForPreviewWeek(liveWeekPreview);
+        }
+      }
+    };
+
+    const up = async () => {
+      if(!dragging) return;
+      dragging = false;
+
+      const threshold = Math.max(42, wrapW * 0.18);
+
+      if(dragMoved && Math.abs(dragDx) >= threshold){
+        // swipe left => +1 (next), swipe right => -1 (prev)
+        const dir = (dragDx < 0) ? +1 : -1;
+        await animateAndCommit(dir);
+      }else{
+        // torna al centro
+        track.classList.add("isSnap");
+        track.style.transform = `translateX(${baseX}px)`;
+        setTimeout(() => track.classList.remove("isSnap"), 260);
+
+        // ripristina titolo reale
+        liveWeekPreview = 0;
+        setTitleForPreviewWeek(0);
+      }
+
+      dragDx = 0;
+      dragMoved = false;
+    };
+
+    strip.addEventListener("pointerdown", down, { passive:true });
+    window.addEventListener("pointermove", move, { passive:true });
+    window.addEventListener("pointerup", up, { passive:true });
+    window.addEventListener("pointercancel", up, { passive:true });
+
+    // fallback touch
+    strip.addEventListener("touchstart", down, { passive:true });
+    strip.addEventListener("touchmove", move, { passive:true });
+    strip.addEventListener("touchend", up, { passive:true });
+    strip.addEventListener("touchcancel", up, { passive:true });
+  }
+
+  async function animateAndCommit(dir){
+    const mount = getMount();
+    if(!mount) return;
+    const track = $("#cvTrack", mount);
+    if(!track) return;
+    if(lock) return;
+
+    lock = true;
+
+    // anima verso pagina target
+    const targetX = baseX + (dir * -wrapW); // dir +1 => next (sx) => baseX - wrapW
+    track.classList.add("isSnap");
+    track.style.transform = `translateX(${targetX}px)`;
+
+    await wait(230);
+
+    // commit: cambia settimana mantenendo lo stesso giorno della settimana
+    const oldStart = pageStartISO;
+    const off = selectedOffset; // già 0..6
+
+    pageStartISO = addDaysISO(oldStart, dir * 7);
+    selectedISO = addDaysISO(pageStartISO, off);
+
+    updateSelectedOffset();
+    liveWeekPreview = 0;
+
+    renderHeaderAndWeeks();
+    setTitleForPreviewWeek(0);
+    await renderSummary(selectedISO);
+
+    // reset al centro (senza flash)
+    track.classList.remove("isSnap");
+    track.style.transform = `translateX(${baseX}px)`;
+
+    lock = false;
+  }
+
+  function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+  /* =========================
+     Open / Close
+     ========================= */
   function open(){
     mountIfNeeded();
 
@@ -360,7 +550,14 @@
     pageStartISO = startOfWeekISO(t);
     selectedISO = t;
 
-    renderHeaderAndWeek();
+    updateSelectedOffset();
+    liveWeekPreview = 0;
+
+    const mount = getMount();
+    if(mount) measure(mount);
+
+    renderHeaderAndWeeks();
+    setTitleForPreviewWeek(0);
     renderSummary(selectedISO);
   }
 
@@ -370,5 +567,16 @@
     mounted = false;
     pageStartISO = null;
     selectedISO = null;
+
+    dragging = false;
+    dragMoved = false;
+    dragDx = 0;
+    lock = false;
+
+    wrapW = 0;
+    baseX = 0;
+
+    liveWeekPreview = 0;
+    selectedOffset = 0;
   });
 })();
