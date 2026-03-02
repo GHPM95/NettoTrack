@@ -1,7 +1,7 @@
 /* =========================
    Calendar View (Agenda) — CSS (pulito, NO contenitori)
    - Strip + Summary senza box
-   - Frecce pillow 38x38 (coerenti coi giorni)
+   - Frecce: pillow sottili e lunghe (come pill date) ma colori invariati
    - Empty state centrato (orizzontale + verticale) senza bordo
    - FIX iOS: track/pagine in px (JS)
    ========================= */
@@ -85,12 +85,12 @@
 }
 
 /* =========================
-   Strip: freccia pillow | carousel | freccia pillow
+   Strip: freccia pillow slim | carousel | freccia pillow slim
    (strip SENZA contenitore)
    ========================= */
 .cviewWeekStrip{
   display:grid;
-  grid-template-columns: 38px 1fr 38px;
+  grid-template-columns: 28px 1fr 28px; /* ✅ slim side rails */
   align-items:center;
   gap:10px;
 
@@ -103,17 +103,17 @@
   user-select:none;
 }
 
-/* Frecce pillow (coerenti coi giorni) */
+/* ✅ Frecce: pillow sottili e lunghe (stessi colori di prima) */
 .cviewNavBtn{
-  width:38px;
-  height:38px;
-  border-radius:16px;
+  width:28px;              /* sottile */
+  height:52px;             /* lungo tipo pillow */
+  border-radius:18px;      /* capsule */
   border:none;
 
-  position:relative; /* ✅ serve per ::after */
+  position:relative;
   overflow:hidden;
 
-  background: rgba(255,255,255,.08);
+  background: rgba(255,255,255,.08); /* stesso look di prima */
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
 
   color: var(--text);
@@ -136,7 +136,7 @@
   pointer-events:none;
 }
 .cviewNavBtn:active{
-  transform: scale(.96);
+  transform: scale(.97);
   filter: brightness(1.08);
   background: rgba(255,255,255,.12);
 }
