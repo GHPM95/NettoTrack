@@ -1,11 +1,8 @@
 /* =========================
    calendar-view.js (Agenda)
-   - Monta in #calViewMount
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
-   - Carousel settimane: prev | current | next (drag live + snap)
-   - FIX iOS: track/pagine in pixel (no %)
-   - Cambio settimana mantiene stesso giorno della settimana
-   - Titolo segue live la settimana in preview durante drag
+   - Carousel settimane: prev | current | next (drag + snap)
+   - ✅ Capsule: "09:00 - 10:00" + tags dx / dettagli / note
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -14,23 +11,20 @@
 
   let mounted = false;
 
-  let pageStartISO = null;  // lunedì settimana visibile
-  let selectedISO = null;   // giorno selezionato
+  let pageStartISO = null;
+  let selectedISO = null;
 
-  // gesture / carousel
   let dragging = false;
   let dragStartX = 0;
   let dragDx = 0;
   let dragMoved = false;
   let lock = false;
 
-  // misure track (px)
   let wrapW = 0;
-  let baseX = 0; // centro = -wrapW
+  let baseX = 0;
 
-  // title preview
-  let liveWeekPreview = 0;  // -1 prev, 0 current, +1 next
-  let selectedOffset = 0;   // 0..6 offset del selected nella settimana corrente
+  let liveWeekPreview = 0;
+  let selectedOffset = 0;
 
   function getMount(){ return document.getElementById("calViewMount"); }
   function isActuallyMounted(mount){ return !!(mount && mount.querySelector("#cviewRoot")); }
@@ -38,7 +32,7 @@
   function todayISO(){
     try{
       if (window.NTCal && typeof window.NTCal.todayParts === "function"){
-        const t = window.NTCal.todayParts(); // {y,m,d} con m 0-11
+        const t = window.NTCal.todayParts();
         return `${t.y}-${String(t.m+1).padStart(2,"0")}-${String(t.d).padStart(2,"0")}`;
       }
     }catch(_){}
@@ -60,7 +54,7 @@
   }
   function startOfWeekISO(iso){
     const d = isoToDate(iso);
-    const day = d.getDay(); // 0 dom
+    const day = d.getDay();
     const diff = (day === 0 ? -6 : 1 - day);
     d.setDate(d.getDate() + diff);
     d.setHours(12,0,0,0);
@@ -83,7 +77,6 @@
     const [h,m] = String(t).split(":").map(x => parseInt(x,10));
     return (h*60) + (m||0);
   }
-
   function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 
   function dayDiffISO(aISO, bISO){
@@ -91,7 +84,6 @@
     const b = isoToDate(bISO); b.setHours(12,0,0,0);
     return Math.round((a - b) / 86400000);
   }
-
   function updateSelectedOffset(){
     const rawOff = dayDiffISO(selectedISO, pageStartISO);
     selectedOffset = clamp(rawOff, 0, 6);
@@ -108,13 +100,20 @@
     titleEl.textContent = formatMonthYear(previewSelected);
   }
 
+  function makeTag(label){
+    const t = document.createElement("span");
+    t.className = "cviewInlineTag";
+    t.textContent = label;
+    return t;
+  }
+
   /* =========================
      Data: SOLO saved (NO draft)
      ========================= */
   function loadDaySavedOnly(iso){
     const cal = window.NTCal;
     if(!cal || typeof cal.loadDay !== "function"){
-      return { shifts: [], badges: {overtime:false, holiday:false, sunday:false, advanced:""}, notes:"" };
+      return { shifts: [], notes:"" };
     }
 
     let model = null;
@@ -122,50 +121,54 @@
 
     const shiftsRaw = Array.isArray(model?.shifts) ? model.shifts : [];
 
+    const typeMap = { morning:"Mattino", afternoon:"Pomeriggio", night:"Notte", none:"" };
+
     const shifts = shiftsRaw.map((s) => {
       const from = typeof s?.from === "string" ? s.from : "";
       const to   = typeof s?.to   === "string" ? s.to   : "";
 
       const tags = s?.tags || {};
+      const st = String(s?.shiftType || "none");
+
+      const pauseMin = Number.isFinite(Number(s?.pauseMin)) ? Number(s.pauseMin) : 0;
+      const pausePaid = !!s?.pausePaid;
+
       const advA = typeof s?.advA === "string" ? s.advA : "-";
       const advB = typeof s?.advB === "string" ? s.advB : "-";
 
-      const st = String(s?.shiftType || "none");
-      const typeMap = { morning:"Mattino", afternoon:"Pomeriggio", night:"Notte", none:"" };
+      // ✅ label specifica
+      let advLabel = "";
+      let advValue = "";
+      if(advA && advA !== "-"){ advLabel = "Assenza"; advValue = advA; }
+      else if(advB && advB !== "-"){ advLabel = "Congedo"; advValue = advB; }
 
-      const adv = (advA && advA !== "-") ? advA : ((advB && advB !== "-") ? advB : "");
-
+      // dot: priorità (solo colore indicativo)
       const dotKind =
         tags.overtime ? "over" :
         tags.holiday  ? "holiday" :
         tags.sunday   ? "sunday" :
         "base";
 
-      const extras = [];
-      if(tags.overtime) extras.push("Straordinario");
-      if(tags.holiday)  extras.push("Festivo");
-      if(tags.sunday)   extras.push("Domenicale");
-      if(typeMap[st])   extras.push(`Fascia: ${typeMap[st]}`);
-      if(adv)           extras.push(`Avanzate: ${adv}`);
+      const note = typeof s?.note === "string" ? s.note.trim() : "";
 
-      const note = typeof s?.note === "string" ? s.note : "";
-      if(note.trim()) extras.push(`Nota: ${note.trim()}`);
-
-      return { start: from, end: to, dotKind, sub: extras.join(" · ") };
+      return {
+        start: from,
+        end: to,
+        dotKind,
+        overtime: !!tags.overtime,
+        holiday: !!tags.holiday,
+        sunday: !!tags.sunday,
+        shiftLabel: typeMap[st] || "",
+        pauseMin,
+        pausePaid,
+        advLabel,
+        advValue,
+        note
+      };
     });
 
-    const badges = {
-      overtime: shiftsRaw.some(s => !!s?.tags?.overtime),
-      holiday:  shiftsRaw.some(s => !!s?.tags?.holiday),
-      sunday:   shiftsRaw.some(s => !!s?.tags?.sunday),
-      advanced:
-        (shiftsRaw.find(s => s?.advA && s.advA !== "-")?.advA) ||
-        (shiftsRaw.find(s => s?.advB && s.advB !== "-")?.advB) ||
-        ""
-    };
-
     const notes = typeof model?.notes === "string" ? model.notes : "";
-    return { shifts, badges, notes };
+    return { shifts, notes };
   }
 
   /* =========================
@@ -331,12 +334,18 @@
     }
   }
 
+  function dotClass(kind){
+    if(kind === "over") return "isOver";
+    if(kind === "holiday") return "isHoliday";
+    if(kind === "sunday") return "isSunday";
+    return "";
+  }
+
   async function renderSummary(iso){
     const mount = getMount();
     if(!mount) return;
 
     const dateEl = $("#cvSummaryDate", mount);
-    const badgesEl = $("#cvBadges", mount);
     const linesEl = $("#cvLines", mount);
     const notesWrap = $("#cvNotesWrap", mount);
     const notesText = $("#cvNotesText", mount);
@@ -344,22 +353,6 @@
     if(dateEl) dateEl.textContent = formatLongDate(iso);
 
     const day = loadDaySavedOnly(iso);
-
-    if(badgesEl){
-      badgesEl.innerHTML = "";
-      const list = [];
-      if(day.badges.holiday) list.push("Festività");
-      if(day.badges.sunday) list.push("Domenicale");
-      if(day.badges.overtime) list.push("Straordinari");
-      if(day.badges.advanced) list.push(String(day.badges.advanced));
-
-      list.forEach(t => {
-        const b = document.createElement("div");
-        b.className = "cviewBadge";
-        b.textContent = t;
-        badgesEl.appendChild(b);
-      });
-    }
 
     const shifts = Array.isArray(day.shifts) ? day.shifts.slice() : [];
     shifts.sort((a,b) => timeToMin(a.start) - timeToMin(b.start));
@@ -378,25 +371,57 @@
           row.className = "cviewLine";
 
           const dot = document.createElement("div");
-          dot.className = "cviewDot";
-          if(s.dotKind === "over") dot.classList.add("isOver");
-          if(s.dotKind === "holiday") dot.classList.add("isHoliday");
-          if(s.dotKind === "sunday") dot.classList.add("isSunday");
+          dot.className = `cviewDot ${dotClass(s.dotKind)}`.trim();
 
           const txt = document.createElement("div");
           txt.className = "cviewLineText";
 
-          const main = document.createElement("div");
-          main.className = "cviewLineMain";
-          main.textContent = `dalle ${s.start || "—"} alle ${s.end || "—"}`;
+          // Riga 1: ORA + TAGS a destra
+          const header = document.createElement("div");
+          header.className = "cviewLineHeader";
 
-          txt.appendChild(main);
+          const time = document.createElement("div");
+          time.className = "cviewLineTime";
+          time.textContent = `${s.start || "—"} - ${s.end || "—"}`;
 
-          if(s.sub && String(s.sub).trim()){
-            const sub = document.createElement("div");
-            sub.className = "cviewLineSub";
-            sub.textContent = String(s.sub).trim();
-            txt.appendChild(sub);
+          const tagsWrap = document.createElement("div");
+          tagsWrap.className = "cviewLineTags";
+
+          // ✅ tags: domenicale/festivo/straordinario (anche più di uno)
+          if(s.sunday) tagsWrap.appendChild(makeTag("Domenicale"));
+          if(s.holiday) tagsWrap.appendChild(makeTag("Festivo"));
+          if(s.overtime) tagsWrap.appendChild(makeTag("Straordinario"));
+
+          header.appendChild(time);
+          header.appendChild(tagsWrap);
+
+          // Riga 2: dettagli
+          const details = [];
+          if(s.pauseMin && s.pauseMin > 0){
+            details.push(`Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`);
+          }
+          if(s.shiftLabel){
+            details.push(`Turno: ${s.shiftLabel}`);
+          }
+          if(s.advLabel && s.advValue){
+            details.push(`${s.advLabel}: ${s.advValue}`);
+          }
+
+          // Riga 3: note (se c’è)
+          txt.appendChild(header);
+
+          if(details.length){
+            const d = document.createElement("div");
+            d.className = "cviewLineDetails";
+            d.textContent = details.join(" · ");
+            txt.appendChild(d);
+          }
+
+          if(s.note){
+            const n = document.createElement("div");
+            n.className = "cviewLineNote";
+            n.textContent = `Nota: ${s.note}`;
+            txt.appendChild(n);
           }
 
           row.appendChild(dot);
@@ -406,6 +431,7 @@
       }
     }
 
+    // note “giorno” (se mai le userai)
     const notes = (day.notes || "").trim();
     if(notesWrap && notesText){
       if(notes){
