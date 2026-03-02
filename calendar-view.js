@@ -1,3 +1,4 @@
+/* calendar-view.js — Weekly Agenda (accordion affidabile iOS) */
 (() => {
   const { dateKey, startOfWeek, loadDay, dayTotals } = window.NTCal;
 
@@ -5,7 +6,7 @@
 
   let mounted = false;
   let weekStart = startOfWeek(new Date());
-  let openKey = null; // tiene aperto anche dopo render
+  let openKey = null; // mantiene la riga aperta
 
   function getMount() {
     return document.getElementById("calViewMount");
@@ -29,11 +30,28 @@
     return hh * 60 + mm;
   }
 
-  // prende orari anche se in campi diversi (fallback)
-  function getFromTo(s){
-    const from = (s?.from ?? s?.start ?? s?.time?.from ?? s?.timeFrom ?? s?.inizio ?? "").toString();
-    const to   = (s?.to   ?? s?.end   ?? s?.time?.to   ?? s?.timeTo   ?? s?.fine   ?? "").toString();
-    return { from, to };
+  // stessa logica "significativo" del Day Editor / Insert
+  function isMeaningfulShift(s){
+    if(!s) return false;
+
+    const hasTimes = !!(s.from || s.to);
+
+    const pauseMin = Number(s.pauseMin || 0);
+    const hasPause = pauseMin > 0 || !!s.pausePaid;
+
+    const hasFascia = !!(s.shiftType && s.shiftType !== "none");
+
+    const t = s.tags || {};
+    const f = s.flags || {};
+    const hasExtra = !!(
+      t.overtime || t.holiday || t.sunday ||
+      f.straordinario || f.festivo || f.domenicale
+    );
+
+    const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
+    const hasNote = !!(s.note && String(s.note).trim().length);
+
+    return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
   }
 
   function shiftMeta(shift){
@@ -56,43 +74,10 @@
     root?.classList.toggle("isAnyOpen", anyOpen);
   }
 
-  function setDetailsOpen(detailsEl, on){
-    if (!detailsEl) return;
-
-    // base stile “JS-driven”
-    detailsEl.style.display = "block";
-    detailsEl.style.overflow = "hidden";
-    detailsEl.style.transition = "max-height .22s ease, opacity .18s ease, margin-top .18s ease, padding-top .18s ease";
-
-    if (!on) {
-      detailsEl.style.maxHeight = "0px";
-      detailsEl.style.opacity = "0";
-      detailsEl.style.marginTop = "0px";
-      detailsEl.style.paddingTop = "0px";
-      detailsEl.style.borderTopWidth = "0px";
-      return;
-    }
-
-    // open
-    detailsEl.style.opacity = "1";
-    detailsEl.style.marginTop = "10px";
-    detailsEl.style.paddingTop = "10px";
-    detailsEl.style.borderTopWidth = "1px";
-
-    // misura altezza reale dopo che è in DOM
-    requestAnimationFrame(() => {
-      const h = detailsEl.scrollHeight;
-      detailsEl.style.maxHeight = `${Math.max(1, h)}px`;
-    });
-  }
-
   function closeAllRowsExcept(mount, keepRow){
     const grid = mount.querySelector("#cviewGrid");
     grid.querySelectorAll(".cviewRow.isOpen").forEach(r => {
-      if (r !== keepRow) {
-        r.classList.remove("isOpen");
-        setDetailsOpen(r.querySelector(".cviewDetails"), false);
-      }
+      if (r !== keepRow) r.classList.remove("isOpen");
     });
     syncAnyOpenFlag(mount);
   }
@@ -165,13 +150,12 @@
 
       const key = dateKey(day.getFullYear(), day.getMonth(), day.getDate());
       const data = loadDay(key);
-console.log("DEBUG DAY", key, data);
 
       const totals = data ? dayTotals(data) : { baseHours:0, extraHours:0, hasBase:false, hasExtra:false };
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
-      row.setAttribute("data-no-swipe", "");
+      row.setAttribute("data-no-swipe", ""); // ui.js lo rispetta
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
@@ -211,45 +195,30 @@ console.log("DEBUG DAY", key, data);
       head.appendChild(badges);
       row.appendChild(head);
 
-      // ===== DETAILS: SEMPRE se esiste shifts =====
+      // ===== DETAILS =====
       const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
+      const meaningful = shifts.filter(isMeaningfulShift);
+
       let details = null;
 
-      if (shifts.length) {
+      if (meaningful.length) {
         details = document.createElement("div");
         details.className = "cviewDetails";
         details.setAttribute("data-no-swipe", "");
 
-        // chiuso di base (JS-driven)
-        details.style.maxHeight = "0px";
-        details.style.opacity = "0";
-        details.style.overflow = "hidden";
-        details.style.borderTopStyle = "solid";
-        details.style.borderTopColor = "rgba(255,255,255,.10)";
-        details.style.borderTopWidth = "0px";
-        details.style.marginTop = "0px";
-        details.style.paddingTop = "0px";
-
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        // ordina usando fallback from/start/time.from
-        const sorted = [...shifts].sort((a,b) =>
-          timeToMin(getFromTo(a).from) - timeToMin(getFromTo(b).from)
+        const sorted = [...meaningful].sort((a,b) =>
+          timeToMin(a?.from ?? a?.start ?? a?.time?.from) -
+          timeToMin(b?.from ?? b?.start ?? b?.time?.from)
         );
 
-        let anyLine = false;
-
-        sorted.forEach((s) => {
-          const { from, to } = getFromTo(s);
-          const meta = shiftMeta(s);
-
-          // se è tutto vuoto, comunque stampo riga “placeholder”
-          const showFrom = from && from.trim() ? from : "--:--";
-          const showTo   = to && to.trim() ? to   : "--:--";
-
+        sorted.forEach(s => {
           const li = document.createElement("li");
           li.className = "cviewShiftItem";
+
+          const meta = shiftMeta(s);
 
           const dot = document.createElement("span");
           dot.className = `cviewShiftDot ${meta.dotClass}`;
@@ -261,8 +230,11 @@ console.log("DEBUG DAY", key, data);
           lbl.className = "cviewShiftLbl";
           lbl.textContent = `${meta.label}: `;
 
+          const from = s?.from ?? s?.start ?? s?.time?.from ?? "--:--";
+          const to   = s?.to   ?? s?.end   ?? s?.time?.to   ?? "--:--";
+
           const t = document.createElement("span");
-          t.textContent = `${showFrom} - ${showTo}`;
+          t.textContent = `${from} - ${to}`;
 
           txt.appendChild(lbl);
           txt.appendChild(t);
@@ -270,16 +242,7 @@ console.log("DEBUG DAY", key, data);
           li.appendChild(dot);
           li.appendChild(txt);
           ul.appendChild(li);
-          anyLine = true;
         });
-
-        // sicurezza: se per qualche motivo non ha creato righe, ne metto una
-        if (!anyLine) {
-          const li = document.createElement("li");
-          li.className = "cviewShiftItem";
-          li.innerHTML = `<div class="cviewShiftTxt"><span class="cviewShiftLbl">Turni:</span> nessun dettaglio disponibile</div>`;
-          ul.appendChild(li);
-        }
 
         details.appendChild(ul);
         row.appendChild(details);
@@ -291,10 +254,10 @@ console.log("DEBUG DAY", key, data);
 
         const willOpen = !row.classList.contains("isOpen");
         closeAllRowsExcept(mount, row);
-        row.classList.toggle("isOpen", willOpen);
-        setDetailsOpen(details, willOpen);
 
+        row.classList.toggle("isOpen", willOpen);
         openKey = willOpen ? key : null;
+
         syncAnyOpenFlag(mount);
 
         if (willOpen) {
@@ -302,11 +265,8 @@ console.log("DEBUG DAY", key, data);
         }
       });
 
-      // restore aperto dopo render
-      if (details && openKey === key) {
-        row.classList.add("isOpen");
-        requestAnimationFrame(() => setDetailsOpen(details, true));
-      }
+      // restore
+      if (details && openKey === key) row.classList.add("isOpen");
 
       grid.appendChild(row);
     }
