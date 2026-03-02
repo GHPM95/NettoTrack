@@ -5,19 +5,12 @@
 
   let mounted = false;
   let weekStart = startOfWeek(new Date());
-
-  // mantiene quale riga è aperta anche dopo renderWeek()
   let openKey = null;
 
-  function getMount() {
-    return document.getElementById("calViewMount");
-  }
+  function getMount(){ return document.getElementById("calViewMount"); }
+  function isActuallyMounted(mount){ return !!(mount && mount.querySelector("#cviewRoot")); }
 
-  function isActuallyMounted(mount) {
-    return !!(mount && mount.querySelector("#cviewRoot"));
-  }
-
-  function fmtDM(d) {
+  function fmtDM(d){
     const dd = String(d.getDate()).padStart(2,"0");
     const mm = String(d.getMonth()+1).padStart(2,"0");
     const yy = String(d.getFullYear()).slice(-2);
@@ -31,11 +24,16 @@
     return hh * 60 + mm;
   }
 
-  // ✅ shift “significativo” (stessa logica dell’insert)
+  // legge orari anche se in futuro cambi campi
+  function getFrom(s){ return s?.from ?? s?.start ?? s?.time?.from ?? ""; }
+  function getTo(s){ return s?.to ?? s?.end ?? s?.time?.to ?? ""; }
+
   function isMeaningfulShift(s){
     if(!s) return false;
 
-    const hasTimes = !!(s.from || s.to);
+    const from = getFrom(s);
+    const to = getTo(s);
+    const hasTimes = !!(from || to);
 
     const pauseMin = Number(s.pauseMin || 0);
     const hasPause = pauseMin > 0 || !!s.pausePaid;
@@ -58,7 +56,6 @@
   function shiftMeta(shift){
     const t = shift?.tags || {};
     const f = shift?.flags || {};
-
     const stra = !!(t.overtime || f.straordinario);
     const fest = !!(t.holiday  || f.festivo);
     const dom  = !!(t.sunday   || f.domenicale);
@@ -75,48 +72,15 @@
     root?.classList.toggle("isAnyOpen", anyOpen);
   }
 
-  // 🔥 anima sempre con altezza reale (niente max-height fisso)
-  function setDetailsOpen(detailsEl, on){
-    if (!detailsEl) return;
-
-    // per evitare “flash” strani su iOS, forza display/layout
-    detailsEl.style.display = "block";
-
-    if (!on) {
-      detailsEl.style.maxHeight = "0px";
-      detailsEl.style.opacity = "0";
-      detailsEl.style.marginTop = "0";
-      detailsEl.style.paddingTop = "0";
-      detailsEl.style.borderTopWidth = "0";
-      return;
-    }
-
-    // stato open: prima ripristina spazi, poi misura
-    detailsEl.style.opacity = "1";
-    detailsEl.style.marginTop = "10px";
-    detailsEl.style.paddingTop = "10px";
-    detailsEl.style.borderTopWidth = "1px";
-
-    // misura dopo che il browser ha applicato gli stili
-    requestAnimationFrame(() => {
-      const h = detailsEl.scrollHeight;
-      detailsEl.style.maxHeight = `${h}px`;
-    });
-  }
-
   function closeAllRowsExcept(mount, keepRow){
     const grid = mount.querySelector("#cviewGrid");
     grid.querySelectorAll(".cviewRow.isOpen").forEach(r => {
-      if (r !== keepRow) {
-        r.classList.remove("isOpen");
-        const det = r.querySelector(".cviewDetails");
-        setDetailsOpen(det, false);
-      }
+      if (r !== keepRow) r.classList.remove("isOpen");
     });
     syncAnyOpenFlag(mount);
   }
 
-  function mountIfNeeded() {
+  function mountIfNeeded(){
     const mount = getMount();
     if (!mount) return;
 
@@ -129,9 +93,7 @@
             <button class="ntBtn" id="cviewPrev" type="button" aria-label="Settimana precedente">‹</button>
             <button class="ntBtn" id="cviewNext" type="button" aria-label="Settimana successiva">›</button>
           </div>
-
           <div class="cviewTitle" id="cviewTitle"></div>
-
           <button class="ntBtn" id="cviewClose" type="button" aria-label="Chiudi">×</button>
         </div>
 
@@ -165,7 +127,7 @@
     renderWeek();
   }
 
-  function renderWeek() {
+  function renderWeek(){
     const mount = getMount();
     if (!mount) return;
 
@@ -178,18 +140,20 @@
     if (!grid) return;
     grid.innerHTML = "";
 
-    for (let i=0; i<7; i++) {
+    for (let i=0; i<7; i++){
       const day = new Date(weekStart);
       day.setDate(day.getDate() + i);
 
       const key = dateKey(day.getFullYear(), day.getMonth(), day.getDate());
       const data = loadDay(key);
-
       const totals = data ? dayTotals(data) : { baseHours:0, extraHours:0, hasBase:false, hasExtra:false };
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
-      row.setAttribute("data-no-swipe", ""); // ✅ il tuo ui.js lo rispetta
+      row.setAttribute("data-no-swipe", "");
+
+      // blocca swipe (ui.js rispetta data-no-swipe, ma fermiamo anche propagation)
+      row.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
@@ -212,13 +176,13 @@
       const badges = document.createElement("div");
       badges.className = "cviewBadges";
 
-      if (totals.hasBase) {
+      if (totals.hasBase){
         const b = document.createElement("div");
         b.className = "cviewBubble base";
         b.textContent = String(totals.baseHours);
         badges.appendChild(b);
       }
-      if (totals.hasExtra) {
+      if (totals.hasExtra){
         const b = document.createElement("div");
         b.className = "cviewBubble extra";
         b.textContent = String(totals.extraHours);
@@ -229,30 +193,23 @@
       head.appendChild(badges);
       row.appendChild(head);
 
-      // ===== DETAILS =====
+      // Details
       const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
       const meaningful = shifts.filter(isMeaningfulShift);
 
-      let details = null;
+      let hasDetails = false;
 
-      if (meaningful.length) {
-        details = document.createElement("div");
+      if (meaningful.length){
+        hasDetails = true;
+        const details = document.createElement("div");
         details.className = "cviewDetails";
         details.setAttribute("data-no-swipe", "");
-
-        // 🔧 base closed (JS-driven)
-        details.style.maxHeight = "0px";
-        details.style.opacity = "0";
-        details.style.overflow = "hidden";
-        details.style.transition = "max-height .22s ease, opacity .18s ease, margin-top .18s ease, padding-top .18s ease";
+        details.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...meaningful].sort((a,b) =>
-          timeToMin(a?.from ?? a?.start ?? a?.time?.from) -
-          timeToMin(b?.from ?? b?.start ?? b?.time?.from)
-        );
+        const sorted = [...meaningful].sort((a,b) => timeToMin(getFrom(a)) - timeToMin(getFrom(b)));
 
         sorted.forEach(s => {
           const li = document.createElement("li");
@@ -270,8 +227,8 @@
           lbl.className = "cviewShiftLbl";
           lbl.textContent = `${meta.label}: `;
 
-          const from = s?.from ?? s?.start ?? s?.time?.from ?? "--:--";
-          const to   = s?.to   ?? s?.end   ?? s?.time?.to   ?? "--:--";
+          const from = getFrom(s) || "--:--";
+          const to   = getTo(s)   || "--:--";
 
           const t = document.createElement("span");
           t.textContent = `${from} - ${to}`;
@@ -288,35 +245,25 @@
         row.appendChild(details);
       }
 
-      // click: apri/chiudi
+      // Tap: apri/chiudi
       row.addEventListener("click", (e) => {
         e.stopPropagation();
-
-        // se non ha dettagli, non fare nulla
-        if (!details) return;
+        if (!hasDetails) return;
 
         const willOpen = !row.classList.contains("isOpen");
         closeAllRowsExcept(mount, row);
-
         row.classList.toggle("isOpen", willOpen);
-        setDetailsOpen(details, willOpen);
         openKey = willOpen ? key : null;
-
         syncAnyOpenFlag(mount);
 
-        if (willOpen) {
-          // evita che finisca “tagliato”
-          setTimeout(() => {
-            row.scrollIntoView({ block: "nearest", behavior: "smooth" });
-          }, 30);
+        if (willOpen){
+          setTimeout(() => row.scrollIntoView({ block:"nearest", behavior:"smooth" }), 30);
         }
       });
 
       // restore open state dopo render
-      if (details && openKey === key) {
+      if (hasDetails && openKey === key){
         row.classList.add("isOpen");
-        // apri dopo che è in DOM
-        requestAnimationFrame(() => setDetailsOpen(details, true));
       }
 
       grid.appendChild(row);
