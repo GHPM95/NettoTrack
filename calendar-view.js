@@ -1,8 +1,8 @@
 /* =========================
    calendar-view.js (Agenda)
-   Monta in #calViewMount (come calendar-insert)
-   ✅ legge SOLO NTCal.loadDay (salvati)
-   ❌ ignora loadDraft/saveDraft (autosave)
+   Monta in #calViewMount
+   ✅ SOLO NTCal.loadDay (salvati)
+   ❌ MAI loadDraft/saveDraft
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -47,10 +47,9 @@
   }
 
   function startOfWeekISO(iso){
-    // lunedì start
     const d = isoToDate(iso);
     const day = d.getDay(); // 0 dom, 1 lun
-    const diff = (day === 0 ? -6 : 1 - day);
+    const diff = (day === 0 ? -6 : 1 - day); // lunedì start
     d.setDate(d.getDate() + diff);
     d.setHours(12,0,0,0);
     return dateToISO(d);
@@ -81,7 +80,6 @@
     const mount = getMount();
     if (!mount) return;
 
-    // se la slide è stata chiusa/riaperta, il mount torna vuoto
     if (mounted && isActuallyMounted(mount)) return;
 
     mount.innerHTML = `
@@ -107,7 +105,7 @@
             <div class="cviewBadges" id="cvBadges"></div>
           </div>
 
-          <div class="cviewBlocks" id="cvBlocks"></div>
+          <div class="cviewLines" id="cvLines"></div>
 
           <div class="cviewNotes" id="cvNotesWrap" hidden>
             <div class="cviewNotesTitle">Note</div>
@@ -119,23 +117,21 @@
       </div>
     `;
 
-    // listeners base
     mount.querySelector("#cvClose")?.addEventListener("click", () => {
-      // chiudi card
       document.dispatchEvent(new Event("nettotrack:closeCalendarView"));
     });
 
     mount.querySelector("#cvPrev")?.addEventListener("click", async () => {
       pageStartISO = addDaysISO(pageStartISO, -7);
       selectedISO = pageStartISO;
-      renderAll();
+      renderHeaderAndWeek();
       await renderSummary(selectedISO);
     });
 
     mount.querySelector("#cvNext")?.addEventListener("click", async () => {
       pageStartISO = addDaysISO(pageStartISO, +7);
       selectedISO = pageStartISO;
-      renderAll();
+      renderHeaderAndWeek();
       await renderSummary(selectedISO);
     });
 
@@ -148,7 +144,7 @@
   function loadDaySavedOnly(iso){
     const cal = window.NTCal;
     if(!cal || typeof cal.loadDay !== "function"){
-      return { shifts: [], hasOvertime:false, isHoliday:false, isSundayPay:false, advancedOption:"", notes:"" };
+      return { shifts: [], badges: {overtime:false, holiday:false, sunday:false, advanced:""}, notes:"" };
     }
 
     let model = null;
@@ -168,48 +164,58 @@
       const st = String(s?.shiftType || "none");
       const typeMap = { morning:"Mattino", afternoon:"Pomeriggio", night:"Notte", none:"" };
 
-      const tagBits = [];
-      if(tags.overtime) tagBits.push("Straordinario");
-      if(tags.holiday)  tagBits.push("Festivo");
-      if(tags.sunday)   tagBits.push("Domenicale");
-
       const adv = (advA && advA !== "-") ? advA : ((advB && advB !== "-") ? advB : "");
+
+      // priorità dot (se ci sono più flag)
+      // overtime > holiday > sunday > base
+      const dotKind =
+        tags.overtime ? "over" :
+        tags.holiday  ? "holiday" :
+        tags.sunday   ? "sunday" :
+        "base";
+
+      // stringa “extra” sotto (solo se presente)
+      const extras = [];
+      if(tags.overtime) extras.push("Straordinario");
+      if(tags.holiday)  extras.push("Festivo");
+      if(tags.sunday)   extras.push("Domenicale");
+      if(typeMap[st])   extras.push(`Fascia: ${typeMap[st]}`);
+      if(adv)           extras.push(`Avanzate: ${adv}`);
+
+      const note = typeof s?.note === "string" ? s.note : "";
+      if(note.trim()) extras.push(`Nota: ${note.trim()}`);
 
       return {
         start: from,
         end: to,
-        type: typeMap[st] || "",
-        tag: tagBits.join(" · "),
-        advanced: adv,
-        note: typeof s?.note === "string" ? s.note : ""
+        dotKind,
+        sub: extras.join(" · "),
       };
     });
 
-    const hasOvertime = shiftsRaw.some(s => !!s?.tags?.overtime);
-    const isHoliday   = shiftsRaw.some(s => !!s?.tags?.holiday);
-    const isSundayPay = shiftsRaw.some(s => !!s?.tags?.sunday);
+    const badges = {
+      overtime: shiftsRaw.some(s => !!s?.tags?.overtime),
+      holiday:  shiftsRaw.some(s => !!s?.tags?.holiday),
+      sunday:   shiftsRaw.some(s => !!s?.tags?.sunday),
+      advanced:
+        (shiftsRaw.find(s => s?.advA && s.advA !== "-")?.advA) ||
+        (shiftsRaw.find(s => s?.advB && s.advB !== "-")?.advB) ||
+        ""
+    };
 
-    const advancedOption =
-      (shiftsRaw.find(s => s?.advA && s.advA !== "-")?.advA) ||
-      (shiftsRaw.find(s => s?.advB && s.advB !== "-")?.advB) ||
-      "";
-
-    // nel tuo modello oggi non hai note giornaliere separate: qui resta vuoto (ma se le aggiungi, funziona)
     const notes = typeof model?.notes === "string" ? model.notes : "";
-
-    return { shifts, hasOvertime, isHoliday, isSundayPay, advancedOption, notes };
+    return { shifts, badges, notes };
   }
 
   /* -------------------------
-     Render
+     Render Header + Week
   ------------------------- */
-  function renderAll(){
+  function renderHeaderAndWeek(){
     const mount = getMount();
     if(!mount) return;
 
     const titleEl = mount.querySelector("#cvTitle");
     const daysEl = mount.querySelector("#cvDays");
-
     if(titleEl) titleEl.textContent = formatMonthYear(selectedISO);
 
     if(!daysEl) return;
@@ -228,7 +234,8 @@
 
       const dow = document.createElement("div");
       dow.className = "cviewDow";
-      dow.textContent = WDN[(d.getDay() + 6) % 7]; // converto dom->7
+      // L M M G V S D (lunedì-start)
+      dow.textContent = WDN[(d.getDay() + 6) % 7];
 
       const num = document.createElement("div");
       num.className = "cviewNum";
@@ -242,7 +249,7 @@
 
       btn.addEventListener("click", async () => {
         selectedISO = iso;
-        renderAll(); // aggiorna selezione + titolo
+        renderHeaderAndWeek();
         await renderSummary(selectedISO);
       });
 
@@ -250,13 +257,16 @@
     }
   }
 
+  /* -------------------------
+     Summary: DOT + “dalle… alle…”
+  ------------------------- */
   async function renderSummary(iso){
     const mount = getMount();
     if(!mount) return;
 
     const dateEl = mount.querySelector("#cvSummaryDate");
     const badgesEl = mount.querySelector("#cvBadges");
-    const blocksEl = mount.querySelector("#cvBlocks");
+    const linesEl = mount.querySelector("#cvLines");
     const notesWrap = mount.querySelector("#cvNotesWrap");
     const notesText = mount.querySelector("#cvNotesText");
 
@@ -264,14 +274,14 @@
 
     const day = loadDaySavedOnly(iso);
 
-    // badges
+    // badges (in alto)
     if(badgesEl){
       badgesEl.innerHTML = "";
       const list = [];
-      if(day.isHoliday) list.push("Festività");
-      if(day.isSundayPay) list.push("Domenicale");
-      if(day.hasOvertime) list.push("Straordinari");
-      if(day.advancedOption) list.push(String(day.advancedOption));
+      if(day.badges.holiday) list.push("Festività");
+      if(day.badges.sunday) list.push("Domenicale");
+      if(day.badges.overtime) list.push("Straordinari");
+      if(day.badges.advanced) list.push(String(day.badges.advanced));
 
       list.forEach(t => {
         const b = document.createElement("div");
@@ -281,57 +291,53 @@
       });
     }
 
-    // turni ordinati
+    // righe turni ordinate
     const shifts = Array.isArray(day.shifts) ? day.shifts.slice() : [];
     shifts.sort((a,b) => timeToMin(a.start) - timeToMin(b.start));
 
-    if(blocksEl){
-      blocksEl.innerHTML = "";
+    if(linesEl){
+      linesEl.innerHTML = "";
 
       if(!shifts.length){
         const empty = document.createElement("div");
         empty.className = "cviewEmpty";
         empty.textContent = "Nessun turno salvato per questo giorno.";
-        blocksEl.appendChild(empty);
+        linesEl.appendChild(empty);
       }else{
         shifts.forEach(s => {
-          const card = document.createElement("div");
-          card.className = "cviewBlock";
+          const row = document.createElement("div");
+          row.className = "cviewLine";
 
-          const top = document.createElement("div");
-          top.className = "cviewBlockTop";
+          const dot = document.createElement("div");
+          dot.className = "cviewDot";
+          if(s.dotKind === "over") dot.classList.add("isOver");
+          if(s.dotKind === "holiday") dot.classList.add("isHoliday");
+          if(s.dotKind === "sunday") dot.classList.add("isSunday");
 
-          const time = document.createElement("div");
-          time.className = "cviewBlockTime";
-          time.textContent = `${s.start || "—"} – ${s.end || "—"}`;
+          const txt = document.createElement("div");
+          txt.className = "cviewLineText";
 
-          const tag = document.createElement("div");
-          tag.className = "cviewBlockTag";
-          tag.textContent = s.tag ? String(s.tag) : "";
+          const main = document.createElement("div");
+          main.className = "cviewLineMain";
+          main.textContent = `dalle ${s.start || "—"} alle ${s.end || "—"}`;
 
-          top.appendChild(time);
-          top.appendChild(tag);
+          txt.appendChild(main);
 
-          const lines = [];
-          if(s.type) lines.push(`Fascia: ${s.type}`);
-          if(s.advanced) lines.push(`Avanzate: ${s.advanced}`);
-          if(s.note && String(s.note).trim().length) lines.push(`Nota: ${String(s.note).trim()}`);
-
-          card.appendChild(top);
-
-          if(lines.length){
-            const meta = document.createElement("div");
-            meta.className = "cviewBlockMeta";
-            meta.textContent = lines.join(" · ");
-            card.appendChild(meta);
+          if(s.sub && String(s.sub).trim()){
+            const sub = document.createElement("div");
+            sub.className = "cviewLineSub";
+            sub.textContent = String(s.sub).trim();
+            txt.appendChild(sub);
           }
 
-          blocksEl.appendChild(card);
+          row.appendChild(dot);
+          row.appendChild(txt);
+          linesEl.appendChild(row);
         });
       }
     }
 
-    // note giorno (se esistono)
+    // note giorno (se un domani le aggiungi)
     const notes = (day.notes || "").trim();
     if(notesWrap && notesText){
       if(notes){
@@ -354,21 +360,15 @@
     pageStartISO = startOfWeekISO(t);
     selectedISO = t;
 
-    renderAll();
+    renderHeaderAndWeek();
     renderSummary(selectedISO);
   }
 
   document.addEventListener("nettotrack:calendarViewOpened", open);
 
-  // se chiudi, la slide viene rimossa da ui.js; quando riapri, rimontiamo da zero
   document.addEventListener("nettotrack:closeCalendarView", () => {
     mounted = false;
     pageStartISO = null;
     selectedISO = null;
-  });
-
-  // opzionale: se la pagina carica e la card è già aperta (rarissimo), prova a montare
-  document.addEventListener("DOMContentLoaded", () => {
-    // non auto-apro: aspetto l’evento vero
   });
 })();
