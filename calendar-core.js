@@ -19,9 +19,6 @@
 
   /* =====================================================
      STORAGE — PER GIORNO
-     ⚠️ IMPORTANTISSIMO:
-     Day Editor salva con prefix "nettotrack:turni:".
-     Qui facciamo compatibilità: leggiamo/scriviamo sia prefix che key “nuda”.
   ===================================================== */
   const DAY_PREFIX = "nettotrack:turni:";
 
@@ -31,20 +28,85 @@
     return k.startsWith(DAY_PREFIX) ? k : (DAY_PREFIX + k);
   }
 
+  /* =====================================================
+     NORMALIZE (CRITICO)
+     - garantisce shifts[]
+     - garantisce from/to (anche se salvati come start/end o time.from/time.to)
+     - uniforma tags/flags
+  ===================================================== */
+  function pickTimeFromShift(s) {
+    if (!s || typeof s !== "object") return { from: "", to: "" };
+
+    const from =
+      s.from ?? s.start ?? s.time?.from ?? s.timeFrom ?? s.da ?? s.inizio ?? "";
+    const to =
+      s.to ?? s.end ?? s.time?.to ?? s.timeTo ?? s.a ?? s.fine ?? "";
+
+    return {
+      from: typeof from === "string" ? from : String(from || ""),
+      to: typeof to === "string" ? to : String(to || "")
+    };
+  }
+
+  function normalizeShift(s) {
+    if (!s || typeof s !== "object") return null;
+
+    const { from, to } = pickTimeFromShift(s);
+
+    // tags/flags: compatibilità incrociata
+    const tags = (s.tags && typeof s.tags === "object") ? { ...s.tags } : {};
+    const flags = (s.flags && typeof s.flags === "object") ? { ...s.flags } : {};
+
+    // se esistono flags vecchi, riempi tags nuovi
+    if (flags.straordinario) tags.overtime = true;
+    if (flags.festivo) tags.holiday = true;
+    if (flags.domenicale) tags.sunday = true;
+
+    // se esistono tags nuovi, riempi flags vecchi
+    if (tags.overtime) flags.straordinario = true;
+    if (tags.holiday) flags.festivo = true;
+    if (tags.sunday) flags.domenicale = true;
+
+    const pauseMin = Number(s.pauseMin ?? s.pause ?? 0) || 0;
+
+    return {
+      ...s,
+      from,
+      to,
+      pauseMin,
+      pausePaid: !!s.pausePaid,
+      shiftType: s.shiftType ?? s.fascia ?? s.type ?? "none",
+      tags,
+      flags
+    };
+  }
+
+  function normalizeDayModel(obj) {
+    if (!obj || typeof obj !== "object") return null;
+
+    const rawShifts = Array.isArray(obj.shifts) ? obj.shifts : [];
+
+    const shifts = rawShifts
+      .map(normalizeShift)
+      .filter(Boolean);
+
+    return { ...obj, shifts };
+  }
+
   function loadDay(dateKeyStr) {
     const k1 = keyWithPrefix(dateKeyStr);
     const k2 = String(dateKeyStr || "");
 
-    // 1) prova la chiave “nuova” (prefix)
+    // 1) chiave prefix
     try {
       const raw = localStorage.getItem(k1);
-      if (raw) return JSON.parse(raw);
+      if (raw) return normalizeDayModel(JSON.parse(raw));
     } catch {}
 
-    // 2) fallback: chiave vecchia “nuda”
+    // 2) chiave nuda
     try {
       const raw = localStorage.getItem(k2);
-      if (raw) return JSON.parse(raw);
+      if (raw) return normalizeDayModel(JSON.parse(raw));
     } catch {}
 
     return null;
@@ -53,13 +115,17 @@
   function saveDay(dateKeyStr, obj) {
     const k1 = keyWithPrefix(dateKeyStr);
     const k2 = String(dateKeyStr || "");
-    const raw = (() => { try { return JSON.stringify(obj); } catch { return ""; } })();
+
+    // salva SEMPRE in formato normalizzato
+    const model = normalizeDayModel(obj) || obj;
+
+    const raw = (() => {
+      try { return JSON.stringify(model); }
+      catch { return ""; }
+    })();
     if (!raw) return;
 
-    // scrivo su prefix (standard)
     try { localStorage.setItem(k1, raw); } catch {}
-
-    // compatibilità: scrivo anche su chiave nuda (se ti dava fastidio, dimmelo e lo togliamo)
     try { localStorage.setItem(k2, raw); } catch {}
   }
 
@@ -71,11 +137,9 @@
   }
 
   /* =====================================================
-     DRAFT (MODIFICHE NON SALVATE)
-     (lo teniamo compatibile con il tuo codice attuale)
+     DRAFT
   ===================================================== */
   function draftKey(dateKeyStr) {
-    // mantengo lo schema che avevi già
     return `_draft_${String(dateKeyStr || "")}`;
   }
 
@@ -83,7 +147,7 @@
     try {
       const raw = localStorage.getItem(draftKey(dateKeyStr));
       if (!raw) return null;
-      return JSON.parse(raw);
+      return normalizeDayModel(JSON.parse(raw));
     } catch {
       return null;
     }
@@ -91,19 +155,18 @@
 
   function saveDraft(dateKeyStr, obj) {
     try {
-      localStorage.setItem(draftKey(dateKeyStr), JSON.stringify(obj));
+      const model = normalizeDayModel(obj) || obj;
+      localStorage.setItem(draftKey(dateKeyStr), JSON.stringify(model));
     } catch {}
   }
 
   function removeDraft(dateKeyStr) {
-    try {
-      localStorage.removeItem(draftKey(dateKeyStr));
-    } catch {}
+    try { localStorage.removeItem(draftKey(dateKeyStr)); } catch {}
   }
 
   /* =====================================================
      TIME / ORE
-     (aggiornato: riconosce sia "tags" (nuovo) che "flags" (vecchio))
+     (ora usa from/to normalizzati)
   ===================================================== */
   function parseHHMM(str) {
     const m = /^(\d{1,2}):(\d{2})$/.exec(String(str || "").trim());
@@ -115,38 +178,36 @@
   }
 
   function minutesToHours(min) {
-    return Math.round((min / 60) * 10) / 10; // 1 decimale
+    return Math.round((min / 60) * 10) / 10;
+  }
+
+  function isExtraShift(s) {
+    const t = s?.tags || {};
+    const f = s?.flags || {};
+    return !!(t.overtime || t.holiday || t.sunday || f.straordinario || f.festivo || f.domenicale);
   }
 
   function shiftMinutes(shift) {
-    if (!shift) return 0;
-    const a = parseHHMM(shift.from);
-    const b = parseHHMM(shift.to);
+    const s = normalizeShift(shift);
+    if (!s) return 0;
+
+    const a = parseHHMM(s.from);
+    const b = parseHHMM(s.to);
     if (a == null || b == null) return 0;
 
     let diff = b - a;
-    if (diff < 0) diff += 24 * 60; // overnight
+    if (diff < 0) diff += 24 * 60;
 
-    const pause = Number(shift.pauseMin || 0) || 0;
-    const pausePaid = !!shift.pausePaid;
+    const pause = Number(s.pauseMin || 0) || 0;
+    const pausePaid = !!s.pausePaid;
 
     return Math.max(0, diff - (pausePaid ? 0 : pause));
   }
 
-  function isExtraShift(s) {
-    // nuovo schema (Day Editor): tags
-    const t = s?.tags;
-    if (t && (t.overtime || t.holiday || t.sunday)) return true;
-
-    // vecchio schema: flags
-    const f = s?.flags;
-    if (f && (f.straordinario || f.festivo || f.domenicale)) return true;
-
-    return false;
-  }
-
   function dayTotals(dayObj) {
-    const shifts = Array.isArray(dayObj?.shifts) ? dayObj.shifts : [];
+    const day = normalizeDayModel(dayObj) || dayObj;
+    const shifts = Array.isArray(day?.shifts) ? day.shifts : [];
+
     let baseMin = 0;
     let extraMin = 0;
 
@@ -169,15 +230,15 @@
   ===================================================== */
   function startOfWeek(date) {
     const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const day = d.getDay(); // 0=Sun … 6=Sat
-    const diff = (day === 0 ? -6 : 1 - day); // Monday-based
+    const day = d.getDay();
+    const diff = (day === 0 ? -6 : 1 - day);
     d.setDate(d.getDate() + diff);
     d.setHours(0, 0, 0, 0);
     return d;
   }
 
   /* =====================================================
-     EXPORT GLOBALE
+     EXPORT
   ===================================================== */
   window.NTCal = {
     pad2,
