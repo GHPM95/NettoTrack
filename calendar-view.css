@@ -2,7 +2,8 @@
    Calendar View (Agenda) — CSS
    - Header: titolo + X (stile Day Editor)
    - Strip: frecce dentro + carousel settimane (prev/current/next)
-   - 7 giorni SEMPRE visibili (fix)
+   - FIX iOS: track/pagine in px (width gestita da JS)
+   - 7 giorni SEMPRE visibili (minmax + gap/padding ridotti)
    - Riepilogo: dot piccoli accanto alle ore
    ========================= */
 
@@ -13,7 +14,7 @@
   --glass: rgba(255,255,255,.06);
   --radius: 18px;
 
-  /* TODAY (se vuoi 1:1 col calendar insert, copia qui i token esatti) */
+  /* TODAY */
   --todayFill: rgba(120,140,255,.22);
   --todayBorder: rgba(180,200,255,.25);
   --todayInner: rgba(170,190,255,.22);
@@ -112,7 +113,7 @@
   background:var(--glass);
   border:1px solid var(--line);
   border-radius:var(--radius);
-  padding:8px;                 /* FIX: un filo più compatto */
+  padding:8px;                 /* un filo più compatto */
   backdrop-filter: blur(12px);
 
   display:grid;
@@ -120,44 +121,45 @@
   align-items:center;
   gap:8px;
 
-  touch-action: pan-y;
+  touch-action: pan-y;         /* scroll verticale ok */
   user-select:none;
 }
 
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
-  border-radius: 16px;
+  border-radius:16px;
 }
 
-/* Track a 3 pagine (prev | current | next) */
+/* Track (prev | current | next) — width in px via JS (anti iOS bug) */
 .cviewTrack{
   display:flex;
-  width:300%;
   will-change: transform;
+  transform: translate3d(0,0,0);
 }
 .cviewTrack.isSnap{
   transition: transform .22s ease;
 }
 
+/* Pagine — width in px via JS */
 .cviewPage{
-  flex: 0 0 100%;
+  flex: 0 0 auto;
 }
 
-/* 7 giorni — FIX: minmax(0,1fr) evita che si “mangino” colonne */
+/* 7 giorni — minmax(0,1fr) evita “mangiamenti” colonne su iOS */
 .cviewDays{
   display:grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap:6px;                      /* FIX: meno gap = 7 sempre visibili */
+  gap:6px;
   width:100%;
 }
 
-/* Day btn — FIX: un filo meno padding */
+/* Day btn */
 .cviewDayBtn{
   border:none;
   background:transparent;
   color:var(--text);
-  padding:8px 0;               /* FIX */
+  padding:8px 0;               /* più compatto: 7 sempre visibili */
   border-radius:16px;
   display:flex;
   flex-direction:column;
@@ -178,10 +180,8 @@
   color:var(--muted);
   letter-spacing:.4px;
 }
-
-/* numero — FIX: leggermente più piccolo */
 .cviewNum{
-  font-size:15px;              /* FIX */
+  font-size:15px;              /* leggermente più piccolo */
   font-weight:1000;
   font-variant-numeric: tabular-nums;
 }
@@ -262,15 +262,12 @@
   border: 1px solid rgba(255,255,255,.10);
 }
 
-/* =========================
-   Righe: DOT + ore + dettagli
-   ========================= */
+/* Righe: DOT + ore + dettagli */
 .cviewLines{
   display:flex;
   flex-direction:column;
   gap:10px;
 }
-
 .cviewLine{
   display:flex;
   align-items:flex-start;
@@ -300,7 +297,6 @@
   gap:4px;
   min-width:0;
 }
-
 .cviewLineMain{
   font-weight:1000;
   font-size:14px;
@@ -309,7 +305,6 @@
   overflow:hidden;
   text-overflow:ellipsis;
 }
-
 .cviewLineSub{
   font-size:12px;
   color:var(--muted);
