@@ -6,7 +6,7 @@
   height:100%;
   display:flex;
   flex-direction:column;
-  gap: 12px;
+  gap:12px;
   min-height:0;
 
   /* Colori DOT condivisi (globali da ui.css) */
@@ -25,124 +25,124 @@
 /* ========================= Header ========================= */
 .cviewHeader{
   display:grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns:auto 1fr auto;
   align-items:center;
-  gap: 10px;
+  gap:10px;
 }
 
 .cviewLeft{
   display:flex;
-  gap: 12px;
+  gap:12px;
   align-items:center;
 }
 
 .cviewNavBtn{
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  color: var(--text);
-  font-size: 22px;
-  font-weight: 1000;
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  color:var(--text);
+  font-size:22px;
+  font-weight:1000;
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-  backdrop-filter: blur(var(--blur));
-  transition: transform .12s ease, filter .12s ease;
+  backdrop-filter:blur(var(--blur));
+  transition:transform .12s ease, filter .12s ease;
 }
-.cviewNavBtn:active{ transform: scale(.96); filter: brightness(1.08); }
+.cviewNavBtn:active{ transform:scale(.96); filter:brightness(1.08); }
 
 .cviewCenter{ min-width:0; text-align:center; }
 
 .cviewTitle{
   text-align:center;
-  font-weight: 1000;
+  font-weight:1000;
   letter-spacing:.2px;
-  font-size: clamp(14px, 3.6vw, 17px);
-  white-space: nowrap;
+  font-size:clamp(14px, 3.6vw, 17px);
+  white-space:nowrap;
   overflow:hidden;
-  text-overflow: ellipsis;
+  text-overflow:ellipsis;
 }
 
 .cviewTotals{
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 850;
-  letter-spacing: .12px;
-  white-space: nowrap;
+  margin-top:4px;
+  font-size:12px;
+  color:var(--muted);
+  font-weight:850;
+  letter-spacing:.12px;
+  white-space:nowrap;
   overflow:hidden;
-  text-overflow: ellipsis;
+  text-overflow:ellipsis;
 }
 
 .cviewCloseBtn{
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.10);
-  color: var(--text);
-  font-size: 26px;
-  font-weight: 900;
-  transition: transform .12s ease, filter .12s ease;
+  width:44px;
+  height:44px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.10);
+  color:var(--text);
+  font-size:26px;
+  font-weight:900;
+  transition:transform .12s ease, filter .12s ease;
 }
-.cviewCloseBtn:active{ transform: scale(.96); filter: brightness(1.08); }
+.cviewCloseBtn:active{ transform:scale(.96); filter:brightness(1.08); }
 
 /* =========================
    UX: niente scroll a riposo, scroll solo quando una riga è aperta
    ========================= */
-
-/* default: NO scroll */
 .cviewGrid{
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 
-  overflow: hidden;           /* chiuso = niente scroll */
-  -webkit-overflow-scrolling: auto;
+  overflow:hidden;                 /* chiuso = niente scroll */
+  -webkit-overflow-scrolling:auto;
 }
 
 /* quando almeno una riga è aperta: abilita scroll */
 .cviewRoot.isAnyOpen .cviewGrid{
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
 }
 
 /* ========================= Row (Capsule) ========================= */
 .cviewRow{
-  position: relative;
+  position:relative;
 
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.14);
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.14);
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
 
-  padding: 12px 16px;
+  padding:12px 16px;
 
-  /* ✅ lascia hidden: così la capsula resta “pulita” */
-  overflow:hidden;
-
-  transition: filter .12s ease, transform .12s ease;
+  overflow:hidden;                 /* capsula pulita */
+  transition:filter .12s ease, transform .12s ease;
 
   display:flex;
-  flex-direction: column;   /* details sotto */
+  flex-direction:column;           /* details sotto */
   justify-content:center;
 }
-.cviewRow:active{ transform: scale(.995); filter: brightness(1.05); }
+.cviewRow:active{ transform:scale(.995); filter:brightness(1.05); }
 
-.cviewRow.isEmpty{ opacity: .45; }
+.cviewRow.isEmpty{ opacity:.45; }
 .cviewRow.isEmpty .cviewBadges{ display:none; }
 
 /* ========================= Row Head ========================= */
 .cviewRowHead{
+  position:relative;               /* ✅ ancora i badges */
   width:100%;
   display:flex;
   align-items:center;
   min-width:0;
-  gap: 10px;              /* micro respiro */
+  gap:10px;
+
+  /* ✅ spazio riservato ai bubble a destra (2 bubble da 36 + gap) */
+  padding-right:96px;
 }
 
 /* SINISTRA */
@@ -150,72 +150,69 @@
   display:flex;
   flex-direction:column;
   justify-content:center;
-  gap: 2px;
-  flex: 0 0 auto;
-  width: clamp(150px, 45vw, 190px);
+  gap:2px;
+  flex:0 0 auto;
+  width:clamp(150px, 45vw, 190px);
   min-width:0;
 }
 
 .cviewDayName{
-  font-weight: 700;
-  letter-spacing: .2px;
-  line-height: 1.05;
-  font-size: clamp(11px, 2.6vw, 12px);
-  opacity: .6;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight:700;
+  letter-spacing:.2px;
+  line-height:1.05;
+  font-size:clamp(11px, 2.6vw, 12px);
+  opacity:.6;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
   min-width:0;
 }
 
 .cviewDayDate{
-  color: var(--muted);
-  font-weight: 900;
-  line-height: 1.05;
-  font-size: clamp(12px, 3.2vw, 16px);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color:var(--muted);
+  font-weight:900;
+  line-height:1.05;
+  font-size:clamp(12px, 3.2vw, 16px);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
   min-width:0;
 }
 
-/* ========================= Dot / Badges ========================= */
-/* ✅ FIX: badge dentro la HEAD (non assoluti) => restano allineati al testo */
+/* ========================= Badges ========================= */
 .cviewBadges{
-  position: static;       /* prima: absolute */
-  top:auto;
-  right:auto;
-  transform:none;
-
-  margin-left: auto;      /* ✅ spinge a destra */
+  position:absolute;
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
   display:flex;
   align-items:center;
   justify-content:flex-end;
-  gap: 8px;
+  gap:8px;
 }
 .cviewBadges:empty{ display:none; }
 
 /* ========================= BUBBLE PREMIUM ========================= */
 .cviewBubble{
-  width: 36px;
-  height: 36px;
+  width:36px;
+  height:36px;
+  border-radius:999px;
 
-  border-radius: 999px;
   display:flex;
   align-items:center;
   justify-content:center;
 
-  font-weight: 900;
-  font-size: 14px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.2px;
+  font-weight:900;
+  font-size:14px;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-0.2px;
 
-  color: #fff;
+  color:#fff;
 
   --dotFill: rgba(255,255,255,.20);
 
-  border: 1px solid rgba(255,255,255,.22);
+  border:1px solid rgba(255,255,255,.22);
 
   background:
     radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 55%),
@@ -230,146 +227,100 @@
     inset 0 -3px 8px rgba(0,0,0,.18),
     0 6px 16px rgba(0,0,0,.22);
 }
-
 .cviewBubble.base{ --dotFill: var(--cviewDotBase); }
 .cviewBubble.extra{ --dotFill: var(--cviewDotExtra); }
 
 /* ========================= Details (accordion) ========================= */
+/* CHIUSO: niente linea, niente spazio */
 .cviewDetails{
-  margin-top: 10px;
-  border-top: 1px solid rgba(255,255,255,.10);
-  padding-top: 10px;
+  margin-top:0;
+  padding-top:0;
+  border-top:none;
 
-  color: var(--muted);
-  font-weight: 850;
-  font-size: 12px;
-  line-height: 1.35;
-
-  max-height: 0;
-  opacity: 0;
+  max-height:0;
+  opacity:0;
   overflow:hidden;
 
-  transition: max-height .22s ease, opacity .18s ease, margin-top .18s ease;
+  color:var(--muted);
+  font-weight:850;
+  font-size:12px;
+  line-height:1.35;
+
+  transition:
+    max-height .22s ease,
+    opacity .18s ease,
+    padding .18s ease,
+    margin .18s ease;
 }
-.cviewDetails:empty{ display:none; }
 
 .cviewRow.isOpen .cviewDetails{
-  max-height: 220px; /* più spazio per più turni */
-  opacity: 1;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid rgba(255,255,255,.10);
+
+  max-height:260px;   /* più margine */
+  opacity:1;
 }
+
+.cviewDetails:empty{ display:none; }
 
 /* ========================= Details list content ========================= */
 .cviewShiftList{
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  margin:0;
+  padding:0;
+  list-style:none;
 }
 
 .cviewShiftItem{
   display:flex;
   align-items:center;
-  gap: 8px;
-  padding: 8px 2px;
+  gap:8px;
+  padding:8px 2px;
 }
 
 /* divider tra turni */
 .cviewShiftItem + .cviewShiftItem{
-  border-top: 1px solid rgba(255,255,255,.10);
+  border-top:1px solid rgba(255,255,255,.10);
 }
 
-/* DOT identico al calendario insert (dimensione fissa QUI) */
+/* DOT */
 .cviewShiftDot{
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  flex: 0 0 auto;
-  opacity: 1;
+  width:7px;
+  height:7px;
+  border-radius:999px;
+  flex:0 0 auto;
+  opacity:1;
 }
 
-/* Colori dot coerenti col view (base bilanciato incluso) */
+/* colori dot */
 .cviewShiftDot.base{ background: var(--cviewDotBase); }
 .cviewShiftDot.extra{ background: var(--cviewDotExtra); }
 .cviewShiftDot.festivo{ background: var(--ntDotFestivo, var(--accent3)); }
 .cviewShiftDot.domenicale{ background: var(--ntDotDomenicale, var(--accent4)); }
 
 .cviewShiftTxt{
-  min-width: 0;
-  flex: 1 1 auto;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width:0;
+  flex:1 1 auto;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 
-  color: var(--text);
-  opacity: .92;
-  font-weight: 850;
-  font-size: 12px;
+  color:var(--text);
+  opacity:.92;
+  font-weight:850;
+  font-size:12px;
 }
 
 .cviewShiftLbl{
-  color: var(--muted);
-  font-weight: 900;
+  color:var(--muted);
+  font-weight:900;
 }
 
 /* Hint */
 .cviewHint{
-  font-size: 11px;
-  color: rgba(255,255,255,.52);
-  font-weight: 800;
+  font-size:11px;
+  color:rgba(255,255,255,.52);
+  font-weight:800;
   text-align:center;
   letter-spacing:.12px;
 }
-
-/* ========================= Row Head ========================= */
-.cviewRowHead{
-  position: relative;          /* ✅ ancora i badge qui */
-  width: 100%;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-
-  /* ✅ spazio “riservato” ai bubble a destra */
-  padding-right: 96px;
-}
-
-/* ========================= Badges ========================= */
-.cviewBadges{
-  position: absolute;          /* ✅ ora è relativo alla HEAD */
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-.cviewBadges:empty{ display:none; }
-
-/* ========================= Details (accordion) ========================= */
-/* ✅ quando chiusa: NON deve occupare spazio */
-.cviewDetails{
-  margin-top: 0;
-  padding-top: 0;
-  border-top: 0;
-
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height .22s ease, opacity .18s ease;
-
-  color: var(--muted);
-  font-weight: 850;
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-/* ✅ quando aperta: aggiungi lo “spazio” e la riga sopra */
-.cviewRow.isOpen .cviewDetails{
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,.10);
-
-  max-height: 220px;
-  opacity: 1;
-}
-.cviewDetails:empty{ display:none; }
