@@ -249,3 +249,11 @@
   color:var(--muted);
   font-weight:900;
 }
+/* ===== FIX HARD: non nascondere mai i dettagli via :empty ===== */
+.cviewDetails:empty{ display:block !important; }
+
+/* lascia che sia il JS a gestire height/opacity */
+.cviewRow.isOpen .cviewDetails{
+  max-height: none !important;
+  opacity: 1 !important;
+}
