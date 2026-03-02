@@ -2,21 +2,18 @@
    Calendar View (Weekly Agenda)
    ========================= */
 
-/* Root */
 .cviewRoot{
   width:100%;
   height:100%;
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap: 12px;
   min-height:0;
 
-  /* Dot colors (globali) */
   --cviewDotBase: var(--ntDotBase, var(--accent2));
   --cviewDotExtra: var(--ntDotExtra, var(--accent1));
 }
 
-/* abbassa SOLO il celeste di ~5% (se supportato) */
 @supports (color: color-mix(in srgb, white 50%, black)) {
   .cviewRoot{
     --cviewDotBase: color-mix(in srgb, var(--ntDotBase, var(--accent2)) 95%, black 5%);
@@ -26,140 +23,134 @@
 /* Header */
 .cviewHeader{
   display:grid;
-  grid-template-columns:auto 1fr auto;
+  grid-template-columns: auto 1fr auto;
   align-items:center;
-  gap:10px;
+  gap: 10px;
 }
-
 .cviewLeft{
   display:flex;
-  gap:12px;
+  gap: 12px;
   align-items:center;
 }
-
 .cviewTitle{
   text-align:center;
-  font-weight:1000;
+  font-weight: 1000;
   letter-spacing:.2px;
-  font-size:clamp(14px, 3.6vw, 17px);
-  white-space:nowrap;
+  font-size: clamp(14px, 3.6vw, 17px);
+  white-space: nowrap;
   overflow:hidden;
-  text-overflow:ellipsis;
+  text-overflow: ellipsis;
 }
 
 /* Grid */
 .cviewGrid{
-  flex:1;
-  min-height:0;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 
-  /* UX: niente scroll a riposo */
-  overflow:hidden;
-  -webkit-overflow-scrolling:auto;
+  /* UX: no scroll finché non apri */
+  overflow: hidden;
+  -webkit-overflow-scrolling: auto;
 }
 .cviewRoot.isAnyOpen .cviewGrid{
-  overflow:auto;
-  -webkit-overflow-scrolling:touch;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Row */
 .cviewRow{
-  position:relative;
-  border-radius:22px;
-  border:1px solid rgba(255,255,255,.14);
+  position: relative;
+
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.14);
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
 
-  padding:12px 16px;
+  padding: 12px 16px;
   overflow:hidden;
 
-  transition:filter .12s ease, transform .12s ease;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-}
-.cviewRow:active{ transform:scale(.995); filter:brightness(1.05); }
+  transition: filter .12s ease, transform .12s ease;
 
-.cviewRow.isEmpty{ opacity:.45; }
+  display:flex;
+  flex-direction: column;
+}
+.cviewRow:active{ transform: scale(.995); filter: brightness(1.05); }
+
+.cviewRow.isEmpty{ opacity: .45; }
 .cviewRow.isEmpty .cviewBadges{ display:none; }
 
 /* Row head */
 .cviewRowHead{
-  position:relative;
   width:100%;
   display:flex;
   align-items:center;
   min-width:0;
-
-  /* spazio “riservato” ai bubble a destra */
-  padding-right:96px;
+  gap: 10px;
 }
 
 .cviewLeftTxt{
   display:flex;
   flex-direction:column;
   justify-content:center;
-  gap:2px;
+  gap: 2px;
+  flex: 1 1 auto;
   min-width:0;
-  width:clamp(150px, 45vw, 190px);
 }
 
 .cviewDayName{
-  font-weight:700;
-  letter-spacing:.2px;
-  line-height:1.05;
-  font-size:clamp(11px, 2.6vw, 12px);
-  opacity:.6;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  font-weight: 700;
+  letter-spacing: .2px;
+  line-height: 1.05;
+  font-size: clamp(11px, 2.6vw, 12px);
+  opacity: .6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cviewDayDate{
-  color:var(--muted);
-  font-weight:900;
-  line-height:1.05;
-  font-size:clamp(12px, 3.2vw, 16px);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  color: var(--muted);
+  font-weight: 900;
+  line-height: 1.05;
+  font-size: clamp(12px, 3.2vw, 16px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Badges (ancorati alla head) */
+/* Badges: dentro head (sempre allineati) */
 .cviewBadges{
-  position:absolute;
-  right:0;
-  top:50%;
-  transform:translateY(-50%);
+  margin-left: auto;
   display:flex;
   align-items:center;
   justify-content:flex-end;
-  gap:8px;
+  gap: 8px;
 }
 .cviewBadges:empty{ display:none; }
 
 /* Bubble */
 .cviewBubble{
-  width:36px;
-  height:36px;
-  border-radius:999px;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+
   display:flex;
   align-items:center;
   justify-content:center;
 
-  font-weight:900;
-  font-size:14px;
-  line-height:1;
-  font-variant-numeric:tabular-nums;
-  letter-spacing:-0.2px;
-  color:#fff;
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.2px;
 
+  color: #fff;
   --dotFill: rgba(255,255,255,.20);
-  border:1px solid rgba(255,255,255,.22);
 
+  border: 1px solid rgba(255,255,255,.22);
   background:
     radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 55%),
     linear-gradient(
@@ -176,84 +167,75 @@
 .cviewBubble.base{ --dotFill: var(--cviewDotBase); }
 .cviewBubble.extra{ --dotFill: var(--cviewDotExtra); }
 
-/* Details (accordion) — UNA SOLA DEFINIZIONE, pulita */
+/* Details: CSS accordion “semplice” */
 .cviewDetails{
-  /* chiuso: non occupa spazio */
-  margin-top:0;
-  padding-top:0;
-  border-top:0;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 
-  max-height:0;
-  opacity:0;
-  overflow:hidden;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
 
-  transition:max-height .24s ease, opacity .18s ease, margin-top .18s ease, padding-top .18s ease;
+  transition: max-height .22s ease, opacity .18s ease, margin-top .18s ease, padding-top .18s ease;
 
-  color:var(--muted);
-  font-weight:850;
-  font-size:12px;
-  line-height:1.35;
+  color: var(--muted);
+  font-weight: 850;
+  font-size: 12px;
+  line-height: 1.35;
 }
+
 .cviewRow.isOpen .cviewDetails{
-  margin-top:10px;
-  padding-top:10px;
-  border-top:1px solid rgba(255,255,255,.10);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,.10);
 
-  max-height:600px; /* grande apposta: niente “vuoto” */
-  opacity:1;
+  /* NON serve scrollHeight: scegliamo un massimo alto */
+  max-height: 360px;
+  opacity: 1;
 }
 
-/* Details list */
 .cviewShiftList{
-  margin:0;
-  padding:0;
-  list-style:none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .cviewShiftItem{
   display:flex;
   align-items:center;
-  gap:8px;
-  padding:8px 2px;
+  gap: 8px;
+  padding: 8px 2px;
 }
 .cviewShiftItem + .cviewShiftItem{
-  border-top:1px solid rgba(255,255,255,.10);
+  border-top: 1px solid rgba(255,255,255,.10);
 }
 
 .cviewShiftDot{
-  width:7px;
-  height:7px;
-  border-radius:999px;
-  flex:0 0 auto;
-  opacity:1;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex: 0 0 auto;
 }
-.cviewShiftDot.base{ background:var(--cviewDotBase); }
-.cviewShiftDot.extra{ background:var(--cviewDotExtra); }
-.cviewShiftDot.festivo{ background:var(--ntDotFestivo, var(--accent3)); }
-.cviewShiftDot.domenicale{ background:var(--ntDotDomenicale, var(--accent4)); }
+.cviewShiftDot.base{ background: var(--cviewDotBase); }
+.cviewShiftDot.extra{ background: var(--cviewDotExtra); }
+.cviewShiftDot.festivo{ background: var(--ntDotFestivo, var(--accent3)); }
+.cviewShiftDot.domenicale{ background: var(--ntDotDomenicale, var(--accent4)); }
 
 .cviewShiftTxt{
-  min-width:0;
-  flex:1 1 auto;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  min-width: 0;
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
-  color:var(--text);
-  opacity:.92;
-  font-weight:850;
-  font-size:12px;
+  color: var(--text);
+  opacity: .92;
+  font-weight: 850;
+  font-size: 12px;
 }
 
 .cviewShiftLbl{
-  color:var(--muted);
-  font-weight:900;
-}
-/* ===== FIX HARD: non nascondere mai i dettagli via :empty ===== */
-.cviewDetails:empty{ display:block !important; }
-
-/* lascia che sia il JS a gestire height/opacity */
-.cviewRow.isOpen .cviewDetails{
-  max-height: none !important;
-  opacity: 1 !important;
+  color: var(--muted);
+  font-weight: 900;
 }
