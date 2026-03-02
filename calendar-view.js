@@ -256,7 +256,6 @@
     const mount = getMount();
     if(!mount) return;
 
-    // titolo (stato reale, non preview)
     const titleEl = $("#cvTitle", mount);
     if(titleEl) titleEl.textContent = formatMonthYear(selectedISO);
 
@@ -264,7 +263,6 @@
     renderWeekGrid($("#cvDaysCur", mount), pageStartISO);
     renderWeekGrid($("#cvDaysNext", mount), addDaysISO(pageStartISO, +7));
 
-    // reset track al centro (no anim)
     const track = $("#cvTrack", mount);
     if(track){
       track.classList.remove("isSnap");
@@ -305,7 +303,6 @@
         if(dragMoved) return;
 
         selectedISO = iso;
-        // se selezioni un giorno in prev/next, centra quella settimana
         pageStartISO = startOfWeekISO(selectedISO);
 
         updateSelectedOffset();
@@ -422,7 +419,6 @@
     const down = (e) => {
       if(lock) return;
 
-      // se tocchi le frecce, niente drag
       const t = e.target;
       if(t && t.closest && t.closest("#cvPrev")) return;
       if(t && t.closest && t.closest("#cvNext")) return;
@@ -446,16 +442,15 @@
 
       if(Math.abs(dragDx) > 6) dragMoved = true;
 
-      // translate live: centro + dx
       track.style.transform = `translateX(${baseX + dragDx}px)`;
 
-      // preview titolo (quando ti avvicini a cambiare pagina)
+      // preview titolo se ti avvicini alla pagina successiva/precedente
       if(wrapW > 0){
         const threshold = Math.max(42, wrapW * 0.18);
         let dirPreview = 0;
 
-        if(dragDx <= -threshold) dirPreview = +1;     // verso next
-        else if(dragDx >= threshold) dirPreview = -1; // verso prev
+        if(dragDx <= -threshold) dirPreview = +1;
+        else if(dragDx >= threshold) dirPreview = -1;
 
         if(dirPreview !== liveWeekPreview){
           liveWeekPreview = dirPreview;
@@ -471,16 +466,13 @@
       const threshold = Math.max(42, wrapW * 0.18);
 
       if(dragMoved && Math.abs(dragDx) >= threshold){
-        // swipe left => +1 (next), swipe right => -1 (prev)
         const dir = (dragDx < 0) ? +1 : -1;
         await animateAndCommit(dir);
       }else{
-        // torna al centro
         track.classList.add("isSnap");
         track.style.transform = `translateX(${baseX}px)`;
         setTimeout(() => track.classList.remove("isSnap"), 260);
 
-        // ripristina titolo reale
         liveWeekPreview = 0;
         setTitleForPreviewWeek(0);
       }
@@ -494,7 +486,6 @@
     window.addEventListener("pointerup", up, { passive:true });
     window.addEventListener("pointercancel", up, { passive:true });
 
-    // fallback touch
     strip.addEventListener("touchstart", down, { passive:true });
     strip.addEventListener("touchmove", move, { passive:true });
     strip.addEventListener("touchend", up, { passive:true });
@@ -510,8 +501,7 @@
 
     lock = true;
 
-    // anima verso pagina target
-    const targetX = baseX + (dir * -wrapW); // dir +1 => next (sx) => baseX - wrapW
+    const targetX = baseX + (dir * -wrapW);
     track.classList.add("isSnap");
     track.style.transform = `translateX(${targetX}px)`;
 
@@ -519,7 +509,7 @@
 
     // commit: cambia settimana mantenendo lo stesso giorno della settimana
     const oldStart = pageStartISO;
-    const off = selectedOffset; // già 0..6
+    const off = selectedOffset;
 
     pageStartISO = addDaysISO(oldStart, dir * 7);
     selectedISO = addDaysISO(pageStartISO, off);
@@ -531,7 +521,6 @@
     setTitleForPreviewWeek(0);
     await renderSummary(selectedISO);
 
-    // reset al centro (senza flash)
     track.classList.remove("isSnap");
     track.style.transform = `translateX(${baseX}px)`;
 
