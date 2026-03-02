@@ -1,18 +1,15 @@
 /* =========================
-   Calendar View (Agenda) — CSS
-   - Header: titolo + X (stile Day Editor)
-   - Strip: frecce slim side-rails + carousel settimane (prev/current/next)
+   Calendar View (Agenda) — CSS (NO contenitori visivi)
+   - Header: titolo + X
+   - Strip: frecce slim + carousel (ma strip SENZA box)
+   - Summary: area scroll SENZA box
    - FIX iOS: track/pagine in px (width gestita da JS)
-   - 7 giorni SEMPRE visibili (minmax)
-   - Riepilogo: dot piccoli accanto alle ore
    ========================= */
 
 :root{
   --text: rgba(255,255,255,.92);
   --muted: rgba(255,255,255,.62);
   --line: rgba(255,255,255,.10);
-  --glass: rgba(255,255,255,.06);
-  --radius: 18px;
 
   /* TODAY */
   --todayFill: rgba(120,140,255,.22);
@@ -25,18 +22,19 @@
   --selInner: rgba(255,255,255,.10);
 
   /* Dot righe riepilogo */
-  --dotBase: rgba(120,170,255,.95);     /* blu */
-  --dotOver: rgba(180,120,255,.95);     /* viola */
-  --dotHoliday: rgba(255,180,90,.95);   /* arancio */
-  --dotSunday: rgba(255,110,180,.95);   /* rosa */
+  --dotBase: rgba(120,170,255,.95);
+  --dotOver: rgba(180,120,255,.95);
+  --dotHoliday: rgba(255,180,90,.95);
+  --dotSunday: rgba(255,110,180,.95);
 }
 
+/* Root */
 .cviewRoot{
   width:100%;
   height:100%;
   display:flex;
   flex-direction:column;
-  gap:14px;
+  gap:12px;                 /* un filo più compatto */
   min-height:0;
   background:transparent;
   box-sizing:border-box;
@@ -88,35 +86,35 @@
 }
 
 /* =========================
-   Strip: freccia slim | carousel | freccia slim
+   Strip (SENZA box)
+   - è solo un layout grid
    ========================= */
 .cviewWeekStrip{
-  background:var(--glass);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:8px;
-  backdrop-filter: blur(12px);
-
   display:grid;
-  grid-template-columns: 28px 1fr 28px; /* ✅ più respiro ai 7 giorni */
-  align-items:stretch;                  /* ✅ frecce alte quanto strip */
+  grid-template-columns: 28px 1fr 28px;
+  align-items:center;
   gap:10px;
+
+  padding:0;               /* ✅ niente box */
+  border:none;
+  background:transparent;
+  backdrop-filter:none;
 
   touch-action: pan-y;
   user-select:none;
 }
 
-/* Frecce slim (solo calendar view, non tocca ntBtn globali) */
+/* Frecce slim: visivamente leggere ma touch comodo */
 .cviewNavBtn{
-  height: 100%;
-  width: 28px;
-  border-radius: 14px;
-  border: none;
+  width:28px;
+  height:38px;             /* ✅ coerente con gli altri controlli */
+  border-radius:14px;
+  border:none;
   background: rgba(255,255,255,.08);
   color: var(--text);
-  font-weight: 1000;
-  font-size: 18px;
-  line-height: 1;
+  font-weight:1000;
+  font-size:18px;
+  line-height:1;
 
   display:flex;
   align-items:center;
@@ -130,13 +128,14 @@
   background: rgba(255,255,255,.12);
 }
 
+/* Wrap giorni: solo maschera overflow, niente box */
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
-  border-radius:16px;
+  border-radius:16px;       /* utile per non “tagliare” highlights ai bordi */
 }
 
-/* Track (prev | current | next) — width in px via JS (anti iOS bug) */
+/* Track (prev|cur|next) — width in px via JS */
 .cviewTrack{
   display:flex;
   will-change: transform;
@@ -145,17 +144,15 @@
 .cviewTrack.isSnap{
   transition: transform .22s ease;
 }
-
-/* Pagine — width in px via JS */
 .cviewPage{
-  flex: 0 0 auto;
+  flex:0 0 auto;            /* width in px via JS */
 }
 
-/* 7 giorni — minmax(0,1fr) evita “mangiamenti” colonne su iOS */
+/* 7 giorni */
 .cviewDays{
   display:grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap:7px;         /* ✅ un filo più “aria” rispetto a 6 */
+  gap:7px;
   width:100%;
 }
 
@@ -219,20 +216,31 @@
   pointer-events:none;
 }
 
+/* Divider sottile (solo una riga, niente box) */
+.cviewDivider{
+  height:1px;
+  width:100%;
+  border-radius:999px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent);
+  margin-top:2px;
+}
+
 /* =========================
-   Summary
+   Summary (SENZA box)
+   - area scroll “pulita”
    ========================= */
 .cviewSummary{
   flex:1;
   min-height:0;
-  background:var(--glass);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:14px;
-  backdrop-filter: blur(12px);
+  padding:0;               /* ✅ niente box */
+  border:none;
+  background:transparent;
+  backdrop-filter:none;
+
   display:flex;
   flex-direction:column;
   gap:12px;
+
   overflow:auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -243,6 +251,7 @@
   align-items:flex-start;
   justify-content:space-between;
   gap:12px;
+  padding-top:2px;
 }
 
 .cviewSummaryDate{
@@ -251,6 +260,7 @@
   letter-spacing:.2px;
 }
 
+/* badges restano “pill” pulite */
 .cviewBadges{
   display:flex;
   gap:8px;
@@ -267,7 +277,7 @@
   border: 1px solid rgba(255,255,255,.10);
 }
 
-/* Righe: DOT + ore + dettagli */
+/* righe riepilogo: piccole card (ci stanno bene) */
 .cviewLines{
   display:flex;
   flex-direction:column;
@@ -288,7 +298,7 @@
   height:7px;
   border-radius:999px;
   margin-top:6px;
-  flex: 0 0 auto;
+  flex:0 0 auto;
   background: var(--dotBase);
   box-shadow: 0 0 0 2px rgba(255,255,255,.08);
 }
@@ -325,9 +335,8 @@
   text-align:center;
 }
 
-/* Note giorno (se un domani le aggiungi) */
+/* Note (se usate) */
 .cviewNotes{
-  margin-top:4px;
   padding:12px;
   border-radius:16px;
   background: rgba(255,255,255,.06);
