@@ -1,17 +1,12 @@
 /* day-editor.js
-   Card "Turni" (slide: dayEditor) — separata dal calendario
-   Apre tramite: evento "nettotrack:dayEditorOpened" { detail: { dateKey } }
-
-   Extra:
-   - Salva dati (disattivo se non cambia nulla)
-   - Impostazioni avanzate (accordion user-controlled)
-   - Restore su refresh (best effort, non rompe nulla se UI non supporta)
+   Card "Turni" (slide: dayEditor)
+   - AUTOSAVE -> DRAFT (non sovrascrive i salvati)
+   - "Salva dati" -> SAVE definitivo (nettotrack:turni:YYYY-MM-DD)
 */
 (() => {
   const $ = (sel, root = document) => root.querySelector(sel);
 
   const SLIDE_ID = "dayEditor";
-  const STORAGE_PREFIX = "nettotrack:turni:";
   const SESSION_LAST = "nt:lastOpen";
   const SESSION_LAST_DATE = "nt:lastDateKey";
 
@@ -26,11 +21,11 @@
   // accordion advanced (user controlled)
   let advancedOpen = false;
 
-  // debounce storage
+  // debounce draft save
   let saveTimer = null;
 
-// autosave on/off (si spegne quando chiudi con X)
-let autoSaveEnabled = true;
+  // autosave on/off (si spegne quando chiudi con X)
+  let autoSaveEnabled = true;
 
   /* -------------------------
      Utils
@@ -77,13 +72,11 @@ let autoSaveEnabled = true;
         return window.NTCal.isSunday(yy, mm - 1, dd);
       }
     } catch (_) {}
-
     try {
       const [yy, mm, dd] = String(dateKey).split("-").map(Number);
       const dt = new Date(yy, mm - 1, dd);
       return dt.getDay() === 0;
     } catch (_) {}
-
     return false;
   }
 
@@ -119,6 +112,10 @@ let autoSaveEnabled = true;
     const base = makeDefaultShift();
     if (!s || typeof s !== "object") return { ...base };
 
+    // accetta anche vecchi campi (start/end/time.*) se ci fossero
+    const from = typeof (s.from ?? s.start ?? s.time?.from) === "string" ? (s.from ?? s.start ?? s.time?.from) : "";
+    const to   = typeof (s.to   ?? s.end   ?? s.time?.to)   === "string" ? (s.to   ?? s.end   ?? s.time?.to)   : "";
+
     const tags = {
       morning: !!(s.tags && s.tags.morning),
       afternoon: !!(s.tags && s.tags.afternoon),
@@ -131,6 +128,7 @@ let autoSaveEnabled = true;
     let shiftType = typeof s.shiftType === "string" ? s.shiftType : "none";
     if (!["none","morning","afternoon","night"].includes(shiftType)) shiftType = "none";
 
+    // coerenza shiftType <-> tags
     tags.morning = shiftType === "morning";
     tags.afternoon = shiftType === "afternoon";
     tags.night = shiftType === "night";
@@ -142,8 +140,8 @@ let autoSaveEnabled = true;
     const advB = typeof s.advB === "string" ? s.advB : "-";
 
     return {
-      from: typeof s.from === "string" ? s.from : base.from,
-      to: typeof s.to === "string" ? s.to : base.to,
+      from,
+      to,
       pauseMin: Number.isFinite(Number(s.pauseMin)) ? clamp(Number(s.pauseMin), 0, 999) : base.pauseMin,
       pausePaid: !!s.pausePaid,
       shiftType,
@@ -152,36 +150,6 @@ let autoSaveEnabled = true;
       advB: advB || "-",
       note: typeof s.note === "string" ? s.note : base.note
     };
-  }
-
-  function loadState(dateKey) {
-    const core = window.NettoTrackCalendarCore;
-    try {
-      if (core && typeof core.getDayData === "function") {
-        const data = core.getDayData(dateKey);
-        if (data && typeof data === "object") {
-          const shifts = Array.isArray(data.shifts) && data.shifts.length
-            ? data.shifts.map(normalizeShift)
-            : defaultState(dateKey).shifts;
-          return { dateKey, shifts };
-        }
-      }
-    } catch (_) {}
-
-    try {
-      const raw = localStorage.getItem(STORAGE_PREFIX + dateKey);
-      if (!raw) return defaultState(dateKey);
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") return defaultState(dateKey);
-
-      const shifts = Array.isArray(parsed.shifts) && parsed.shifts.length
-        ? parsed.shifts.map(normalizeShift)
-        : defaultState(dateKey).shifts;
-
-      return { dateKey, shifts };
-    } catch (_) {
-      return defaultState(dateKey);
-    }
   }
 
   function enforceSundayRule() {
@@ -213,7 +181,7 @@ let autoSaveEnabled = true;
       const hasTimes = !!(s.from || s.to);
       const hasPause = Number(s.pauseMin || 0) > 0 || !!s.pausePaid;
       const hasFascia = (s.shiftType && s.shiftType !== "none");
-      const hasExtra = !!(s.tags && (s.tags.overtime || s.tags.holiday));
+      const hasExtra = !!(s.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
       const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
       const hasNote = !!(s.note && String(s.note).trim().length);
       return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
@@ -225,7 +193,7 @@ let autoSaveEnabled = true;
     return state.shifts.some((s) => !!(s.from && s.to));
   }
 
-  // ✅ NUOVO: Salva si attiva solo se TUTTI i turni sono completi (Da & A)
+  // Salva si attiva solo se TUTTI i turni sono completi (Da & A)
   function areAllShiftsComplete() {
     if (!state || !Array.isArray(state.shifts) || state.shifts.length === 0) return false;
     return state.shifts.every((s) => !!(s.from && s.to));
@@ -243,56 +211,53 @@ let autoSaveEnabled = true;
   }
 
   /* -------------------------
-     Save
+     Storage (DRAFT vs SAVE)
   ------------------------- */
-  function scheduleBackgroundSave() {
-  if (!autoSaveEnabled) return;         // ✅ dopo X non schedula nulla
-  if (saveTimer) clearTimeout(saveTimer);
+  function scheduleDraftSave() {
+    if (!autoSaveEnabled) return;
+    if (saveTimer) clearTimeout(saveTimer);
 
-  saveTimer = setTimeout(() => {
-    if (!autoSaveEnabled) return;       // ✅ safety
-    saveToStorage(false);
-  }, 220);
-}
+    saveTimer = setTimeout(() => {
+      if (!autoSaveEnabled) return;
+      saveDraftOnly();
+    }, 220);
+  }
 
-  function saveToStorage(isUserSave) {
-    if (!currentKey || !state) return;
-
-    const payload = { shifts: state.shifts };
-
-    const core = window.NettoTrackCalendarCore;
+  function saveDraftOnly() {
+    if (!currentKey || !state || !window.NTCal) return;
     try {
-      if (core && typeof core.setDayData === "function") {
-        core.setDayData(currentKey, payload);
-      }
-    } catch (_) {}
+      window.NTCal.saveDraft(currentKey, { shifts: state.shifts });
+    } catch {}
+    document.dispatchEvent(new Event("nettotrack:dataChanged"));
+    updateDirtyFromSnapshot();
+  }
 
-    try {
-      localStorage.setItem(STORAGE_PREFIX + currentKey, JSON.stringify(payload));
-    } catch (_) {}
+  function saveDefinitive() {
+    if (!currentKey || !state || !window.NTCal) return;
 
-document.dispatchEvent(new Event("nettotrack:dataChanged"));
+    // scrivo “salvato”
+    try { window.NTCal.saveDay(currentKey, { shifts: state.shifts }); } catch {}
+    // tolgo bozza
+    try { window.NTCal.removeDraft(currentKey); } catch {}
 
-    if (isUserSave) {
-      lastSavedSnapshot = stableStringify(state.shifts);
-      dirty = false;
-      advancedOpen = false; // richiudo solo su Salva
-      renderShifts();
-    } else {
-      updateDirtyFromSnapshot();
+    document.dispatchEvent(new Event("nettotrack:dataChanged"));
+
+    lastSavedSnapshot = stableStringify(state.shifts);
+    dirty = false;
+    advancedOpen = false;
+    renderShifts();
+  }
+
+  function stopPendingAutoSave() {
+    autoSaveEnabled = false;
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
     }
   }
-  
-  function stopPendingAutoSave() {
-  autoSaveEnabled = false;              // ✅ spegne proprio l’autosave
-  if (saveTimer) {
-    clearTimeout(saveTimer);
-    saveTimer = null;
-  }
-}
 
-    document.addEventListener("nettotrack:closeDayEditor", () => {
-   stopPendingAutoSave();
+  document.addEventListener("nettotrack:closeDayEditor", () => {
+    stopPendingAutoSave();
   });
 
   /* -------------------------
@@ -329,34 +294,33 @@ document.dispatchEvent(new Event("nettotrack:dataChanged"));
     `;
 
     $(".deClose", mount)?.addEventListener("click", () => {
-  // STOP: niente autosave dopo la chiusura
-stopPendingAutoSave();
-state = null;
-currentKey = null;
+      stopPendingAutoSave();
+      state = null;
+      currentKey = null;
+      advancedOpen = false;
+      document.dispatchEvent(new Event("nettotrack:closeDayEditor"));
+    });
 
-  advancedOpen = false;
-  document.dispatchEvent(new Event("nettotrack:closeDayEditor"));
-  });
+    $("#deAddShift", mount)?.addEventListener("click", () => {
+      const btn = $("#deAddShift", mount);
+      if (btn && btn.disabled) return;
 
- $("#deAddShift", mount)?.addEventListener("click", () => {
-  const btn = $("#deAddShift", mount);
-  if (btn && btn.disabled) return;
+      state.shifts.unshift(makeDefaultShift());
+      enforceSundayRule();
 
-  state.shifts.unshift(makeDefaultShift()); // nuovo turno in alto
-  markDirty();
-  renderShifts();
+      markDirty();
+      renderShifts();
 
-  // ✅ TORNA IN ALTO AL NUOVO TURNO
-  const scroller = $("#deShifts", mount);
-  if (scroller) scroller.scrollTo({ top: 0, behavior: "smooth" });
+      const scroller = $("#deShifts", mount);
+      if (scroller) scroller.scrollTo({ top: 0, behavior: "smooth" });
 
-  scheduleBackgroundSave();
-});
+      scheduleDraftSave();
+    });
 
     $("#deSave", mount)?.addEventListener("click", () => {
       const btn = $("#deSave", mount);
       if (btn && btn.disabled) return;
-      saveToStorage(true);
+      saveDefinitive();
     });
 
     renderShifts();
@@ -378,16 +342,13 @@ currentKey = null;
       addBtn.classList.toggle("isDisabled", !canAdd);
     }
 
-    // ✅ Salva: attivo SOLO se:
-    // - tutti i turni sono completi (Da & A)   ← questa è la tua richiesta
-    // - e ci sono cambiamenti (dirty)
+    // Salva: attivo solo se tutti completi e dirty
     if (saveBtn) {
       const canSave = allComplete && dirty;
       saveBtn.disabled = !canSave;
       saveBtn.classList.toggle("isDisabled", !canSave);
     }
 
-    // se non c'è nessun dato, forzo entrambi spenti (sicurezza)
     if (!anyData) {
       if (saveBtn) { saveBtn.disabled = true; saveBtn.classList.add("isDisabled"); }
       if (addBtn)  { addBtn.disabled = true; addBtn.classList.add("isDisabled"); }
@@ -437,51 +398,31 @@ currentKey = null;
           </div>
 
           <div class="deGrid deGrid--time">
-  <label class="deField">
-    <span class="deFieldLbl">Da<span class="deReq">*</span></span>
-    <input
-      class="deInput"
-      type="time"
-      data-k="from"
-      value="${escapeHtml(s.from)}"
-      style="max-width:100%;"
-    >
-  </label>
+            <label class="deField">
+              <span class="deFieldLbl">Da<span class="deReq">*</span></span>
+              <input class="deInput" type="time" data-k="from" value="${escapeHtml(s.from)}" style="max-width:100%;">
+            </label>
 
-  <label class="deField">
-    <span class="deFieldLbl">A<span class="deReq">*</span></span>
-    <input
-      class="deInput"
-      type="time"
-      data-k="to"
-      value="${escapeHtml(s.to)}"
-      style="max-width:100%;"
-    >
-  </label>
-</div>
+            <label class="deField">
+              <span class="deFieldLbl">A<span class="deReq">*</span></span>
+              <input class="deInput" type="time" data-k="to" value="${escapeHtml(s.to)}" style="max-width:100%;">
+            </label>
+          </div>
 
-<div class="deGrid">
-   <label class="deField">
-    <span class="deFieldLbl">Pausa (min)</span>
-    <input
-      class="deInput"
-      type="number"
-      inputmode="numeric"
-      min="0"
-      max="999"
-      data-k="pauseMin"
-      value="${Number(s.pauseMin) || 0}"
-    >
-  </label>
+          <div class="deGrid">
+            <label class="deField">
+              <span class="deFieldLbl">Pausa (min)</span>
+              <input class="deInput" type="number" inputmode="numeric" min="0" max="999" data-k="pauseMin" value="${Number(s.pauseMin) || 0}">
+            </label>
 
-  <label class="deField deFieldSelect">
-    <span class="deFieldLbl">Pausa pagata</span>
-    <select class="deSelect" data-k="pausePaid">
-      <option value="false" ${s.pausePaid ? "" : "selected"}>No</option>
-      <option value="true" ${s.pausePaid ? "selected" : ""}>Sì</option>
-    </select>
-  </label>
-</div>
+            <label class="deField deFieldSelect">
+              <span class="deFieldLbl">Pausa pagata</span>
+              <select class="deSelect" data-k="pausePaid">
+                <option value="false" ${s.pausePaid ? "" : "selected"}>No</option>
+                <option value="true" ${s.pausePaid ? "selected" : ""}>Sì</option>
+              </select>
+            </label>
+          </div>
 
           <div class="deDivider"></div>
 
@@ -553,7 +494,7 @@ currentKey = null;
 
         markDirty();
         renderShifts();
-        saveToStorage(false);
+        scheduleDraftSave();
       });
 
       card.querySelector(".deAdvToggle")?.addEventListener("click", () => {
@@ -571,7 +512,7 @@ currentKey = null;
             else shift[k] = el.value;
 
             markDirty();
-            scheduleBackgroundSave();
+            scheduleDraftSave();
           });
         }
 
@@ -582,7 +523,7 @@ currentKey = null;
             if (k === "pausePaid") {
               shift.pausePaid = v === "true";
               markDirty();
-              scheduleBackgroundSave();
+              scheduleDraftSave();
               return;
             }
 
@@ -590,7 +531,7 @@ currentKey = null;
               applyShiftType(shift, v || "none");
               markDirty();
               renderShifts();
-              scheduleBackgroundSave();
+              scheduleDraftSave();
               return;
             }
 
@@ -599,7 +540,7 @@ currentKey = null;
               if (shift.advA !== "-") shift.advB = "-";
               markDirty();
               renderShifts();
-              scheduleBackgroundSave();
+              scheduleDraftSave();
               return;
             }
 
@@ -608,7 +549,7 @@ currentKey = null;
               if (shift.advB !== "-") shift.advA = "-";
               markDirty();
               renderShifts();
-              scheduleBackgroundSave();
+              scheduleDraftSave();
               return;
             }
           });
@@ -618,7 +559,7 @@ currentKey = null;
           el.addEventListener("input", () => {
             shift.note = el.value;
             markDirty();
-            scheduleBackgroundSave();
+            scheduleDraftSave();
           });
         }
       });
@@ -636,7 +577,7 @@ currentKey = null;
           chipEl.setAttribute("aria-pressed", shift.tags[tag] ? "true" : "false");
 
           markDirty();
-          scheduleBackgroundSave();
+          scheduleDraftSave();
         });
       });
     });
@@ -645,15 +586,41 @@ currentKey = null;
   }
 
   /* -------------------------
+     Load on open
+     - prima prova DRAFT
+     - se non c'è, usa SAVED
+  ------------------------- */
+  function loadState(dateKey) {
+    const cal = window.NTCal;
+    const def = defaultState(dateKey);
+
+    if (!cal) return def;
+
+    let model = null;
+    try { model = cal.loadDraft(dateKey); } catch {}
+    if (!model) {
+      try { model = cal.loadDay(dateKey); } catch {}
+    }
+    if (!model || typeof model !== "object") return def;
+
+    const shifts = Array.isArray(model.shifts) && model.shifts.length
+      ? model.shifts.map(normalizeShift)
+      : def.shifts;
+
+    return { dateKey, shifts };
+  }
+
+  /* -------------------------
      Open
   ------------------------- */
   function open(dateKey) {
-  autoSaveEnabled = true; // ✅ quando apro, autosave torna attivo
+    autoSaveEnabled = true;
 
-  currentKey = dateKey || currentKey || new Date().toISOString().slice(0, 10);
+    currentKey = dateKey || currentKey || new Date().toISOString().slice(0, 10);
     state = loadState(currentKey);
     enforceSundayRule();
 
+    // snapshot = stato corrente (draft o saved)
     lastSavedSnapshot = stableStringify(state.shifts);
     dirty = false;
 
