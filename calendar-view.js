@@ -6,6 +6,9 @@
   let mounted = false;
   let weekStart = startOfWeek(new Date());
 
+  // mantiene quale riga è aperta anche dopo renderWeek()
+  let openKey = null;
+
   function getMount() {
     return document.getElementById("calViewMount");
   }
@@ -23,38 +26,27 @@
 
   function timeToMin(t){
     if(!t || typeof t !== "string") return 9999;
-    const m = /^(\d{1,2}):(\d{2})$/.exec(t.trim());
-    if(!m) return 9999;
-    const hh = parseInt(m[1],10);
-    const mm = parseInt(m[2],10);
+    const [hh, mm] = t.split(":").map(n => parseInt(n,10));
     if(Number.isNaN(hh) || Number.isNaN(mm)) return 9999;
     return hh * 60 + mm;
   }
 
-  function getShiftFrom(s){
-    return (s?.from ?? s?.start ?? s?.time?.from ?? "").toString();
-  }
-  function getShiftTo(s){
-    return (s?.to ?? s?.end ?? s?.time?.to ?? "").toString();
-  }
-
+  // ✅ shift “significativo” (stessa logica dell’insert)
   function isMeaningfulShift(s){
     if(!s) return false;
 
-    const from = getShiftFrom(s);
-    const to = getShiftTo(s);
-    const hasTimes = !!(from || to);
+    const hasTimes = !!(s.from || s.to);
 
-    const pauseMin = Number(s.pauseMin ?? s.pause ?? 0) || 0;
+    const pauseMin = Number(s.pauseMin || 0);
     const hasPause = pauseMin > 0 || !!s.pausePaid;
 
     const hasFascia = !!(s.shiftType && s.shiftType !== "none");
 
-    const tags = s.tags || {};
-    const flags = s.flags || {};
+    const t = s.tags || {};
+    const f = s.flags || {};
     const hasExtra = !!(
-      tags.overtime || tags.holiday || tags.sunday ||
-      flags.straordinario || flags.festivo || flags.domenicale
+      t.overtime || t.holiday || t.sunday ||
+      f.straordinario || f.festivo || f.domenicale
     );
 
     const hasAdv = (s.advA && s.advA !== "-") || (s.advB && s.advB !== "-");
@@ -83,10 +75,44 @@
     root?.classList.toggle("isAnyOpen", anyOpen);
   }
 
+  // 🔥 anima sempre con altezza reale (niente max-height fisso)
+  function setDetailsOpen(detailsEl, on){
+    if (!detailsEl) return;
+
+    // per evitare “flash” strani su iOS, forza display/layout
+    detailsEl.style.display = "block";
+
+    if (!on) {
+      detailsEl.style.maxHeight = "0px";
+      detailsEl.style.opacity = "0";
+      detailsEl.style.marginTop = "0";
+      detailsEl.style.paddingTop = "0";
+      detailsEl.style.borderTopWidth = "0";
+      return;
+    }
+
+    // stato open: prima ripristina spazi, poi misura
+    detailsEl.style.opacity = "1";
+    detailsEl.style.marginTop = "10px";
+    detailsEl.style.paddingTop = "10px";
+    detailsEl.style.borderTopWidth = "1px";
+
+    // misura dopo che il browser ha applicato gli stili
+    requestAnimationFrame(() => {
+      const h = detailsEl.scrollHeight;
+      detailsEl.style.maxHeight = `${h}px`;
+    });
+  }
+
   function closeAllRowsExcept(mount, keepRow){
     const grid = mount.querySelector("#cviewGrid");
-    const open = grid.querySelectorAll(".cviewRow.isOpen");
-    open.forEach(r => { if (r !== keepRow) r.classList.remove("isOpen"); });
+    grid.querySelectorAll(".cviewRow.isOpen").forEach(r => {
+      if (r !== keepRow) {
+        r.classList.remove("isOpen");
+        const det = r.querySelector(".cviewDetails");
+        setDetailsOpen(det, false);
+      }
+    });
     syncAnyOpenFlag(mount);
   }
 
@@ -115,6 +141,7 @@
 
     mount.querySelector("#cviewPrev").addEventListener("click", (e) => {
       e.stopPropagation();
+      openKey = null;
       weekStart = new Date(weekStart);
       weekStart.setDate(weekStart.getDate() - 7);
       renderWeek();
@@ -122,6 +149,7 @@
 
     mount.querySelector("#cviewNext").addEventListener("click", (e) => {
       e.stopPropagation();
+      openKey = null;
       weekStart = new Date(weekStart);
       weekStart.setDate(weekStart.getDate() + 7);
       renderWeek();
@@ -129,6 +157,7 @@
 
     mount.querySelector("#cviewClose").addEventListener("click", (e) => {
       e.stopPropagation();
+      openKey = null;
       document.dispatchEvent(new Event("nettotrack:closeCalendarView"));
     });
 
@@ -160,13 +189,11 @@
 
       const row = document.createElement("div");
       row.className = "cviewRow" + (!data ? " isEmpty" : "");
-      row.setAttribute("data-no-swipe", "");
-      row.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
+      row.setAttribute("data-no-swipe", ""); // ✅ il tuo ui.js lo rispetta
 
       const head = document.createElement("div");
       head.className = "cviewRowHead";
       head.setAttribute("data-no-swipe", "");
-      head.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
 
       const left = document.createElement("div");
       left.className = "cviewLeftTxt";
@@ -203,23 +230,28 @@
       row.appendChild(head);
 
       // ===== DETAILS =====
-      const rawShifts =
-        (Array.isArray(data?.shifts) ? data.shifts : null) ??
-        (Array.isArray(data?.turni) ? data.turni : []);
+      const shifts = Array.isArray(data?.shifts) ? data.shifts : [];
+      const meaningful = shifts.filter(isMeaningfulShift);
 
-      const meaningful = rawShifts.filter(isMeaningfulShift);
+      let details = null;
 
       if (meaningful.length) {
-        const details = document.createElement("div");
+        details = document.createElement("div");
         details.className = "cviewDetails";
         details.setAttribute("data-no-swipe", "");
-        details.addEventListener("pointerdown", (e) => e.stopPropagation(), { passive:true });
+
+        // 🔧 base closed (JS-driven)
+        details.style.maxHeight = "0px";
+        details.style.opacity = "0";
+        details.style.overflow = "hidden";
+        details.style.transition = "max-height .22s ease, opacity .18s ease, margin-top .18s ease, padding-top .18s ease";
 
         const ul = document.createElement("ul");
         ul.className = "cviewShiftList";
 
-        const sorted = [...meaningful].sort(
-          (a,b) => timeToMin(getShiftFrom(a)) - timeToMin(getShiftFrom(b))
+        const sorted = [...meaningful].sort((a,b) =>
+          timeToMin(a?.from ?? a?.start ?? a?.time?.from) -
+          timeToMin(b?.from ?? b?.start ?? b?.time?.from)
         );
 
         sorted.forEach(s => {
@@ -238,11 +270,11 @@
           lbl.className = "cviewShiftLbl";
           lbl.textContent = `${meta.label}: `;
 
-          const from = getShiftFrom(s) || "--:--";
-          const to   = getShiftTo(s)   || "--:--";
+          const from = s?.from ?? s?.start ?? s?.time?.from ?? "--:--";
+          const to   = s?.to   ?? s?.end   ?? s?.time?.to   ?? "--:--";
 
           const t = document.createElement("span");
-          t.textContent = (from === "--:--" && to === "--:--") ? "(nessun orario)" : `${from} - ${to}`;
+          t.textContent = `${from} - ${to}`;
 
           txt.appendChild(lbl);
           txt.appendChild(t);
@@ -254,17 +286,37 @@
 
         details.appendChild(ul);
         row.appendChild(details);
+      }
 
-        row.addEventListener("click", (e) => {
-          e.stopPropagation();
+      // click: apri/chiudi
+      row.addEventListener("click", (e) => {
+        e.stopPropagation();
 
-          const willOpen = !row.classList.contains("isOpen");
-          closeAllRowsExcept(mount, row);
-          row.classList.toggle("isOpen", willOpen);
-          syncAnyOpenFlag(mount);
+        // se non ha dettagli, non fare nulla
+        if (!details) return;
 
-          if (willOpen) row.scrollIntoView({ block: "nearest", behavior: "smooth" });
-        });
+        const willOpen = !row.classList.contains("isOpen");
+        closeAllRowsExcept(mount, row);
+
+        row.classList.toggle("isOpen", willOpen);
+        setDetailsOpen(details, willOpen);
+        openKey = willOpen ? key : null;
+
+        syncAnyOpenFlag(mount);
+
+        if (willOpen) {
+          // evita che finisca “tagliato”
+          setTimeout(() => {
+            row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          }, 30);
+        }
+      });
+
+      // restore open state dopo render
+      if (details && openKey === key) {
+        row.classList.add("isOpen");
+        // apri dopo che è in DOM
+        requestAnimationFrame(() => setDetailsOpen(details, true));
       }
 
       grid.appendChild(row);
@@ -276,6 +328,7 @@
   document.addEventListener("nettotrack:calendarViewOpened", () => {
     mountIfNeeded();
     weekStart = startOfWeek(new Date());
+    openKey = null;
     renderWeek();
   });
 
