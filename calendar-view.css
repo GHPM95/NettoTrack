@@ -372,3 +372,4 @@
   max-height: 220px;
   opacity: 1;
 }
+.cviewDetails:empty{ display:none; }
