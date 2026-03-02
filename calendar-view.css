@@ -1,6 +1,8 @@
 /* =========================
    Calendar View (Agenda) — CSS
-   Montato in #calViewMount
+   - Header: titolo + X (stile Day Editor)
+   - Strip: frecce dentro + carousel settimane (prev/current/next)
+   - Riepilogo: dot piccoli accanto alle ore
    ========================= */
 
 :root{
@@ -10,7 +12,7 @@
   --glass: rgba(255,255,255,.06);
   --radius: 18px;
 
-  /* TODAY (allinea ai token del calendar-insert se vuoi 1:1) */
+  /* TODAY (se vuoi 1:1 col calendar insert, copia qui i token esatti) */
   --todayFill: rgba(120,140,255,.22);
   --todayBorder: rgba(180,200,255,.25);
   --todayInner: rgba(170,190,255,.22);
@@ -20,7 +22,7 @@
   --selBorder: rgba(255,255,255,.18);
   --selInner: rgba(255,255,255,.10);
 
-  /* Dot colori (piccoli) */
+  /* Dot righe riepilogo */
   --dotBase: rgba(120,170,255,.95);     /* blu */
   --dotOver: rgba(180,120,255,.95);     /* viola */
   --dotHoliday: rgba(255,180,90,.95);   /* arancio */
@@ -39,21 +41,51 @@
 }
 .cviewRoot *{ box-sizing:border-box; }
 
-/* Header */
+/* =========================
+   Header: spacer | titolo | X
+   ========================= */
 .cviewHeader{
   display:grid;
-  grid-template-columns:auto 1fr auto;
+  grid-template-columns: 38px 1fr 38px;
   align-items:center;
   gap:10px;
   min-width:0;
 }
-.cviewLeft{
-  display:flex;
-  gap:10px;
-  align-items:center;
+.cviewHeaderSpacer{
+  width:38px;
+  height:38px;
+  opacity:0;
+  pointer-events:none;
+}
+.cviewTitle{
+  font-weight:1000;
+  letter-spacing:.2px;
+  font-size: clamp(14px, 3.6vw, 17px);
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  min-width:0;
+  text-align:center;
+}
+.cviewClose{
+  width:38px;
+  height:38px;
+  border-radius:14px;
+  border:none;
+  background: rgba(255,255,255,.10);
+  color: var(--text);
+  font-weight:900;
+  font-size:18px;
+  line-height:1;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+}
+.cviewClose:active{
+  transform: scale(.96);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.14);
 }
 
-/* Bottoni stile insert */
+/* Frecce (stesso linguaggio) */
 .ntBtn{
   width:38px;
   height:38px;
@@ -72,32 +104,54 @@
   background:rgba(255,255,255,.14);
 }
 
-.cviewTitle{
-  text-align:center;
-  font-weight:1000;
-  letter-spacing:.2px;
-  font-size: clamp(14px, 3.6vw, 17px);
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
-  min-width:0;
-}
-
-/* Week strip */
+/* =========================
+   Strip: freccia | carousel | freccia
+   ========================= */
 .cviewWeekStrip{
   background:var(--glass);
   border:1px solid var(--line);
   border-radius:var(--radius);
   padding:10px;
   backdrop-filter: blur(12px);
+
+  display:grid;
+  grid-template-columns: 38px 1fr 38px;
+  align-items:center;
+  gap:8px;
+
+  /* lascia scroll verticale pagina; gesture orizzontale gestita da JS */
+  touch-action: pan-y;
+  user-select:none;
 }
+
+.cviewDaysWrap{
+  min-width:0;
+  overflow:hidden;
+  border-radius: 16px;
+}
+
+/* Track a 3 pagine (prev | current | next) */
+.cviewTrack{
+  display:flex;
+  width:300%;
+  will-change: transform;
+}
+.cviewTrack.isSnap{
+  transition: transform .22s ease;
+}
+
+.cviewPage{
+  flex: 0 0 100%;
+}
+
+/* 7 giorni */
 .cviewDays{
   display:grid;
   grid-template-columns:repeat(7, 1fr);
   gap:8px;
 }
 
-/* Day button */
+/* Day btn */
 .cviewDayBtn{
   border:none;
   background:transparent;
@@ -157,7 +211,9 @@
   pointer-events:none;
 }
 
-/* Summary */
+/* =========================
+   Summary
+   ========================= */
 .cviewSummary{
   flex:1;
   min-height:0;
@@ -193,7 +249,6 @@
   flex-wrap:wrap;
   justify-content:flex-end;
 }
-
 .cviewBadge{
   font-size:11px;
   font-weight:1000;
@@ -204,7 +259,9 @@
   border: 1px solid rgba(255,255,255,.10);
 }
 
-/* Lista righe riepilogo ore (DOT + testo) */
+/* =========================
+   Righe: DOT + ore + dettagli
+   ========================= */
 .cviewLines{
   display:flex;
   flex-direction:column;
@@ -225,17 +282,15 @@
   width:7px;
   height:7px;
   border-radius:999px;
-  margin-top:6px; /* allineamento con prima riga testo */
+  margin-top:6px;
   flex: 0 0 auto;
   background: var(--dotBase);
   box-shadow: 0 0 0 2px rgba(255,255,255,.08);
 }
-
 .cviewDot.isOver{ background: var(--dotOver); }
 .cviewDot.isHoliday{ background: var(--dotHoliday); }
 .cviewDot.isSunday{ background: var(--dotSunday); }
 
-/* testo riga */
 .cviewLineText{
   display:flex;
   flex-direction:column;
@@ -258,7 +313,6 @@
   line-height:1.25;
 }
 
-/* empty */
 .cviewEmpty{
   padding:14px;
   border-radius:16px;
@@ -286,12 +340,4 @@
   font-size:13px;
   color:var(--muted);
   white-space:pre-wrap;
-}
-
-.cviewHint{
-  text-align:center;
-  font-size:12px;
-  color: rgba(255,255,255,.45);
-  font-weight:900;
-  padding-bottom: 2px;
 }
