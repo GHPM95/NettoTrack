@@ -1,9 +1,6 @@
 /* =========================
    Calendar View (Agenda)
-   VERSIONE STABILE DEFINITIVA (NO CLIP ANGOLI)
-   - 7 giorni centrati
-   - nessun numero tagliato
-   - angoli primo/ultimo pill NON tagliati
+   FIX: gap freccia↔L/D (senza tagliare gli angoli)
    ========================= */
 
 :root{
@@ -24,10 +21,7 @@
   --dotSunday: rgba(255,110,180,.95);
 }
 
-/* =========================
-   ROOT
-   ========================= */
-
+/* ROOT */
 .cviewRoot{
   width:100%;
   height:100%;
@@ -40,23 +34,18 @@
 }
 .cviewRoot *{ box-sizing:border-box; }
 
-/* =========================
-   HEADER
-   ========================= */
-
+/* HEADER */
 .cviewHeader{
   display:grid;
   grid-template-columns: 38px 1fr 38px;
   align-items:center;
   gap:10px;
 }
-
 .cviewTitle{
   font-weight:1000;
   font-size:16px;
   text-align:center;
 }
-
 .cviewClose{
   width:38px;
   height:38px;
@@ -68,25 +57,21 @@
   font-size:18px;
 }
 
-/* =========================
-   WEEK STRIP
-   ========================= */
-
+/* WEEK STRIP */
 .cviewWeekStrip{
   display:grid;
-  grid-template-columns: 26px 1fr 26px; /* ✅ recupero spazio per i 7 pill */
+  grid-template-columns: 26px 1fr 26px;
   align-items:center;
-  gap:6px;                               /* ✅ più aria al centro */
+  gap:6px;
   padding: 0 2px;
 }
 
 /* Frecce */
 .cviewNavBtn{
-  width:26px;                            /* ✅ prima 28 */
+  width:26px;
   height:52px;
   border-radius:20px;
   border:none;
-  position:relative;
   background: rgba(255,255,255,.08);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
   color: var(--text);
@@ -102,57 +87,48 @@
   background: rgba(255,255,255,.12);
 }
 
-/* Wrapper giorni
-   ✅ padding laterale più grande = NON taglia gli angoli dei pill (L e D)
-*/
+/* ✅ WRAP: via padding “enorme” che creava vuoto ai lati */
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
   border-radius:18px;
-  padding: 0 8px;   /* ✅ era 0 2px: troppo poco -> clip angoli */
+  padding: 0;   /* ✅ era 0 8px */
 }
 
 /* Track */
-.cviewTrack{
-  display:flex;
-}
-.cviewTrack.isSnap{
-  transition: transform .22s ease;
-}
-.cviewPage{
-  flex:0 0 auto;
-}
+.cviewTrack{ display:flex; }
+.cviewTrack.isSnap{ transition: transform .22s ease; }
+.cviewPage{ flex:0 0 auto; }
 
 /* Griglia 7 giorni */
 .cviewDays{
   display:grid;
   grid-template-columns: repeat(7, 1fr);
-  gap:5px;          /* ✅ era 6px: recupero spazio dopo il padding 8px */
+  gap:5px;
 }
 
-/* =========================
-   DAY PILL
-   ========================= */
-
+/* Day pill */
 .cviewDayBtn{
   border:none;
   background:transparent;
   color:var(--text);
-
   height:54px;
   padding:0;
-
   border-radius:18px;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
   gap:4px;
-
   position:relative;
   overflow:hidden;
   transition:.12s ease;
 }
+
+/* ✅ CUSCINETTO SOLO AI LATI (non sull’intera strip)
+   Evita taglio angoli vicino alle frecce MA senza creare “vuoto” */
+.cviewDays .cviewDayBtn:first-child{ margin-left: 4px; }
+.cviewDays .cviewDayBtn:last-child{  margin-right:4px; }
 
 .cviewDow{
   font-size:11px;
@@ -164,7 +140,6 @@
   align-items:center;
   justify-content:center;
 }
-
 .cviewNum{
   font-size:15px;
   font-weight:1000;
@@ -202,19 +177,13 @@
   box-shadow: inset 0 0 0 1px var(--selInner);
 }
 
-/* =========================
-   DIVIDER
-   ========================= */
-
+/* Divider */
 .cviewDivider{
   height:1px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
 }
 
-/* =========================
-   SUMMARY
-   ========================= */
-
+/* Summary */
 .cviewSummary{
   flex:1;
   display:flex;
@@ -222,16 +191,12 @@
   gap:14px;
   overflow:auto;
 }
-
 .cviewSummaryDate{
   font-weight:1000;
   font-size:16px;
 }
 
-/* =========================
-   CAPSULE TURNI
-   ========================= */
-
+/* Capsule turni (lasciate uguali) */
 .cviewLine{
   display:flex;
   gap:12px;
@@ -240,14 +205,12 @@
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.10);
 }
-
 .cviewDot{
   width:8px;
   height:8px;
   border-radius:999px;
   margin-top:8px;
 }
-
 .cviewDot.isOver{ background: var(--dotOver); }
 .cviewDot.isHoliday{ background: var(--dotHoliday); }
 .cviewDot.isSunday{ background: var(--dotSunday); }
@@ -258,18 +221,15 @@
   gap:8px;
   width:100%;
 }
-
 .cviewLineHeader{
   display:flex;
   align-items:center;
 }
-
 .cviewLineTime{
   flex:1;
   font-weight:1000;
   font-size:16px;
 }
-
 .cviewLineTags{
   margin-left:auto;
   display:flex;
@@ -278,7 +238,6 @@
   justify-content:flex-end;
   max-width:60%;
 }
-
 .cviewInlineTag{
   font-size:10.5px;
   font-weight:1000;
@@ -287,19 +246,16 @@
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.14);
 }
-
 .cviewLineDetails{
   font-size:13px;
   color: var(--muted);
   font-weight:900;
 }
-
 .cviewLineNote{
   font-size:13px;
   color: var(--muted);
   font-weight:900;
 }
-
 .cviewEmpty{
   flex:1;
   display:flex;
