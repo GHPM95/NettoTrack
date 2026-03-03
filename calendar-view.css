@@ -1,6 +1,6 @@
 /* =========================
    Calendar View (Agenda)
-   FIX: gap freccia↔L/D (senza tagliare gli angoli)
+   FIX: pill singolo per TODAY + SELECTED (no doppio interno)
    ========================= */
 
 :root{
@@ -9,11 +9,9 @@
 
   --todayFill: rgba(120,140,255,.22);
   --todayBorder: rgba(180,200,255,.25);
-  --todayInner: rgba(170,190,255,.22);
 
   --selFill: rgba(255,255,255,.10);
   --selBorder: rgba(255,255,255,.18);
-  --selInner: rgba(255,255,255,.10);
 
   --dotBase: rgba(120,170,255,.95);
   --dotOver: rgba(180,120,255,.95);
@@ -87,12 +85,12 @@
   background: rgba(255,255,255,.12);
 }
 
-/* ✅ WRAP: via padding “enorme” che creava vuoto ai lati */
+/* Wrap giorni */
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
   border-radius:18px;
-  padding: 0;   /* ✅ era 0 8px */
+  padding:0;
 }
 
 /* Track */
@@ -125,8 +123,7 @@
   transition:.12s ease;
 }
 
-/* ✅ CUSCINETTO SOLO AI LATI (non sull’intera strip)
-   Evita taglio angoli vicino alle frecce MA senza creare “vuoto” */
+/* Cuscinetto solo ai lati */
 .cviewDays .cviewDayBtn:first-child{ margin-left: 4px; }
 .cviewDays .cviewDayBtn:last-child{  margin-right:4px; }
 
@@ -151,31 +148,19 @@
   justify-content:center;
 }
 
-/* Today */
+/* ✅ TODAY: pill singolo (NO after) */
 .cviewDayBtn.isToday{
   background: var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
-.cviewDayBtn.isToday::after{
-  content:"";
-  position:absolute;
-  inset:6px;
-  border-radius:14px;
-  box-shadow: inset 0 0 0 1px var(--todayInner);
-}
+.cviewDayBtn.isToday::after{ display:none !important; }
 
-/* Selected */
+/* ✅ SELECTED: pill singolo (NO after) */
 .cviewDayBtn.isSelected:not(.isToday){
   background: var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
 }
-.cviewDayBtn.isSelected:not(.isToday)::after{
-  content:"";
-  position:absolute;
-  inset:6px;
-  border-radius:14px;
-  box-shadow: inset 0 0 0 1px var(--selInner);
-}
+.cviewDayBtn.isSelected:not(.isToday)::after{ display:none !important; }
 
 /* Divider */
 .cviewDivider{
@@ -196,7 +181,7 @@
   font-size:16px;
 }
 
-/* Capsule turni (lasciate uguali) */
+/* Capsule turni (immutate) */
 .cviewLine{
   display:flex;
   gap:12px;
