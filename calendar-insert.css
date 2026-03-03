@@ -11,8 +11,14 @@
   min-height:0;
   position:relative;
 
-  --cinsDotPremium: var(--ntDotBase, var(--accent2));
-  --cinsDotPremiumExtra: var(--ntDotExtra, var(--accent1));
+  /* fallback dot */
+  --cinsDotPremium: rgba(120,170,255,.95);
+  --cinsDotPremiumExtra: rgba(180,120,255,.95);
+
+  /* ✅ TODAY: identico al Calendar View */
+  --todayFill: rgba(120,140,255,.22);
+  --todayBorder: rgba(180,200,255,.25);
+  --todayInner: rgba(170,190,255,.22);
 }
 
 /* =========================
@@ -56,7 +62,7 @@
   color:var(--text);
   font-weight:1000;
   letter-spacing:.2px;
-  font-size:clamp(14px,3.6vw,17px);
+  font-size:clamp(14px, 3.6vw, 17px);
   padding:10px;
   border-radius:14px;
   text-align:center;
@@ -81,13 +87,14 @@
 
 .cinsWeekdays{
   display:grid;
-  grid-template-columns:repeat(7,1fr);
+  grid-template-columns:repeat(7, 1fr);
   gap:8px;
   padding:0 6px;
 }
 
 .cinsW{
   height:24px;
+  padding:0 2px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -107,11 +114,13 @@
   flex:1;
   min-height:0;
   display:grid;
-  grid-template-columns:repeat(7,1fr);
-  grid-template-rows:repeat(6,1fr);
+  grid-template-columns:repeat(7, 1fr);
+  grid-template-rows:repeat(6, 1fr);
   gap:8px;
   padding:6px;
 }
+
+/* giorno base */
 
 .cinsDay{
   aspect-ratio:1/1;
@@ -125,6 +134,7 @@
   justify-content:center;
   position:relative;
   overflow:hidden;
+  min-width:0;
 }
 
 .cinsDay.isOff{
@@ -141,27 +151,16 @@
 }
 
 /* =========================
-   TODAY — IDENTICO AL VIEW (TONDO)
+   TODAY — SOLO QUESTO CAMBIA (identico al View, ma TONDO)
    ========================= */
 
 .cinsDay.isToday{
   border:none;
-  border-radius:999px;
   overflow:hidden;
+  border-radius:999px;
 
-  background:
-    radial-gradient(
-      circle at 30% 25%,
-      rgba(255,255,255,.22),
-      transparent 55%
-    ),
-    linear-gradient(
-      135deg,
-      rgba(130,170,255,.92),
-      rgba(170,130,255,.92)
-    );
-
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
+  background: var(--todayFill);
+  box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
 
 .cinsDay.isToday .cinsNum{
@@ -169,7 +168,7 @@
   text-shadow:0 1px 2px rgba(0,0,0,.22);
 }
 
-/* rimuove eventuali vecchi layer */
+/* nessun doppio interno */
 .cinsDay.isToday::after{
   display:none !important;
 }
@@ -194,8 +193,10 @@
   width:7px;
   height:7px;
   border-radius:999px;
+  opacity:1;
 }
 
+/* sovrapposizione orizzontale */
 .cinsDot + .cinsDot{
   margin-left:-3px;
 }
@@ -240,4 +241,38 @@
   display:flex;
   flex-direction:column;
   gap:12px;
+}
+
+.cinsPickerTop{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+}
+.cinsPickerTitle{ font-weight:1000; }
+
+.cinsYearRow{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:10px;
+  margin:6px 0 10px;
+}
+.cinsYearVal{
+  text-align:center;
+  font-weight:1000;
+}
+
+.cinsMonthGrid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:10px;
+}
+
+.cinsPickBtn{
+  height:44px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.10);
+  color:var(--text);
+  font-weight:1000;
 }
