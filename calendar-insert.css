@@ -15,10 +15,9 @@
   --cinsDotPremium: rgba(120,170,255,.95);
   --cinsDotPremiumExtra: rgba(180,120,255,.95);
 
-  /* ✅ TODAY (linguaggio "calendar view") */
+  /* ✅ fallback TODAY (come calendar-view) */
   --todayFill: rgba(120,140,255,.22);
   --todayBorder: rgba(180,200,255,.25);
-  --todayInner: rgba(170,190,255,.22);
 }
 
 /* =========================
@@ -84,7 +83,6 @@
 }
 
 /* Weekdays */
-
 .cinsWeekdays{
   display:grid;
   grid-template-columns:repeat(7, 1fr);
@@ -120,7 +118,7 @@
   padding:6px;
 }
 
-/* ✅ BASE DAY (RIPRISTINATO IDENTICO AL COMMIT — NON SCURISCE GLI ALTRI) */
+/* giorno base */
 .cinsDay{
   aspect-ratio:1/1;
   border-radius:999px;
@@ -136,7 +134,6 @@
   min-width:0;
 }
 
-/* ✅ OFF (identico al commit) */
 .cinsDay.isOff{
   opacity:.28;
   pointer-events:none;
@@ -151,29 +148,19 @@
 }
 
 /* =========================
-   TODAY — come Calendar View, ma TONDO
-   (e NON tocca gli altri giorni)
+   ✅ TODAY — IDENTICO a calendar-view (1 solo pill)
+   - NON cambia gli altri giorni
    ========================= */
 
 .cinsDay.isToday{
-  border:none;
-  border-radius:999px;
+  border:none;                /* toglie il bordo base */
   overflow:hidden;
-
   background: var(--todayFill);
-  box-shadow: inset 0 0 0 1px var(--todayBorder);
+  box-shadow: inset 0 0 0 1px var(--todayBorder);  /* bordo sottile */
 }
 
-.cinsDay.isToday::after{
-  /* se vuoi 1 solo pill (senza doppio), metti display:none.
-     Se invece vuoi l'inner ring come nel view, lascia questo attivo. */
-  content:"";
-  position:absolute;
-  inset:6px;
-  border-radius:999px;
-  box-shadow: inset 0 0 0 1px var(--todayInner);
-  pointer-events:none;
-}
+/* niente patina / niente doppio */
+.cinsDay.isToday::after{ display:none !important; }
 
 .cinsDay.isToday .cinsNum{
   color:#fff;
@@ -208,8 +195,12 @@
   margin-left:-3px;
 }
 
-.cinsDot.premium{ background:var(--cinsDotPremium); }
-.cinsDot.premiumExtra{ background:var(--cinsDotPremiumExtra); }
+.cinsDot.premium{
+  background:var(--cinsDotPremium);
+}
+.cinsDot.premiumExtra{
+  background:var(--cinsDotPremiumExtra);
+}
 
 /* =========================
    Picker mese/anno
@@ -226,6 +217,7 @@
   justify-content:center;
   padding:14px;
 }
+
 .cinsPickerLayer.isOn{ display:flex; }
 
 .cinsRoot.isPickerOn .cinsHeader,
@@ -255,6 +247,7 @@
   grid-template-columns:1fr auto;
   align-items:center;
 }
+
 .cinsPickerTitle{ font-weight:1000; }
 
 .cinsYearRow{
@@ -264,6 +257,7 @@
   gap:10px;
   margin:6px 0 10px;
 }
+
 .cinsYearVal{
   text-align:center;
   font-weight:1000;
