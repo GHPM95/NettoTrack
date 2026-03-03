@@ -11,9 +11,8 @@
   min-height:0;
   position:relative;
 
-  /* ✅ Alias colori DOT (globali) con fallback sugli accent */
-  --cinsDotPremium: var(--ntDotBase, var(--accent2));       /* celeste */
-  --cinsDotPremiumExtra: var(--ntDotExtra, var(--accent1)); /* viola */
+  --cinsDotPremium: var(--ntDotBase, var(--accent2));
+  --cinsDotPremiumExtra: var(--ntDotExtra, var(--accent1));
 }
 
 /* =========================
@@ -79,6 +78,7 @@
 }
 
 /* Weekdays */
+
 .cinsWeekdays{
   display:grid;
   grid-template-columns:repeat(7,1fr);
@@ -88,13 +88,11 @@
 
 .cinsW{
   height:24px;
-  padding:0 2px; /* micro respiro */
   display:flex;
   align-items:center;
   justify-content:center;
   border:none;
   background:transparent;
-  border-radius:0;
   font-size:12px;
   font-weight:900;
   color:var(--muted);
@@ -119,11 +117,9 @@
   aspect-ratio:1/1;
   border-radius:999px;
   border:1px solid rgba(255,255,255,.14);
-  background:linear-gradient(
-    180deg,
-    rgba(255,255,255,.08),
-    rgba(255,255,255,.05)
-  );
+  background:
+    radial-gradient(120% 160% at 30% 0%, rgba(255,255,255,.10), transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
   display:flex;
   align-items:center;
   justify-content:center;
@@ -145,26 +141,14 @@
 }
 
 /* =========================
-   TODAY — SOLO PILL PIENO (UGUALE AGENDA)
-   ✅ MODIFICA UNICA rispetto al file originale:
-   - rimosso ::after (niente doppio layer interno)
-   - rimosso ring sul dot (evita “doppio” visivo)
+   TODAY — IDENTICO AL VIEW (TONDO)
    ========================= */
 
-/* (prima c’era un ring sul dot: lo tolgo) */
-.cinsDay.isToday .cinsDot{
-  box-shadow:none;
-}
-
 .cinsDay.isToday{
-  position:relative;
+  border:none;
   border-radius:999px;
   overflow:hidden;
 
-  /* elimina il bordo base */
-  border:none;
-
-  /* pieno blu→viola + glass */
   background:
     radial-gradient(
       circle at 30% 25%,
@@ -177,22 +161,17 @@
       rgba(170,130,255,.92)
     );
 
-  /* bordo interno discreto (UNO SOLO) */
   box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
 }
 
-/* ❌ rimosso completamente il vecchio .cinsDay.isToday::after */
-
-/* numero e dot SEMPRE davanti */
 .cinsDay.isToday .cinsNum{
-  position:relative;
-  z-index:2;
   color:#fff;
-  font-weight:1000;
-  text-shadow:0 1px 2px rgba(0,0,0,.25);
+  text-shadow:0 1px 2px rgba(0,0,0,.22);
 }
-.cinsDay.isToday .cinsDots{
-  z-index:3;
+
+/* rimuove eventuali vecchi layer */
+.cinsDay.isToday::after{
+  display:none !important;
 }
 
 /* =========================
@@ -201,11 +180,10 @@
 
 .cinsDots{
   position:absolute;
-  bottom:4px; /* più in basso del numero */
+  bottom:4px;
   left:50%;
   transform:translateX(-50%);
-  display:flex;            /* ✅ ORIZZONTALE */
-  flex-direction:row;
+  display:flex;
   align-items:center;
   justify-content:center;
   z-index:3;
@@ -216,15 +194,12 @@
   width:7px;
   height:7px;
   border-radius:999px;
-  opacity:1;
 }
 
-/* ✅ sovrapposizione ORIZZONTALE */
 .cinsDot + .cinsDot{
-  margin-left:-3px; /* overlap laterale */
+  margin-left:-3px;
 }
 
-/* ✅ colori (globali) */
 .cinsDot.premium{ background:var(--cinsDotPremium); }
 .cinsDot.premiumExtra{ background:var(--cinsDotPremiumExtra); }
 
@@ -250,7 +225,6 @@
   visibility:hidden;
 }
 
-/* CARD — NIENTE DOPPIO BORDO */
 .cinsPickerCard{
   width:100%;
   height:100%;
@@ -258,69 +232,12 @@
   border-radius:var(--rCard);
   border:1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(
-      140% 220% at 25% 0%,
-      rgba(255,255,255,.12),
-      transparent 55%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.11),
-      rgba(255,255,255,.06)
-    );
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.06));
   backdrop-filter:blur(var(--blur));
   box-shadow:var(--shadow);
   padding:16px;
   display:flex;
   flex-direction:column;
   gap:12px;
-}
-
-/* Header picker */
-.cinsPickerTop{
-  display:grid;
-  grid-template-columns:1fr auto;
-  align-items:center;
-}
-.cinsPickerTitle{ font-weight:1000; }
-
-/* Anno */
-.cinsYearRow{
-  display:grid;
-  grid-template-columns:auto 1fr auto;
-  align-items:center;
-  gap:10px;
-  margin:6px 0 10px;
-}
-.cinsYearVal{
-  text-align:center;
-  font-weight:1000;
-}
-
-/* Mesi */
-.cinsMonthGrid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-}
-.cinsPickBtn{
-  height:44px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,255,255,.10);
-  color:var(--text);
-  font-weight:1000;
-}
-
-/* =========================
-   Swipe hint — FINALE
-   ========================= */
-
-.cinsSwipeHint{
-  margin-top:auto;
-  padding-top:10px;
-  text-align:center;
-  font-size:11px;
-  opacity:.55;
-  font-weight:800;
 }
