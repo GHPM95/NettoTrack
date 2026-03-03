@@ -11,9 +11,10 @@
   min-height:0;
   position:relative;
 
-  /* ✅ Alias colori DOT (globali) con fallback sugli accent */
-  --cinsDotPremium: var(--ntDotBase, var(--accent2));        /* celeste */
-  --cinsDotPremiumExtra: var(--ntDotExtra, var(--accent1));  /* viola */}
+  /* fallback dot */
+  --cinsDotPremium: rgba(120,170,255,.95);
+  --cinsDotPremiumExtra: rgba(180,120,255,.95);
+}
 
 /* =========================
    Header
@@ -21,7 +22,7 @@
 
 .cinsHeader{
   display:grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns:auto 1fr auto;
   align-items:center;
   gap:10px;
 }
@@ -56,7 +57,7 @@
   color:var(--text);
   font-weight:1000;
   letter-spacing:.2px;
-  font-size:clamp(14px,3.6vw,17px);
+  font-size:clamp(14px, 3.6vw, 17px);
   padding:10px;
   border-radius:14px;
   text-align:center;
@@ -80,22 +81,19 @@
 /* Weekdays */
 .cinsWeekdays{
   display:grid;
-  grid-template-columns:repeat(7,1fr);
+  grid-template-columns:repeat(7, 1fr);
   gap:8px;
   padding:0 6px;
 }
 
 .cinsW{
-  height: 24px;
-  padding: 0 2px;      /* micro respiro */
+  height:24px;
+  padding:0 2px;
   display:flex;
   align-items:center;
   justify-content:center;
-
   border:none;
   background:transparent;
-  border-radius:0;
-
   font-size:12px;
   font-weight:900;
   color:var(--muted);
@@ -110,26 +108,26 @@
   flex:1;
   min-height:0;
   display:grid;
-  grid-template-columns:repeat(7,1fr);
-  grid-template-rows:repeat(6,1fr);
+  grid-template-columns:repeat(7, 1fr);
+  grid-template-rows:repeat(6, 1fr);
   gap:8px;
   padding:6px;
 }
 
+/* giorno base */
 .cinsDay{
   aspect-ratio:1/1;
   border-radius:999px;
   border:1px solid rgba(255,255,255,.14);
-  background:linear-gradient(
-    180deg,
-    rgba(255,255,255,.08),
-    rgba(255,255,255,.05)
-  );
+  background:
+    radial-gradient(120% 160% at 30% 0%, rgba(255,255,255,.10), transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
   display:flex;
   align-items:center;
   justify-content:center;
   position:relative;
   overflow:hidden;
+  min-width:0;
 }
 
 .cinsDay.isOff{
@@ -146,99 +144,68 @@
 }
 
 /* =========================
-   TODAY — PULSANTE SELEZIONATO (CHIARO, LEGGIBILE)
+   TODAY — PIENO (UGUALE A AGENDA)
+   1 SOLO PILL: niente doppio bordo interno
    ========================= */
-.cinsDay.isToday .cinsDot{
-  box-shadow: 0 0 0 1.5px rgba(255,255,255,.65);
-}
+
 .cinsDay.isToday{
-  position: relative;
-  border-radius: 999px;
-  overflow: hidden;
+  border:none;
+  overflow:hidden;
 
-  /* 🔥 elimina il bordo base fantasma */
-  border: none;
-
-  /* RIEMPIMENTO leggero */
   background:
-  radial-gradient(
-    circle at 30% 25%,
-    rgba(255,255,255,.22),
-    transparent 55%
-  ),
-  linear-gradient(
-    135deg,
-    rgba(130,170,255,.92),
-    rgba(170,130,255,.92)
-  );
+    radial-gradient(
+      circle at 30% 25%,
+      rgba(255,255,255,.22),
+      transparent 55%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(130,170,255,.92),
+      rgba(170,130,255,.92)
+    );
 
-  /* BORDO interno pulito (attaccato, non alone) */
-  box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,.22);
+  /* bordo interno discreto (UNO SOLO) */
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
 }
 
-/* patina glass sopra (coerenza con il resto della UI) */
-.cinsDay.isToday::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:inherit;
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,.18),
-    rgba(255,255,255,.06)
-  );
-  z-index:1;
-}
-
-/* numero e dot SEMPRE davanti */
 .cinsDay.isToday .cinsNum{
-  position:relative;
-  z-index:2;
   color:#fff;
-  font-weight:1000;
-  text-shadow: 0 1px 2px rgba(0,0,0,.25);
+  text-shadow:0 1px 2px rgba(0,0,0,.22);
 }
-.cinsDay.isToday .cinsDots{
-  z-index:3;
-}
+
+/* se in passato avevi ::after o anelli, li neutralizzo */
+.cinsDay.isToday::after{ display:none !important; }
 
 /* =========================
    Dots
    ========================= */
+
 .cinsDots{
   position:absolute;
-  bottom: 4px;                 /* più in basso del numero */
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;               /* ✅ ORIZZONTALE */
-  flex-direction: row;         /* sicurezza */
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
-  pointer-events: none;
+  bottom:4px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:3;
+  pointer-events:none;
 }
 
 .cinsDot{
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  opacity: 1;
+  width:7px;
+  height:7px;
+  border-radius:999px;
+  opacity:1;
 }
 
-/* ✅ sovrapposizione ORIZZONTALE */
+/* sovrapposizione orizzontale */
 .cinsDot + .cinsDot{
-  margin-left: -3px;           /* overlap laterale */
+  margin-left:-3px;
 }
 
-/* ✅ colori (globali) */
-.cinsDot.premium{
-  background: var(--cinsDotPremium);
-}
-
-.cinsDot.premiumExtra{
-  background: var(--cinsDotPremiumExtra);
-}
+.cinsDot.premium{ background:var(--cinsDotPremium); }
+.cinsDot.premiumExtra{ background:var(--cinsDotPremiumExtra); }
 
 /* =========================
    Picker mese/anno
@@ -255,17 +222,13 @@
   justify-content:center;
   padding:14px;
 }
-
-.cinsPickerLayer.isOn{
-  display:flex;
-}
+.cinsPickerLayer.isOn{ display:flex; }
 
 .cinsRoot.isPickerOn .cinsHeader,
 .cinsRoot.isPickerOn .cinsBody{
   visibility:hidden;
 }
 
-/* CARD — NIENTE DOPPIO BORDO */
 .cinsPickerCard{
   width:100%;
   height:100%;
@@ -273,16 +236,8 @@
   border-radius:var(--rCard);
   border:1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(
-      140% 220% at 25% 0%,
-      rgba(255,255,255,.12),
-      transparent 55%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.11),
-      rgba(255,255,255,.06)
-    );
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.06));
   backdrop-filter:blur(var(--blur));
   box-shadow:var(--shadow);
   padding:16px;
@@ -291,18 +246,13 @@
   gap:12px;
 }
 
-/* Header picker */
 .cinsPickerTop{
   display:grid;
   grid-template-columns:1fr auto;
   align-items:center;
 }
+.cinsPickerTitle{ font-weight:1000; }
 
-.cinsPickerTitle{
-  font-weight:1000;
-}
-
-/* Anno */
 .cinsYearRow{
   display:grid;
   grid-template-columns:auto 1fr auto;
@@ -310,16 +260,14 @@
   gap:10px;
   margin:6px 0 10px;
 }
-
 .cinsYearVal{
   text-align:center;
   font-weight:1000;
 }
 
-/* Mesi */
 .cinsMonthGrid{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(3, 1fr);
   gap:10px;
 }
 
@@ -330,17 +278,4 @@
   background:rgba(255,255,255,.10);
   color:var(--text);
   font-weight:1000;
-}
-
-/* =========================
-   Swipe hint — FINALE
-   ========================= */
-
-.cinsSwipeHint{
-  margin-top:auto;
-  padding-top:10px;
-  text-align:center;
-  font-size:11px;
-  opacity:.55;
-  font-weight:800;
 }
