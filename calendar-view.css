@@ -1,9 +1,6 @@
 /* =========================
-   Calendar View (Agenda) — CSS
-   FIX VISIVI:
-   ✅ strip giorni NON sotto le frecce (ridotto bleed + frecce sopra)
-   ✅ tags sempre ancorati a destra (anche quando wrap)
-   ✅ gerarchia capsule più pulita
+   Calendar View (Agenda)
+   VERSIONE STABILE ALLINEATA
    ========================= */
 
 :root{
@@ -24,6 +21,10 @@
   --dotSunday: rgba(255,110,180,.95);
 }
 
+/* =========================
+   ROOT
+   ========================= */
+
 .cviewRoot{
   width:100%;
   height:100%;
@@ -36,30 +37,23 @@
 }
 .cviewRoot *{ box-sizing:border-box; }
 
-/* Header */
+/* =========================
+   HEADER
+   ========================= */
+
 .cviewHeader{
   display:grid;
   grid-template-columns: 38px 1fr 38px;
   align-items:center;
   gap:10px;
-  min-width:0;
 }
-.cviewHeaderSpacer{
-  width:38px;
-  height:38px;
-  opacity:0;
-  pointer-events:none;
-}
+
 .cviewTitle{
   font-weight:1000;
-  letter-spacing:.2px;
-  font-size: clamp(14px, 3.6vw, 17px);
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
-  min-width:0;
+  font-size:16px;
   text-align:center;
 }
+
 .cviewClose{
   width:38px;
   height:38px;
@@ -69,28 +63,17 @@
   color: var(--text);
   font-weight:900;
   font-size:18px;
-  line-height:1;
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
-}
-.cviewClose:active{
-  transform: scale(.96);
-  filter: brightness(1.08);
-  background: rgba(255,255,255,.14);
 }
 
-/* Strip */
+/* =========================
+   WEEK STRIP
+   ========================= */
+
 .cviewWeekStrip{
   display:grid;
   grid-template-columns: 28px 1fr 28px;
   align-items:center;
-  gap:12px; /* ✅ più aria, evita feeling “schiacciato” */
-
-  padding:0;
-  border:none;
-  background:transparent;
-
-  touch-action: pan-y;
-  user-select:none;
+  gap:12px;
 }
 
 /* Frecce */
@@ -99,60 +82,32 @@
   height:52px;
   border-radius:18px;
   border:none;
-
   position:relative;
-  z-index:3;            /* ✅ sempre sopra la strip */
-  overflow:hidden;
-
+  z-index:3;
   background: rgba(255,255,255,.08);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
-
   color: var(--text);
   font-weight:1000;
   font-size:18px;
-  line-height:1;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
-  transition: transform .12s ease, filter .12s ease, background .12s ease;
-}
-.cviewNavBtn::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
-  pointer-events:none;
-}
-.cviewNavBtn:active{
-  transform: scale(.97);
-  filter: brightness(1.08);
-  background: rgba(255,255,255,.12);
 }
 
-/* ✅ WRAP: espansione più “soft” (non invade le frecce) */
+/* Wrapper giorni */
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
   border-radius:16px;
-
-  /* prima era 8px: invadeva i bottoni */
-  margin-left: -6px;
+  margin-left:-6px;
   margin-right:-6px;
-  padding-left: 6px;
+  padding-left:6px;
   padding-right:6px;
-
-  position:relative;
-  z-index:1;
 }
 
-/* Track (prev|cur|next) — width in px via JS */
+/* Track */
 .cviewTrack{
   display:flex;
-  will-change: transform;
-  transform: translate3d(0,0,0);
 }
 .cviewTrack.isSnap{
   transition: transform .22s ease;
@@ -161,48 +116,62 @@
   flex:0 0 auto;
 }
 
-/* 7 giorni */
+/* Griglia 7 giorni */
 .cviewDays{
   display:grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(7, 1fr);
   gap:7px;
-  width:100%;
 }
 
-/* Day pill */
+/* =========================
+   DAY PILL FIX ALLINEAMENTO
+   ========================= */
+
 .cviewDayBtn{
   border:none;
   background:transparent;
   color:var(--text);
-  padding:8px 0;
+
+  height:52px;              /* altezza fissa */
+  padding:0;
+
   border-radius:16px;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
   gap:4px;
+
   position:relative;
-  cursor:pointer;
-  user-select:none;
-  transition:transform .12s ease, background .12s ease, box-shadow .12s ease;
   min-width:0;
   overflow:hidden;
 }
-.cviewDayBtn:active{ transform:scale(.98); }
 
 .cviewDow{
   font-size:11px;
   font-weight:900;
   color:var(--muted);
-  letter-spacing:.4px;
+
+  height:12px;
+  line-height:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
+
 .cviewNum{
   font-size:15px;
   font-weight:1000;
   font-variant-numeric: tabular-nums;
+
+  height:18px;
+  line-height:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-/* TODAY */
+/* Today */
 .cviewDayBtn.isToday{
   background: var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
@@ -213,96 +182,60 @@
   inset:6px;
   border-radius:14px;
   box-shadow: inset 0 0 0 1px var(--todayInner);
-  pointer-events:none;
 }
 
-/* SELECTED */
+/* Selected */
 .cviewDayBtn.isSelected:not(.isToday){
   background: var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
 }
-.cviewDayBtn.isSelected:not(.isToday)::after{
-  content:"";
-  position:absolute;
-  inset:6px;
-  border-radius:14px;
-  box-shadow: inset 0 0 0 1px var(--selInner);
-  pointer-events:none;
-}
 
-/* Divider */
+/* =========================
+   DIVIDER
+   ========================= */
+
 .cviewDivider{
   height:1px;
-  width:100%;
-  border-radius:999px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent);
-  margin-top:2px;
 }
 
-/* Summary */
+/* =========================
+   SUMMARY
+   ========================= */
+
 .cviewSummary{
   flex:1;
-  min-height:0;
-
-  padding:0;
-  border:none;
-  background:transparent;
-
   display:flex;
   flex-direction:column;
   gap:12px;
-
   overflow:auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
 }
 
-.cviewSummaryTop{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-  padding-top:2px;
-}
 .cviewSummaryDate{
   font-weight:1000;
   font-size:15px;
-  letter-spacing:.2px;
 }
 
-/* niente badges in alto a destra */
-.cviewBadges{ display:none; }
+/* =========================
+   CAPSULE TURNI
+   ========================= */
 
-/* Lista turni */
-.cviewLines{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  flex: 1;
-  min-height: 0;
-}
-
-/* Capsula turno */
 .cviewLine{
   display:flex;
-  align-items:flex-start;
   gap:10px;
-  padding:14px 14px;
+  padding:14px;
   border-radius:16px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.10);
 }
 
-/* Dot */
 .cviewDot{
   width:7px;
   height:7px;
   border-radius:999px;
   margin-top:8px;
-  flex:0 0 auto;
-  background: var(--dotBase);
-  box-shadow: 0 0 0 2px rgba(255,255,255,.08);
 }
+
 .cviewDot.isOver{ background: var(--dotOver); }
 .cviewDot.isHoliday{ background: var(--dotHoliday); }
 .cviewDot.isSunday{ background: var(--dotSunday); }
@@ -310,41 +243,29 @@
 .cviewLineText{
   display:flex;
   flex-direction:column;
-  gap:7px;          /* ✅ un filo più compatto */
-  min-width:0;
+  gap:7px;
   width:100%;
 }
 
-/* Riga 1: ORA + TAGS (sempre a destra) */
+/* Riga 1 */
 .cviewLineHeader{
   display:flex;
-  align-items:center;       /* ✅ evita “galleggiamenti” */
-  gap:10px;
-  min-width:0;
+  align-items:center;
 }
 
-/* ora prende lo spazio, tags restano a destra */
 .cviewLineTime{
-  flex:1 1 auto;
+  flex:1;
   font-weight:1000;
   font-size:16px;
-  font-variant-numeric: tabular-nums;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  min-width:0;
 }
 
-/* ✅ tags ancorati a destra + wrap ordinato */
 .cviewLineTags{
-  flex:0 0 auto;
-  margin-left:auto;          /* ✅ blocco a destra SEMPRE */
+  margin-left:auto;
   display:flex;
   gap:6px;
   flex-wrap:wrap;
-  justify-content:flex-end;  /* ✅ quando vanno a capo, restano a destra */
-  align-items:center;
-  max-width:58%;
+  justify-content:flex-end;
+  max-width:60%;
 }
 
 .cviewInlineTag{
@@ -354,62 +275,30 @@
   border-radius:999px;
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.14);
-  color: rgba(255,255,255,.92);
-  white-space:nowrap;
 }
 
-/* Riga 2: dettagli */
+/* Riga 2 */
 .cviewLineDetails{
   font-size:13px;
   color: var(--muted);
   font-weight:900;
-  line-height:1.25;
-  white-space:pre-wrap;
 }
 
-/* Riga 3: note */
+/* Riga 3 */
 .cviewLineNote{
   font-size:13px;
   color: var(--muted);
   font-weight:900;
-  line-height:1.25;
-  white-space:pre-wrap;
-  opacity:.92;
 }
 
-/* Empty */
+/* Empty state */
 .cviewEmpty{
-  flex: 1;
+  flex:1;
   display:flex;
   align-items:center;
   justify-content:center;
   text-align:center;
-
-  padding:0 16px;
-  border:none;
-  background:transparent;
-
   color: var(--muted);
-  font-weight: 1000;
-  font-size: 16px;
-  line-height: 1.25;
-}
-
-/* Note “giorno” (se mai usate) */
-.cviewNotes{
-  padding:12px;
-  border-radius:16px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-}
-.cviewNotesTitle{
   font-weight:1000;
-  font-size:12px;
-  opacity:.9;
-  margin-bottom:6px;
-}
-.cviewNotesText{
-  font-size:13px;
-  color:var(--muted);
-  white-space:pre-wrap;
+  font-size:16px;
 }
