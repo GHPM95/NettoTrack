@@ -2,7 +2,7 @@
    Calendar View (Agenda)
    FIX: pill singolo per TODAY + SELECTED (no doppio interno)
    + FIX: empty centrato verticalmente (robusto)
-   + FIX: dettagli (sottodescrizione) in chip per wrap pulito (no parole spezzate)
+   + FIX: details wrap pulito (no spezzature brutte)
    ========================= */
 
 :root{
@@ -171,7 +171,7 @@
 }
 
 /* =========================
-   SUMMARY (fix layout per centratura vuoto)
+   SUMMARY (layout robusto)
    ========================= */
 .cviewSummary{
   flex:1;
@@ -201,7 +201,7 @@
   justify-content:flex-end;
 }
 
-/* ✅ contenitore righe = prende lo spazio */
+/* contenitore righe */
 .cviewLines{
   flex:1;
   min-height:0;
@@ -212,7 +212,7 @@
   padding-bottom: 2px;
 }
 
-/* ✅ quando vuoto: centra verticalmente e orizzontalmente */
+/* ✅ quando vuoto: centra perfettamente */
 .cviewLines.isEmpty{
   overflow:hidden;
   align-items:center;
@@ -292,17 +292,17 @@
   border: 1px solid rgba(255,255,255,.14);
 }
 
-/* ✅ DETTAGLI (sottodescrizione) in chip: wrap pulito */
+/* ✅ DETAILS: wrap pulito (NO spezzature parole) */
 .cviewLineDetails{
   display:flex;
   flex-wrap:wrap;
   gap:6px 10px;
+
   font-size:13px;
   color: var(--muted);
   font-weight:900;
   line-height:1.35;
 }
-/* ogni pezzo non spezza le parole */
 .cviewLineDetails span{
   white-space:nowrap;
 }
