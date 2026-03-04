@@ -1,7 +1,8 @@
 /* =========================
    Calendar View (Agenda)
-   FIX: pill singolo per TODAY + SELECTED
-   + centratura vuoto premium ottica
+   FIX: pill singolo per TODAY + SELECTED (no doppio interno)
+   + FIX: empty centrato verticalmente (robusto)
+   + FIX: dettagli (sottodescrizione) in chip per wrap pulito (no parole spezzate)
    ========================= */
 
 :root{
@@ -21,7 +22,6 @@
 }
 
 /* ROOT */
-
 .cviewRoot{
   width:100%;
   height:100%;
@@ -32,57 +32,49 @@
   background:transparent;
   box-sizing:border-box;
 }
-
-.cviewRoot *{
-  box-sizing:border-box;
-}
+.cviewRoot *{ box-sizing:border-box; }
 
 /* HEADER */
-
 .cviewHeader{
   display:grid;
-  grid-template-columns:38px 1fr 38px;
+  grid-template-columns: 38px 1fr 38px;
   align-items:center;
   gap:10px;
 }
-
 .cviewTitle{
   font-weight:1000;
   font-size:16px;
   text-align:center;
 }
-
 .cviewClose{
   width:38px;
   height:38px;
   border-radius:14px;
   border:none;
-  background:rgba(255,255,255,.10);
-  color:var(--text);
+  background: rgba(255,255,255,.10);
+  color: var(--text);
   font-weight:900;
   font-size:18px;
 }
 
 /* WEEK STRIP */
-
 .cviewWeekStrip{
   display:grid;
-  grid-template-columns:26px 1fr 26px;
+  grid-template-columns: 26px 1fr 26px;
   align-items:center;
   gap:6px;
-  padding:0 2px;
+  padding: 0 2px;
 }
 
 /* Frecce */
-
 .cviewNavBtn{
   width:26px;
   height:52px;
   border-radius:20px;
   border:none;
-  background:rgba(255,255,255,.08);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.10);
-  color:var(--text);
+  background: rgba(255,255,255,.08);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
+  color: var(--text);
   font-weight:1000;
   font-size:18px;
   display:flex;
@@ -90,14 +82,12 @@
   justify-content:center;
   transition:.12s ease;
 }
-
 .cviewNavBtn:active{
   transform:scale(.96);
-  background:rgba(255,255,255,.12);
+  background: rgba(255,255,255,.12);
 }
 
 /* Wrap giorni */
-
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
@@ -106,29 +96,18 @@
 }
 
 /* Track */
+.cviewTrack{ display:flex; }
+.cviewTrack.isSnap{ transition: transform .22s ease; }
+.cviewPage{ flex:0 0 auto; }
 
-.cviewTrack{
-  display:flex;
-}
-
-.cviewTrack.isSnap{
-  transition:transform .22s ease;
-}
-
-.cviewPage{
-  flex:0 0 auto;
-}
-
-/* Griglia giorni */
-
+/* Griglia 7 giorni */
 .cviewDays{
   display:grid;
-  grid-template-columns:repeat(7,1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap:5px;
 }
 
 /* Day pill */
-
 .cviewDayBtn{
   border:none;
   background:transparent;
@@ -146,72 +125,59 @@
   transition:.12s ease;
 }
 
-.cviewDays .cviewDayBtn:first-child{
-  margin-left:4px;
-}
-
-.cviewDays .cviewDayBtn:last-child{
-  margin-right:4px;
-}
+/* Cuscinetto solo ai lati */
+.cviewDays .cviewDayBtn:first-child{ margin-left: 4px; }
+.cviewDays .cviewDayBtn:last-child{  margin-right:4px; }
 
 .cviewDow{
   font-size:11px;
   font-weight:900;
   color:var(--muted);
   height:12px;
+  line-height:12px;
   display:flex;
   align-items:center;
   justify-content:center;
 }
-
 .cviewNum{
   font-size:15px;
   font-weight:1000;
-  font-variant-numeric:tabular-nums;
+  font-variant-numeric: tabular-nums;
   height:18px;
+  line-height:18px;
   display:flex;
   align-items:center;
   justify-content:center;
 }
 
-/* TODAY */
-
+/* ✅ TODAY: pill singolo (NO after) */
 .cviewDayBtn.isToday{
-  background:var(--todayFill);
-  box-shadow:inset 0 0 0 1px var(--todayBorder);
+  background: var(--todayFill);
+  box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
+.cviewDayBtn.isToday::after{ display:none !important; }
 
-.cviewDayBtn.isToday::after{
-  display:none!important;
-}
-
-/* SELECTED */
-
+/* ✅ SELECTED: pill singolo (NO after) */
 .cviewDayBtn.isSelected:not(.isToday){
-  background:var(--selFill);
-  box-shadow:inset 0 0 0 1px var(--selBorder);
+  background: var(--selFill);
+  box-shadow: inset 0 0 0 1px var(--selBorder);
 }
-
-.cviewDayBtn.isSelected:not(.isToday)::after{
-  display:none!important;
-}
+.cviewDayBtn.isSelected:not(.isToday)::after{ display:none !important; }
 
 /* Divider */
-
 .cviewDivider{
   height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
 }
 
 /* =========================
-   SUMMARY
+   SUMMARY (fix layout per centratura vuoto)
    ========================= */
-
 .cviewSummary{
   flex:1;
   min-height:0;
-  display:grid;
-  grid-template-rows:auto 1fr;
+  display:flex;
+  flex-direction:column;
   gap:14px;
   overflow:hidden;
 }
@@ -235,50 +201,48 @@
   justify-content:flex-end;
 }
 
-/* contenitore turni */
-
+/* ✅ contenitore righe = prende lo spazio */
 .cviewLines{
+  flex:1;
   min-height:0;
   display:flex;
   flex-direction:column;
   gap:14px;
   overflow:auto;
-  padding-bottom:2px;
+  padding-bottom: 2px;
 }
 
-/* quando vuoto */
-
-.cviewSummary.isEmpty .cviewLines{
+/* ✅ quando vuoto: centra verticalmente e orizzontalmente */
+.cviewLines.isEmpty{
   overflow:hidden;
-  display:flex;
   align-items:center;
   justify-content:center;
 }
 
 /* Empty message */
-
 .cviewEmpty{
   width:100%;
-  max-width:90%;
+  max-width: 90%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   text-align:center;
-  color:var(--muted);
+  color: var(--muted);
   font-weight:1000;
   font-size:16px;
+  padding: 18px;
   margin:0;
-
-  /* centratura ottica premium */
-  transform:translateY(-6px);
+  transform: translateY(-6px);
 }
 
 /* Capsule turni */
-
 .cviewLine{
   display:flex;
   gap:12px;
   padding:16px;
   border-radius:18px;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
 }
 
 .cviewDot{
@@ -287,10 +251,9 @@
   border-radius:999px;
   margin-top:8px;
 }
-
-.cviewDot.isOver{ background:var(--dotOver); }
-.cviewDot.isHoliday{ background:var(--dotHoliday); }
-.cviewDot.isSunday{ background:var(--dotSunday); }
+.cviewDot.isOver{ background: var(--dotOver); }
+.cviewDot.isHoliday{ background: var(--dotHoliday); }
+.cviewDot.isSunday{ background: var(--dotSunday); }
 
 .cviewLineText{
   display:flex;
@@ -325,40 +288,46 @@
   font-weight:1000;
   padding:4px 8px;
   border-radius:999px;
-  background:rgba(255,255,255,.10);
-  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.14);
 }
 
+/* ✅ DETTAGLI (sottodescrizione) in chip: wrap pulito */
 .cviewLineDetails{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 10px;
   font-size:13px;
-  color:var(--muted);
+  color: var(--muted);
   font-weight:900;
+  line-height:1.35;
+}
+/* ogni pezzo non spezza le parole */
+.cviewLineDetails span{
+  white-space:nowrap;
 }
 
 .cviewLineNote{
   font-size:13px;
-  color:var(--muted);
+  color: var(--muted);
   font-weight:900;
 }
 
-/* Note */
-
+/* Note blocco (se usato) */
 .cviewNotes{
   border-radius:18px;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
   padding:14px 16px;
 }
-
 .cviewNotesTitle{
   font-weight:1000;
   font-size:13px;
-  color:var(--text);
+  color: var(--text);
   margin-bottom:6px;
 }
-
 .cviewNotesText{
   font-size:13px;
-  color:var(--muted);
+  color: var(--muted);
   font-weight:900;
 }
