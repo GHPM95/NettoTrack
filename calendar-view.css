@@ -257,19 +257,29 @@
 }
 
 /* =========================
-   EMPTY: centratura verticale reale (iOS safe)
+   EMPTY CENTER (robusto)
    ========================= */
 
-.cviewSummary:has(.cviewEmpty){
-  overflow: hidden;       /* niente scroll quando è vuoto */
+.cviewSummary.isEmpty{
+  /* layout a 2 righe:
+     riga 1 = titolo/data
+     riga 2 = spazio restante (centrato) */
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 0;
+  overflow: hidden; /* niente scroll quando è vuoto */
 }
 
-/* il blocco empty si piazza in mezzo allo spazio rimasto */
-.cviewSummary:has(.cviewEmpty) .cviewEmpty{
-  flex: 0 0 auto;         /* NON flex:1 */
-  margin-top: auto;       /* ✅ centra verticalmente */
-  margin-bottom: auto;    /* ✅ centra verticalmente */
-  display: block;         /* basta text-align */
+.cviewSummary.isEmpty .cviewEmpty{
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 18px;
+  margin: 0;         /* evita offset strani */
+}
+
+/* se vuoi un micro aggiustamento ottico */
+.cviewSummary.isEmpty .cviewEmpty{
+  transform: translateY(-6px);
 }
