@@ -3,8 +3,6 @@
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
    - ✅ Capsule: "09:00 - 10:00" + tags dx / dettagli / note
-   - ✅ FIX: empty centrato (classe .isEmpty su #cvLines)
-   - ✅ FIX: dettagli in <span> (wrap pulito, no spezzature brutte)
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -107,12 +105,6 @@
     t.className = "cviewInlineTag";
     t.textContent = label;
     return t;
-  }
-
-  function makeDetailSpan(text){
-    const sp = document.createElement("span");
-    sp.textContent = text;
-    return sp;
   }
 
   /* =========================
@@ -366,7 +358,7 @@
     if(linesEl){
       linesEl.innerHTML = "";
 
-      // ✅ gancio per centratura vuoto
+      // ✅ gancio per CSS centratura vuoto
       linesEl.classList.toggle("isEmpty", shifts.length === 0);
 
       if(!shifts.length){
@@ -385,7 +377,6 @@
           const txt = document.createElement("div");
           txt.className = "cviewLineText";
 
-          // Riga 1: ORA + TAGS a destra
           const header = document.createElement("div");
           header.className = "cviewLineHeader";
 
@@ -403,28 +394,26 @@
           header.appendChild(time);
           header.appendChild(tagsWrap);
 
-          txt.appendChild(header);
-
-          // Riga 2: dettagli (✅ in span separati, wrap pulito)
-          const detailsArr = [];
+          const details = [];
           if(s.pauseMin && s.pauseMin > 0){
-            detailsArr.push(`Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`);
+            details.push(`Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`);
           }
           if(s.shiftLabel){
-            detailsArr.push(`Turno: ${s.shiftLabel}`);
+            details.push(`Turno: ${s.shiftLabel}`);
           }
           if(s.advLabel && s.advValue){
-            detailsArr.push(`${s.advLabel}: ${s.advValue}`);
+            details.push(`${s.advLabel}: ${s.advValue}`);
           }
 
-          if(detailsArr.length){
+          txt.appendChild(header);
+
+          if(details.length){
             const d = document.createElement("div");
             d.className = "cviewLineDetails";
-            detailsArr.forEach((t) => d.appendChild(makeDetailSpan(t)));
+            d.textContent = details.join(" · ");
             txt.appendChild(d);
           }
 
-          // Riga 3: note (se c’è)
           if(s.note){
             const n = document.createElement("div");
             n.className = "cviewLineNote";
