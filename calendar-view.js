@@ -3,6 +3,8 @@
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
    - ✅ Capsule: "09:00 - 10:00" + tags dx / dettagli / note
+   - ✅ FIX: empty centrato (classe .isEmpty su #cvLines)
+   - ✅ FIX: dettagli in <span> (wrap pulito, no spezzature brutte)
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -105,6 +107,12 @@
     t.className = "cviewInlineTag";
     t.textContent = label;
     return t;
+  }
+
+  function makeDetailSpan(text){
+    const sp = document.createElement("span");
+    sp.textContent = text;
+    return sp;
   }
 
   /* =========================
@@ -243,6 +251,9 @@
     mounted = true;
   }
 
+  /* =========================
+     FIX iOS: track/pagine in px
+     ========================= */
   function measure(mount){
     const wrap  = $("#cvDaysWrap", mount);
     const track = $("#cvTrack", mount);
@@ -342,7 +353,6 @@
 
     const dateEl = $("#cvSummaryDate", mount);
     const linesEl = $("#cvLines", mount);
-    const summaryEl = linesEl ? linesEl.closest(".cviewSummary") : null; /* ✅ NEW */
     const notesWrap = $("#cvNotesWrap", mount);
     const notesText = $("#cvNotesText", mount);
 
@@ -356,10 +366,8 @@
     if(linesEl){
       linesEl.innerHTML = "";
 
-      // ✅ FIX: gancio per il CSS di centratura verticale del vuoto
-      const isEmpty = shifts.length === 0;
-      linesEl.classList.toggle("isEmpty", isEmpty);
-      if(summaryEl) summaryEl.classList.toggle("isEmpty", isEmpty); /* ✅ NEW */
+      // ✅ gancio per centratura vuoto
+      linesEl.classList.toggle("isEmpty", shifts.length === 0);
 
       if(!shifts.length){
         const empty = document.createElement("div");
@@ -377,6 +385,7 @@
           const txt = document.createElement("div");
           txt.className = "cviewLineText";
 
+          // Riga 1: ORA + TAGS a destra
           const header = document.createElement("div");
           header.className = "cviewLineHeader";
 
@@ -394,26 +403,28 @@
           header.appendChild(time);
           header.appendChild(tagsWrap);
 
-          const details = [];
-          if(s.pauseMin && s.pauseMin > 0){
-            details.push(`Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`);
-          }
-          if(s.shiftLabel){
-            details.push(`Turno: ${s.shiftLabel}`);
-          }
-          if(s.advLabel && s.advValue){
-            details.push(`${s.advLabel}: ${s.advValue}`);
-          }
-
           txt.appendChild(header);
 
-          if(details.length){
+          // Riga 2: dettagli (✅ in span separati, wrap pulito)
+          const detailsArr = [];
+          if(s.pauseMin && s.pauseMin > 0){
+            detailsArr.push(`Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`);
+          }
+          if(s.shiftLabel){
+            detailsArr.push(`Turno: ${s.shiftLabel}`);
+          }
+          if(s.advLabel && s.advValue){
+            detailsArr.push(`${s.advLabel}: ${s.advValue}`);
+          }
+
+          if(detailsArr.length){
             const d = document.createElement("div");
             d.className = "cviewLineDetails";
-            d.textContent = details.join(" · ");
+            detailsArr.forEach((t) => d.appendChild(makeDetailSpan(t)));
             txt.appendChild(d);
           }
 
+          // Riga 3: note (se c’è)
           if(s.note){
             const n = document.createElement("div");
             n.className = "cviewLineNote";
