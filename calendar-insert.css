@@ -26,6 +26,7 @@
   align-items:center;
   gap:10px;
 }
+
 .cinsLeft{
   display:flex;
   gap:8px;
@@ -141,17 +142,16 @@
   z-index:2;
 }
 
-/* =====================================================================
-   ✅ TODAY (SOLO QUESTA PARTE È CAMBIATA)
-   - identico visivo a Calendar View (pieno blu→viola + glass)
-   - MA tondo (calendar insert)
-   - 1 solo “pill”: niente doppio bordo/anelli
-   ===================================================================== */
+/* =========================
+   TODAY — SOLO 1 PILL (uguale Agenda, ma TONDO)
+   - NON tocca gli altri giorni
+   ========================= */
 
 .cinsDay.isToday{
   border:none;
   overflow:hidden;
 
+  /* riempimento blu→viola come Agenda */
   background:
     radial-gradient(
       circle at 30% 25%,
@@ -168,12 +168,7 @@
   box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
 }
 
-.cinsDay.isToday .cinsNum{
-  color:#fff;
-  text-shadow:0 1px 2px rgba(0,0,0,.22);
-}
-
-/* patina glass (non crea doppio “pill”, è solo sheen) */
+/* patina glass sopra (stesso linguaggio UI/Agenda) */
 .cinsDay.isToday::after{
   content:"";
   position:absolute;
@@ -186,6 +181,11 @@
   );
   pointer-events:none;
   z-index:1;
+}
+
+.cinsDay.isToday .cinsNum{
+  color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.22);
 }
 
 /* =========================
@@ -203,18 +203,25 @@
   z-index:3;
   pointer-events:none;
 }
+
 .cinsDot{
   width:7px;
   height:7px;
   border-radius:999px;
   opacity:1;
 }
+
 /* sovrapposizione orizzontale */
 .cinsDot + .cinsDot{
   margin-left:-3px;
 }
-.cinsDot.premium{ background:var(--cinsDotPremium); }
-.cinsDot.premiumExtra{ background:var(--cinsDotPremiumExtra); }
+
+.cinsDot.premium{
+  background:var(--cinsDotPremium);
+}
+.cinsDot.premiumExtra{
+  background:var(--cinsDotPremiumExtra);
+}
 
 /* =========================
    Picker mese/anno
@@ -260,7 +267,10 @@
   grid-template-columns:1fr auto;
   align-items:center;
 }
-.cinsPickerTitle{ font-weight:1000; }
+
+.cinsPickerTitle{
+  font-weight:1000;
+}
 
 .cinsYearRow{
   display:grid;
@@ -269,6 +279,7 @@
   gap:10px;
   margin:6px 0 10px;
 }
+
 .cinsYearVal{
   text-align:center;
   font-weight:1000;
