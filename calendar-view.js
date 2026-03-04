@@ -2,7 +2,7 @@
    calendar-view.js (Agenda)
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
-   - ✅ Capsule: "09:00 - 10:00" + tags dx / dettagli / note
+   - ✅ Capsule: ORA + tags / pausa / meta (turno+assenza) / note
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -358,7 +358,6 @@
     if(linesEl){
       linesEl.innerHTML = "";
 
-      // ✅ gancio per CSS centratura vuoto
       linesEl.classList.toggle("isEmpty", shifts.length === 0);
 
       if(!shifts.length){
@@ -377,12 +376,9 @@
           const txt = document.createElement("div");
           txt.className = "cviewLineText";
 
+          /* Riga 1: TAG (sinistra) + ORA (1 riga) */
           const header = document.createElement("div");
           header.className = "cviewLineHeader";
-
-          const time = document.createElement("div");
-          time.className = "cviewLineTime";
-          time.textContent = `${s.start || "—"} - ${s.end || "—"}`;
 
           const tagsWrap = document.createElement("div");
           tagsWrap.className = "cviewLineTags";
@@ -391,29 +387,36 @@
           if(s.holiday) tagsWrap.appendChild(makeTag("Festivo"));
           if(s.overtime) tagsWrap.appendChild(makeTag("Straordinario"));
 
-          header.appendChild(time);
-          header.appendChild(tagsWrap);
+          const time = document.createElement("div");
+          time.className = "cviewLineTime";
+          time.textContent = `${s.start || "—"} - ${s.end || "—"}`;
 
-          const details = [];
-          if(s.pauseMin && s.pauseMin > 0){
-            details.push(`Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`);
-          }
-          if(s.shiftLabel){
-            details.push(`Turno: ${s.shiftLabel}`);
-          }
-          if(s.advLabel && s.advValue){
-            details.push(`${s.advLabel}: ${s.advValue}`);
-          }
+          header.appendChild(tagsWrap);
+          header.appendChild(time);
 
           txt.appendChild(header);
 
-          if(details.length){
-            const d = document.createElement("div");
-            d.className = "cviewLineDetails";
-            d.textContent = details.join(" · ");
-            txt.appendChild(d);
+          /* Riga 2: PAUSA (più impatto) */
+          if(s.pauseMin && s.pauseMin > 0){
+            const p = document.createElement("div");
+            p.className = "cviewLinePause";
+            p.textContent = `Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`;
+            txt.appendChild(p);
           }
 
+          /* Riga 3: META (più piccola) -> Turno / Assenza-Congedo */
+          const meta = [];
+          if(s.shiftLabel) meta.push(`Turno: ${s.shiftLabel}`);
+          if(s.advLabel && s.advValue) meta.push(`${s.advLabel}: ${s.advValue}`);
+
+          if(meta.length){
+            const m = document.createElement("div");
+            m.className = "cviewLineMeta";
+            m.textContent = meta.join(" · ");
+            txt.appendChild(m);
+          }
+
+          /* Riga 4: Nota (se c’è) */
           if(s.note){
             const n = document.createElement("div");
             n.className = "cviewLineNote";
