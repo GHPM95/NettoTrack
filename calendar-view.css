@@ -1,6 +1,7 @@
 /* =========================
    Calendar View (Agenda)
    FIX: pill singolo per TODAY + SELECTED (no doppio interno)
+   + FIX: empty centrato verticalmente (robusto)
    ========================= */
 
 :root{
@@ -168,18 +169,69 @@
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
 }
 
-/* Summary */
+/* =========================
+   SUMMARY (fix layout per centratura vuoto)
+   ========================= */
 .cviewSummary{
   flex:1;
-  min-height:0;            /* ✅ FIX iOS/Flex: abilita centratura corretta */
-  display:flex;
-  flex-direction:column;
+  min-height:0;
+  display:flex;              /* ✅ fondamentale */
+  flex-direction:column;     /* ✅ fondamentale */
   gap:14px;
-  overflow:auto;
+  overflow:hidden;           /* ✅ evita scroll "strano" quando vuoto */
 }
+
+.cviewSummaryTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
 .cviewSummaryDate{
   font-weight:1000;
   font-size:16px;
+}
+
+.cviewBadges{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+/* ✅ contenitore righe = prende lo spazio */
+.cviewLines{
+  flex:1;                    /* ✅ prende tutto lo spazio restante */
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  overflow:auto;             /* ✅ scroll SOLO qui quando ci sono turni */
+  padding-bottom: 2px;
+}
+
+/* ✅ quando vuoto: centra verticalmente e orizzontalmente */
+.cviewLines.isEmpty{
+  overflow:hidden;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Empty message */
+.cviewEmpty{
+  width:100%;
+  max-width: 90%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color: var(--muted);
+  font-weight:1000;
+  font-size:16px;
+  padding: 18px;
+  margin:0;
+  transform: translateY(-6px); /* micro allineamento ottico */
 }
 
 /* Capsule turni (immutate) */
@@ -210,6 +262,7 @@
 .cviewLineHeader{
   display:flex;
   align-items:center;
+  gap:10px;
 }
 .cviewLineTime{
   flex:1;
@@ -243,43 +296,21 @@
   font-weight:900;
 }
 
-/* ✅ Empty centered */
-.cviewEmpty{
-  flex:1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  color: var(--muted);
+/* Note blocco (se usato) */
+.cviewNotes{
+  border-radius:18px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  padding:14px 16px;
+}
+.cviewNotesTitle{
   font-weight:1000;
-  font-size:16px;
-  padding:18px;            /* ✅ respiro (opzionale) */
+  font-size:13px;
+  color: var(--text);
+  margin-bottom:6px;
 }
-
-/* =========================
-   EMPTY CENTER (robusto)
-   ========================= */
-
-.cviewSummary.isEmpty{
-  /* layout a 2 righe:
-     riga 1 = titolo/data
-     riga 2 = spazio restante (centrato) */
-  display: grid;
-  grid-template-rows: auto 1fr;
-  min-height: 0;
-  overflow: hidden; /* niente scroll quando è vuoto */
-}
-
-.cviewSummary.isEmpty .cviewEmpty{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 18px;
-  margin: 0;         /* evita offset strani */
-}
-
-/* se vuoi un micro aggiustamento ottico */
-.cviewSummary.isEmpty .cviewEmpty{
-  transform: translateY(-6px);
+.cviewNotesText{
+  font-size:13px;
+  color: var(--muted);
+  font-weight:900;
 }
