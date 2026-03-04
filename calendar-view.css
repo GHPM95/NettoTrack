@@ -1,8 +1,8 @@
 /* =========================
    Calendar View (Agenda)
-   FIX: pill singolo per TODAY + SELECTED (no doppio interno)
-   + FIX: empty centrato verticalmente (robusto)
-   + FIX: details premium (grid ordinata, no pasticci)
+   - Pill singolo TODAY/SELECTED (no doppio interno)
+   - Empty centrato verticalmente (robusto)
+   - Card turni: ORA 1 riga + TAG a sinistra + gerarchia premium
    ========================= */
 
 :root{
@@ -150,14 +150,14 @@
   justify-content:center;
 }
 
-/* ✅ TODAY: pill singolo (NO after) */
+/* ✅ TODAY: pill singolo */
 .cviewDayBtn.isToday{
   background: var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
 .cviewDayBtn.isToday::after{ display:none !important; }
 
-/* ✅ SELECTED: pill singolo (NO after) */
+/* ✅ SELECTED: pill singolo */
 .cviewDayBtn.isSelected:not(.isToday){
   background: var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
@@ -171,7 +171,7 @@
 }
 
 /* =========================
-   SUMMARY (fix layout per centratura vuoto)
+   SUMMARY (robusto + vuoto centrato)
    ========================= */
 .cviewSummary{
   flex:1;
@@ -201,7 +201,7 @@
   justify-content:flex-end;
 }
 
-/* ✅ contenitore righe = prende lo spazio */
+/* contenitore righe */
 .cviewLines{
   flex:1;
   min-height:0;
@@ -212,14 +212,13 @@
   padding-bottom: 2px;
 }
 
-/* ✅ quando vuoto: centra verticalmente e orizzontalmente */
 .cviewLines.isEmpty{
   overflow:hidden;
   align-items:center;
   justify-content:center;
 }
 
-/* Empty message */
+/* Empty */
 .cviewEmpty{
   width:100%;
   max-width: 90%;
@@ -232,10 +231,12 @@
   font-size:16px;
   padding: 18px;
   margin:0;
-  transform: translateY(-6px);
+  transform: translateY(-8px);
 }
 
-/* Capsule turni */
+/* =========================
+   TURNI: capsule + gerarchia premium
+   ========================= */
 .cviewLine{
   display:flex;
   gap:12px;
@@ -249,7 +250,7 @@
   width:8px;
   height:8px;
   border-radius:999px;
-  margin-top:8px;
+  margin-top:10px;
 }
 .cviewDot.isOver{ background: var(--dotOver); }
 .cviewDot.isHoliday{ background: var(--dotHoliday); }
@@ -258,47 +259,65 @@
 .cviewLineText{
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:10px;
   width:100%;
 }
+
+/* HEADER: TAG a sinistra, ORA subito dopo */
 .cviewLineHeader{
   display:flex;
   align-items:center;
   gap:10px;
+  flex-wrap:nowrap;
 }
-.cviewLineTime{
-  flex:1;
-  font-weight:1000;
-  font-size:16px;
-}
+
+/* TAGS (sinistra) */
 .cviewLineTags{
-  margin-left:auto;
   display:flex;
-  gap:6px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  max-width:60%;
+  gap:8px;
+  flex-wrap:nowrap;
+  align-items:center;
+  flex:0 0 auto;
 }
+
 .cviewInlineTag{
   font-size:10.5px;
   font-weight:1000;
-  padding:4px 8px;
+  padding:4px 10px;
   border-radius:999px;
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.14);
+  white-space:nowrap;
 }
 
-.cviewLineDetails{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap:6px 12px;
+/* ORA: sempre UNA riga */
+.cviewLineTime{
+  flex:1;
+  min-width:0;
+  font-weight:1000;
+  font-size: clamp(16px, 4.2vw, 20px);
+  line-height:1.1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;          /* ✅ UNA SOLA RIGA */
+  overflow:hidden;
+  text-overflow: ellipsis;      /* sicurezza estrema */
+}
 
+/* PAUSA: più impatto (subito sotto l’ora) */
+.cviewLinePause{
+  font-size:14px;
+  font-weight:1000;
+  color: rgba(255,255,255,.78);
+}
+
+/* META (turno/assenza): leggermente più piccoli */
+.cviewLineMeta{
   font-size:13px;
   color: var(--muted);
   font-weight:900;
-  line-height:1.35;
 }
 
+/* Nota (se presente) */
 .cviewLineNote{
   font-size:13px;
   color: var(--muted);
