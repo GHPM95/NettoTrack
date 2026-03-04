@@ -1,7 +1,7 @@
 /* =========================
    Calendar View (Agenda)
-   FIX: pill singolo per TODAY + SELECTED (no doppio interno)
-   + FIX: empty centrato verticalmente (robusto)
+   - TODAY + SELECTED: pill singolo (no doppio interno)
+   - EMPTY: centratura verticale bulletproof (iOS) con GRID
    ========================= */
 
 :root{
@@ -54,6 +54,11 @@
   color: var(--text);
   font-weight:900;
   font-size:18px;
+  line-height:1;
+}
+.cviewClose:active{
+  transform: scale(.96);
+  background: rgba(255,255,255,.14);
 }
 
 /* WEEK STRIP */
@@ -124,7 +129,7 @@
   transition:.12s ease;
 }
 
-/* Cuscinetto solo ai lati */
+/* Cuscinetto ai lati */
 .cviewDays .cviewDayBtn:first-child{ margin-left: 4px; }
 .cviewDays .cviewDayBtn:last-child{  margin-right:4px; }
 
@@ -149,14 +154,14 @@
   justify-content:center;
 }
 
-/* ✅ TODAY: pill singolo (NO after) */
+/* ✅ TODAY: pill singolo */
 .cviewDayBtn.isToday{
   background: var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
 .cviewDayBtn.isToday::after{ display:none !important; }
 
-/* ✅ SELECTED: pill singolo (NO after) */
+/* ✅ SELECTED: pill singolo */
 .cviewDayBtn.isSelected:not(.isToday){
   background: var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
@@ -170,15 +175,15 @@
 }
 
 /* =========================
-   SUMMARY (fix layout per centratura vuoto)
+   SUMMARY (default)
    ========================= */
 .cviewSummary{
   flex:1;
   min-height:0;
-  display:flex;              /* ✅ fondamentale */
-  flex-direction:column;     /* ✅ fondamentale */
+  display:flex;
+  flex-direction:column;
   gap:14px;
-  overflow:hidden;           /* ✅ evita scroll "strano" quando vuoto */
+  overflow:hidden;
 }
 
 .cviewSummaryTop{
@@ -187,12 +192,10 @@
   justify-content:space-between;
   gap:12px;
 }
-
 .cviewSummaryDate{
   font-weight:1000;
   font-size:16px;
 }
-
 .cviewBadges{
   display:flex;
   gap:8px;
@@ -200,41 +203,53 @@
   justify-content:flex-end;
 }
 
-/* ✅ contenitore righe = prende lo spazio */
+/* lista righe turni */
 .cviewLines{
-  flex:1;                    /* ✅ prende tutto lo spazio restante */
+  flex:1;
   min-height:0;
   display:flex;
   flex-direction:column;
   gap:14px;
-  overflow:auto;             /* ✅ scroll SOLO qui quando ci sono turni */
-  padding-bottom: 2px;
+  overflow:auto;
+  padding-bottom:2px;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* ✅ quando vuoto: centra verticalmente e orizzontalmente */
-.cviewLines.isEmpty{
+/* =========================
+   EMPTY (bulletproof iOS)
+   Attivo quando JS mette: .cviewSummary.isEmpty
+   ========================= */
+.cviewSummary.isEmpty{
+  display:grid;
+  grid-template-rows: auto 1fr; /* top + spazio vero */
+  gap:14px;
+  min-height:0;
   overflow:hidden;
-  align-items:center;
-  justify-content:center;
 }
 
-/* Empty message */
-.cviewEmpty{
-  width:100%;
-  max-width: 90%;
+.cviewSummary.isEmpty .cviewLines{
+  overflow:hidden;
   display:flex;
   align-items:center;
   justify-content:center;
+  min-height:0;
+  padding-bottom:0;
+}
+
+.cviewEmpty{
+  width:100%;
+  max-width:90%;
   text-align:center;
   color: var(--muted);
   font-weight:1000;
   font-size:16px;
-  padding: 18px;
+  padding:18px;
   margin:0;
-  transform: translateY(-6px); /* micro allineamento ottico */
 }
 
-/* Capsule turni (immutate) */
+/* =========================
+   Capsule turni
+   ========================= */
 .cviewLine{
   display:flex;
   gap:12px;
