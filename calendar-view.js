@@ -360,6 +360,9 @@
     if(linesEl){
       linesEl.innerHTML = "";
 
+      // ✅ FIX: gancio per il CSS di centratura verticale del vuoto
+      linesEl.classList.toggle("isEmpty", shifts.length === 0);
+
       if(!shifts.length){
         const empty = document.createElement("div");
         empty.className = "cviewEmpty";
