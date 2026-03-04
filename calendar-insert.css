@@ -10,10 +10,6 @@
   gap:12px;
   min-height:0;
   position:relative;
-
-  /* fallback dot (come commit) */
-  --cinsDotPremium: rgba(120,170,255,.95);
-  --cinsDotPremiumExtra: rgba(180,120,255,.95);
 }
 
 /* =========================
@@ -33,7 +29,6 @@
   align-items:center;
 }
 
-/* bottoni header (uguale stile app) */
 .ntBtn{
   width:38px;
   height:38px;
@@ -58,7 +53,7 @@
   color:var(--text);
   font-weight:1000;
   letter-spacing:.2px;
-  font-size:clamp(14px, 3.6vw, 17px);
+  font-size:clamp(14px,3.6vw,17px);
   padding:10px;
   border-radius:14px;
   text-align:center;
@@ -80,15 +75,16 @@
 }
 
 /* Weekdays */
+
 .cinsWeekdays{
   display:grid;
-  grid-template-columns:repeat(7, 1fr);
+  grid-template-columns:repeat(7,1fr);
   gap:8px;
   padding:0 6px;
 }
+
 .cinsW{
   height:24px;
-  padding:0 2px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -108,13 +104,12 @@
   flex:1;
   min-height:0;
   display:grid;
-  grid-template-columns:repeat(7, 1fr);
-  grid-template-rows:repeat(6, 1fr);
+  grid-template-columns:repeat(7,1fr);
+  grid-template-rows:repeat(6,1fr);
   gap:8px;
   padding:6px;
 }
 
-/* giorno base (NON TOCCATO) */
 .cinsDay{
   aspect-ratio:1/1;
   border-radius:999px;
@@ -127,7 +122,6 @@
   justify-content:center;
   position:relative;
   overflow:hidden;
-  min-width:0;
 }
 
 .cinsDay.isOff{
@@ -144,33 +138,49 @@
 }
 
 /* =========================
-   TODAY — SOLO QUESTO CAMBIA
-   (uguale Calendar View come linguaggio,
-    ma TONDO in insert)
+   TODAY
    ========================= */
 
 .cinsDay.isToday{
-  border:none;
+  position:relative;
   border-radius:999px;
   overflow:hidden;
+  border:none;
 
-  /* pieno blu→viola + glass */
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 55%),
-    linear-gradient(135deg, rgba(130,170,255,.92), rgba(170,130,255,.92));
+    radial-gradient(
+      circle at 30% 25%,
+      rgba(255,255,255,.22),
+      transparent 55%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(130,170,255,.92),
+      rgba(170,130,255,.92)
+    );
 
-  /* UNO SOLO bordo interno discreto */
   box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
 }
 
-.cinsDay.isToday .cinsNum{
-  color:#fff;
-  text-shadow:0 1px 2px rgba(0,0,0,.22);
+.cinsDay.isToday::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.18),
+    rgba(255,255,255,.06)
+  );
+  pointer-events:none;
 }
 
-/* elimina eventuali vecchi layer/anelli (doppio pill) */
-.cinsDay.isToday::after{
-  display:none !important;
+.cinsDay.isToday .cinsNum{
+  position:relative;
+  z-index:2;
+  color:#fff;
+  font-weight:1000;
+  text-shadow:0 1px 2px rgba(0,0,0,.25);
 }
 
 /* =========================
@@ -196,17 +206,12 @@
   opacity:1;
 }
 
-/* sovrapposizione orizzontale */
 .cinsDot + .cinsDot{
   margin-left:-3px;
 }
 
-.cinsDot.premium{
-  background:var(--cinsDotPremium);
-}
-.cinsDot.premiumExtra{
-  background:var(--cinsDotPremiumExtra);
-}
+.cinsDot.premium{ background:var(--accent2); }
+.cinsDot.premiumExtra{ background:var(--accent1); }
 
 /* =========================
    Picker mese/anno
@@ -223,7 +228,6 @@
   justify-content:center;
   padding:14px;
 }
-
 .cinsPickerLayer.isOn{ display:flex; }
 
 .cinsRoot.isPickerOn .cinsHeader,
@@ -238,8 +242,16 @@
   border-radius:var(--rCard);
   border:1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.06));
+    radial-gradient(
+      140% 220% at 25% 0%,
+      rgba(255,255,255,.12),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.11),
+      rgba(255,255,255,.06)
+    );
   backdrop-filter:blur(var(--blur));
   box-shadow:var(--shadow);
   padding:16px;
@@ -253,7 +265,6 @@
   grid-template-columns:1fr auto;
   align-items:center;
 }
-
 .cinsPickerTitle{ font-weight:1000; }
 
 .cinsYearRow{
@@ -263,7 +274,6 @@
   gap:10px;
   margin:6px 0 10px;
 }
-
 .cinsYearVal{
   text-align:center;
   font-weight:1000;
@@ -271,7 +281,7 @@
 
 .cinsMonthGrid{
   display:grid;
-  grid-template-columns:repeat(3, 1fr);
+  grid-template-columns:repeat(3,1fr);
   gap:10px;
 }
 
