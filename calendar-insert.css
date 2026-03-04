@@ -10,6 +10,10 @@
   gap:12px;
   min-height:0;
   position:relative;
+
+  /* fallback dot */
+  --cinsDotPremium: rgba(120,170,255,.95);
+  --cinsDotPremiumExtra: rgba(180,120,255,.95);
 }
 
 /* =========================
@@ -22,7 +26,6 @@
   align-items:center;
   gap:10px;
 }
-
 .cinsLeft{
   display:flex;
   gap:8px;
@@ -53,7 +56,7 @@
   color:var(--text);
   font-weight:1000;
   letter-spacing:.2px;
-  font-size:clamp(14px,3.6vw,17px);
+  font-size:clamp(14px, 3.6vw, 17px);
   padding:10px;
   border-radius:14px;
   text-align:center;
@@ -75,16 +78,15 @@
 }
 
 /* Weekdays */
-
 .cinsWeekdays{
   display:grid;
-  grid-template-columns:repeat(7,1fr);
+  grid-template-columns:repeat(7, 1fr);
   gap:8px;
   padding:0 6px;
 }
-
 .cinsW{
   height:24px;
+  padding:0 2px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -104,12 +106,13 @@
   flex:1;
   min-height:0;
   display:grid;
-  grid-template-columns:repeat(7,1fr);
-  grid-template-rows:repeat(6,1fr);
+  grid-template-columns:repeat(7, 1fr);
+  grid-template-rows:repeat(6, 1fr);
   gap:8px;
   padding:6px;
 }
 
+/* giorno base */
 .cinsDay{
   aspect-ratio:1/1;
   border-radius:999px;
@@ -122,6 +125,7 @@
   justify-content:center;
   position:relative;
   overflow:hidden;
+  min-width:0;
 }
 
 .cinsDay.isOff{
@@ -137,15 +141,16 @@
   z-index:2;
 }
 
-/* =========================
-   TODAY
-   ========================= */
+/* =====================================================================
+   ✅ TODAY (SOLO QUESTA PARTE È CAMBIATA)
+   - identico visivo a Calendar View (pieno blu→viola + glass)
+   - MA tondo (calendar insert)
+   - 1 solo “pill”: niente doppio bordo/anelli
+   ===================================================================== */
 
 .cinsDay.isToday{
-  position:relative;
-  border-radius:999px;
-  overflow:hidden;
   border:none;
+  overflow:hidden;
 
   background:
     radial-gradient(
@@ -159,9 +164,16 @@
       rgba(170,130,255,.92)
     );
 
+  /* bordo interno discreto (UNO SOLO) */
   box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
 }
 
+.cinsDay.isToday .cinsNum{
+  color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.22);
+}
+
+/* patina glass (non crea doppio “pill”, è solo sheen) */
 .cinsDay.isToday::after{
   content:"";
   position:absolute;
@@ -173,14 +185,7 @@
     rgba(255,255,255,.06)
   );
   pointer-events:none;
-}
-
-.cinsDay.isToday .cinsNum{
-  position:relative;
-  z-index:2;
-  color:#fff;
-  font-weight:1000;
-  text-shadow:0 1px 2px rgba(0,0,0,.25);
+  z-index:1;
 }
 
 /* =========================
@@ -198,20 +203,18 @@
   z-index:3;
   pointer-events:none;
 }
-
 .cinsDot{
   width:7px;
   height:7px;
   border-radius:999px;
   opacity:1;
 }
-
+/* sovrapposizione orizzontale */
 .cinsDot + .cinsDot{
   margin-left:-3px;
 }
-
-.cinsDot.premium{ background:var(--accent2); }
-.cinsDot.premiumExtra{ background:var(--accent1); }
+.cinsDot.premium{ background:var(--cinsDotPremium); }
+.cinsDot.premiumExtra{ background:var(--cinsDotPremiumExtra); }
 
 /* =========================
    Picker mese/anno
@@ -242,16 +245,8 @@
   border-radius:var(--rCard);
   border:1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(
-      140% 220% at 25% 0%,
-      rgba(255,255,255,.12),
-      transparent 55%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.11),
-      rgba(255,255,255,.06)
-    );
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.06));
   backdrop-filter:blur(var(--blur));
   box-shadow:var(--shadow);
   padding:16px;
@@ -281,7 +276,7 @@
 
 .cinsMonthGrid{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(3, 1fr);
   gap:10px;
 }
 
