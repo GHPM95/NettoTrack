@@ -171,6 +171,7 @@
 /* Summary */
 .cviewSummary{
   flex:1;
+  min-height:0;            /* ✅ FIX iOS/Flex: abilita centratura corretta */
   display:flex;
   flex-direction:column;
   gap:14px;
@@ -241,6 +242,8 @@
   color: var(--muted);
   font-weight:900;
 }
+
+/* ✅ Empty centered */
 .cviewEmpty{
   flex:1;
   display:flex;
@@ -250,4 +253,5 @@
   color: var(--muted);
   font-weight:1000;
   font-size:16px;
+  padding:18px;            /* ✅ respiro (opzionale) */
 }
