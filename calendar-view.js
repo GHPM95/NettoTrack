@@ -136,13 +136,11 @@
       const advA = typeof s?.advA === "string" ? s.advA : "-";
       const advB = typeof s?.advB === "string" ? s.advB : "-";
 
-      // ✅ label specifica
       let advLabel = "";
       let advValue = "";
       if(advA && advA !== "-"){ advLabel = "Assenza"; advValue = advA; }
       else if(advB && advB !== "-"){ advLabel = "Congedo"; advValue = advB; }
 
-      // dot: priorità (solo colore indicativo)
       const dotKind =
         tags.overtime ? "over" :
         tags.holiday  ? "holiday" :
@@ -245,9 +243,6 @@
     mounted = true;
   }
 
-  /* =========================
-     FIX iOS: track/pagine in px
-     ========================= */
   function measure(mount){
     const wrap  = $("#cvDaysWrap", mount);
     const track = $("#cvTrack", mount);
@@ -347,6 +342,7 @@
 
     const dateEl = $("#cvSummaryDate", mount);
     const linesEl = $("#cvLines", mount);
+    const summaryEl = linesEl ? linesEl.closest(".cviewSummary") : null; /* ✅ NEW */
     const notesWrap = $("#cvNotesWrap", mount);
     const notesText = $("#cvNotesText", mount);
 
@@ -361,7 +357,9 @@
       linesEl.innerHTML = "";
 
       // ✅ FIX: gancio per il CSS di centratura verticale del vuoto
-      linesEl.classList.toggle("isEmpty", shifts.length === 0);
+      const isEmpty = shifts.length === 0;
+      linesEl.classList.toggle("isEmpty", isEmpty);
+      if(summaryEl) summaryEl.classList.toggle("isEmpty", isEmpty); /* ✅ NEW */
 
       if(!shifts.length){
         const empty = document.createElement("div");
@@ -379,7 +377,6 @@
           const txt = document.createElement("div");
           txt.className = "cviewLineText";
 
-          // Riga 1: ORA + TAGS a destra
           const header = document.createElement("div");
           header.className = "cviewLineHeader";
 
@@ -390,7 +387,6 @@
           const tagsWrap = document.createElement("div");
           tagsWrap.className = "cviewLineTags";
 
-          // ✅ tags: domenicale/festivo/straordinario (anche più di uno)
           if(s.sunday) tagsWrap.appendChild(makeTag("Domenicale"));
           if(s.holiday) tagsWrap.appendChild(makeTag("Festivo"));
           if(s.overtime) tagsWrap.appendChild(makeTag("Straordinario"));
@@ -398,7 +394,6 @@
           header.appendChild(time);
           header.appendChild(tagsWrap);
 
-          // Riga 2: dettagli
           const details = [];
           if(s.pauseMin && s.pauseMin > 0){
             details.push(`Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`);
@@ -410,7 +405,6 @@
             details.push(`${s.advLabel}: ${s.advValue}`);
           }
 
-          // Riga 3: note (se c’è)
           txt.appendChild(header);
 
           if(details.length){
@@ -434,7 +428,6 @@
       }
     }
 
-    // note “giorno” (se mai le userai)
     const notes = (day.notes || "").trim();
     if(notesWrap && notesText){
       if(notes){
