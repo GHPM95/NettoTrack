@@ -285,3 +285,21 @@
   /* micro-centering ottico (se lo vuoi) */
   transform: translateY(-6px);
 }
+
+/* =========================
+   EMPTY: centratura verticale reale (iOS safe)
+   ========================= */
+
+.cviewSummary:has(.cviewEmpty){
+  overflow: hidden;       /* niente scroll quando è vuoto */
+}
+
+/* il blocco empty si piazza in mezzo allo spazio rimasto */
+.cviewSummary:has(.cviewEmpty) .cviewEmpty{
+  flex: 0 0 auto;         /* NON flex:1 */
+  margin-top: auto;       /* ✅ centra verticalmente */
+  margin-bottom: auto;    /* ✅ centra verticalmente */
+  display: block;         /* basta text-align */
+  text-align: center;
+  padding: 18px;
+}
