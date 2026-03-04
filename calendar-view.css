@@ -257,36 +257,6 @@
 }
 
 /* =========================
-   FIX EMPTY CENTER (iOS)
-   - data in alto
-   - messaggio centrato nel resto
-   ========================= */
-
-/* quando c’è lo stato vuoto, tolgo lo scroll e uso layout “pieno” */
-.cviewSummary:has(.cviewEmpty){
-  overflow: hidden;
-}
-
-/* la data non deve “rubare” flex */
-.cviewSummary:has(.cviewEmpty) .cviewSummaryDate{
-  flex: 0 0 auto;
-}
-
-/* il messaggio prende tutto lo spazio restante e si centra */
-.cviewSummary:has(.cviewEmpty) .cviewEmpty{
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-
-  padding: 18px;
-
-  /* micro-centering ottico (se lo vuoi) */
-  transform: translateY(-6px);
-}
-
-/* =========================
    EMPTY: centratura verticale reale (iOS safe)
    ========================= */
 
