@@ -1,8 +1,8 @@
 /* =========================
    Calendar View (Agenda)
-   - Pill singolo TODAY/SELECTED (no doppio interno)
-   - Empty centrato verticalmente (robusto)
-   - Card turni: ORA 1 riga + TAG a sinistra + gerarchia premium
+   - FIX: pill singolo per TODAY + SELECTED (no doppio interno)
+   - FIX: empty centrato verticalmente (robusto)
+   - UI: TAG sopra, poi ● + ORARIO su una riga, poi Pausa/Turno/Assenza/Nota in righe separate
    ========================= */
 
 :root{
@@ -150,14 +150,14 @@
   justify-content:center;
 }
 
-/* ✅ TODAY: pill singolo */
+/* ✅ TODAY: pill singolo (NO after) */
 .cviewDayBtn.isToday{
   background: var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
 .cviewDayBtn.isToday::after{ display:none !important; }
 
-/* ✅ SELECTED: pill singolo */
+/* ✅ SELECTED: pill singolo (NO after) */
 .cviewDayBtn.isSelected:not(.isToday){
   background: var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
@@ -171,7 +171,7 @@
 }
 
 /* =========================
-   SUMMARY (robusto + vuoto centrato)
+   SUMMARY (centratura vuoto robusta)
    ========================= */
 .cviewSummary{
   flex:1;
@@ -201,7 +201,7 @@
   justify-content:flex-end;
 }
 
-/* contenitore righe */
+/* ✅ contenitore righe = prende lo spazio */
 .cviewLines{
   flex:1;
   min-height:0;
@@ -212,13 +212,14 @@
   padding-bottom: 2px;
 }
 
+/* ✅ quando vuoto: centra verticalmente e orizzontalmente */
 .cviewLines.isEmpty{
   overflow:hidden;
   align-items:center;
   justify-content:center;
 }
 
-/* Empty */
+/* Empty message */
 .cviewEmpty{
   width:100%;
   max-width: 90%;
@@ -231,31 +232,37 @@
   font-size:16px;
   padding: 18px;
   margin:0;
-  transform: translateY(-8px);
+  transform: translateY(-6px); /* centratura ottica */
 }
 
 /* =========================
-   TURNI: capsule + gerarchia premium
+   CARD TURNO (layout premium)
    ========================= */
 .cviewLine{
+  position:relative;
   display:flex;
   gap:12px;
   padding:16px;
+  padding-left:44px; /* spazio per dot assoluto */
   border-radius:18px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.10);
 }
 
+/* Dot: posizionato per allinearsi all’ORARIO (non ai tag) */
 .cviewDot{
+  position:absolute;
+  left:18px;
+  top:56px; /* allineamento con la riga orario */
   width:8px;
   height:8px;
   border-radius:999px;
-  margin-top:10px;
 }
 .cviewDot.isOver{ background: var(--dotOver); }
 .cviewDot.isHoliday{ background: var(--dotHoliday); }
 .cviewDot.isSunday{ background: var(--dotSunday); }
 
+/* testo card */
 .cviewLineText{
   display:flex;
   flex-direction:column;
@@ -263,68 +270,69 @@
   width:100%;
 }
 
-/* HEADER: TAG a sinistra, ORA subito dopo */
+/* Header: colonna (TAG sopra, ORARIO sotto) */
 .cviewLineHeader{
   display:flex;
-  align-items:center;
+  flex-direction:column;
+  align-items:flex-start;
   gap:10px;
-  flex-wrap:nowrap;
 }
 
-/* TAGS (sinistra) */
+/* TAGS: riga sopra */
 .cviewLineTags{
+  order:-1;
   display:flex;
   gap:8px;
-  flex-wrap:nowrap;
-  align-items:center;
-  flex:0 0 auto;
+  flex-wrap:wrap;
+  justify-content:flex-start;
+  max-width:100%;
 }
 
 .cviewInlineTag{
-  font-size:10.5px;
+  font-size:11px;
   font-weight:1000;
-  padding:4px 10px;
+  padding:6px 10px;
   border-radius:999px;
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.14);
-  white-space:nowrap;
 }
 
-/* ORA: sempre UNA riga */
+/* ORARIO: una riga sola, più impatto */
 .cviewLineTime{
-  flex:1;
-  min-width:0;
+  width:100%;
   font-weight:1000;
-  font-size: clamp(16px, 4.2vw, 20px);
-  line-height:1.1;
+  font-size:22px;
+  letter-spacing:.2px;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;          /* ✅ UNA SOLA RIGA */
+  line-height:1.05;
+  white-space:nowrap;         /* ✅ mai a capo */
   overflow:hidden;
-  text-overflow: ellipsis;      /* sicurezza estrema */
+  text-overflow:clip;         /* ✅ niente "..." */
 }
 
-/* PAUSA: più impatto (subito sotto l’ora) */
-.cviewLinePause{
-  font-size:14px;
+/* Meta lines (Pausa/Turno/Assenza/Nota) */
+.cviewMeta{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+/* Pausa: in primo piano (ma sotto l’orario) */
+.cviewMetaLine.isPrimary{
+  font-size:16px;
   font-weight:1000;
-  color: rgba(255,255,255,.78);
+  color: rgba(255,255,255,.82);
 }
 
-/* META (turno/assenza): leggermente più piccoli */
-.cviewLineMeta{
-  font-size:13px;
-  color: var(--muted);
+/* Turno/Assenza/Nota: secondo piano */
+.cviewMetaLine.isSecondary{
+  font-size:15px;
   font-weight:900;
-}
-
-/* Nota (se presente) */
-.cviewLineNote{
-  font-size:13px;
   color: var(--muted);
-  font-weight:900;
+  line-height:1.22;
 }
 
-/* Note blocco (se usato) */
+/* Note blocco (se usato separatamente) */
 .cviewNotes{
   border-radius:18px;
   background: rgba(255,255,255,.06);
