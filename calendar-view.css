@@ -2,7 +2,7 @@
    Calendar View (Agenda)
    FIX: pill singolo per TODAY + SELECTED (no doppio interno)
    + FIX: empty centrato verticalmente (robusto)
-   + FIX: details wrap pulito (no spezzature brutte)
+   + FIX: details premium (grid ordinata, no pasticci)
    ========================= */
 
 :root{
@@ -171,7 +171,7 @@
 }
 
 /* =========================
-   SUMMARY (layout robusto)
+   SUMMARY (fix layout per centratura vuoto)
    ========================= */
 .cviewSummary{
   flex:1;
@@ -201,7 +201,7 @@
   justify-content:flex-end;
 }
 
-/* contenitore righe */
+/* ✅ contenitore righe = prende lo spazio */
 .cviewLines{
   flex:1;
   min-height:0;
@@ -212,7 +212,7 @@
   padding-bottom: 2px;
 }
 
-/* ✅ quando vuoto: centra perfettamente */
+/* ✅ quando vuoto: centra verticalmente e orizzontalmente */
 .cviewLines.isEmpty{
   overflow:hidden;
   align-items:center;
@@ -261,19 +261,16 @@
   gap:8px;
   width:100%;
 }
-
 .cviewLineHeader{
   display:flex;
   align-items:center;
   gap:10px;
 }
-
 .cviewLineTime{
   flex:1;
   font-weight:1000;
   font-size:16px;
 }
-
 .cviewLineTags{
   margin-left:auto;
   display:flex;
@@ -282,7 +279,6 @@
   justify-content:flex-end;
   max-width:60%;
 }
-
 .cviewInlineTag{
   font-size:10.5px;
   font-weight:1000;
@@ -292,19 +288,15 @@
   border: 1px solid rgba(255,255,255,.14);
 }
 
-/* ✅ DETAILS: wrap pulito (NO spezzature parole) */
 .cviewLineDetails{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px 10px;
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap:6px 12px;
 
   font-size:13px;
   color: var(--muted);
   font-weight:900;
   line-height:1.35;
-}
-.cviewLineDetails span{
-  white-space:nowrap;
 }
 
 .cviewLineNote{
