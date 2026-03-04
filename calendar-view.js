@@ -2,7 +2,11 @@
    calendar-view.js (Agenda)
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
-   - ✅ Capsule: ORA + tags / pausa / meta (turno+assenza) / note
+   - ✅ Card premium:
+       TAG sopra
+       ● + ORARIO su una riga
+       Pausa (primary)
+       Turno / Assenza / Nota (secondary)
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -105,6 +109,13 @@
     t.className = "cviewInlineTag";
     t.textContent = label;
     return t;
+  }
+
+  function makeMetaLine(text, kind){
+    const d = document.createElement("div");
+    d.className = `cviewMetaLine ${kind ? `is${kind}` : ""}`.trim();
+    d.textContent = text;
+    return d;
   }
 
   /* =========================
@@ -357,7 +368,6 @@
 
     if(linesEl){
       linesEl.innerHTML = "";
-
       linesEl.classList.toggle("isEmpty", shifts.length === 0);
 
       if(!shifts.length){
@@ -376,13 +386,11 @@
           const txt = document.createElement("div");
           txt.className = "cviewLineText";
 
-          /* Riga 1: TAG (sinistra) + ORA (1 riga) */
           const header = document.createElement("div");
           header.className = "cviewLineHeader";
 
           const tagsWrap = document.createElement("div");
           tagsWrap.className = "cviewLineTags";
-
           if(s.sunday) tagsWrap.appendChild(makeTag("Domenicale"));
           if(s.holiday) tagsWrap.appendChild(makeTag("Festivo"));
           if(s.overtime) tagsWrap.appendChild(makeTag("Straordinario"));
@@ -394,35 +402,32 @@
           header.appendChild(tagsWrap);
           header.appendChild(time);
 
-          txt.appendChild(header);
+          const meta = document.createElement("div");
+          meta.className = "cviewMeta";
 
-          /* Riga 2: PAUSA (più impatto) */
           if(s.pauseMin && s.pauseMin > 0){
-            const p = document.createElement("div");
-            p.className = "cviewLinePause";
-            p.textContent = `Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`;
-            txt.appendChild(p);
+            meta.appendChild(
+              makeMetaLine(
+                `Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`,
+                "Primary"
+              )
+            );
           }
 
-          /* Riga 3: META (più piccola) -> Turno / Assenza-Congedo */
-          const meta = [];
-          if(s.shiftLabel) meta.push(`Turno: ${s.shiftLabel}`);
-          if(s.advLabel && s.advValue) meta.push(`${s.advLabel}: ${s.advValue}`);
-
-          if(meta.length){
-            const m = document.createElement("div");
-            m.className = "cviewLineMeta";
-            m.textContent = meta.join(" · ");
-            txt.appendChild(m);
+          if(s.shiftLabel){
+            meta.appendChild(makeMetaLine(`Turno: ${s.shiftLabel}`, "Secondary"));
           }
 
-          /* Riga 4: Nota (se c’è) */
+          if(s.advLabel && s.advValue){
+            meta.appendChild(makeMetaLine(`${s.advLabel}: ${s.advValue}`, "Secondary"));
+          }
+
           if(s.note){
-            const n = document.createElement("div");
-            n.className = "cviewLineNote";
-            n.textContent = `Nota: ${s.note}`;
-            txt.appendChild(n);
+            meta.appendChild(makeMetaLine(`Nota: ${s.note}`, "Secondary"));
           }
+
+          txt.appendChild(header);
+          if(meta.childNodes.length) txt.appendChild(meta);
 
           row.appendChild(dot);
           row.appendChild(txt);
@@ -431,6 +436,7 @@
       }
     }
 
+    // note “giorno” (se mai le userai)
     const notes = (day.notes || "").trim();
     if(notesWrap && notesText){
       if(notes){
