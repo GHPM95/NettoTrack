@@ -408,3 +408,25 @@
 .cviewMetaLine.alignTime{
   padding-left: var(--cvTimeIndent);
 }
+
+/* Durata pill: un filo più piccola/leggera */
+.cviewDurPill{
+  font-size: 14px;          /* prima era troppo presente */
+  font-weight: 800;
+  padding: 6px 12px;
+  opacity: .92;
+}
+
+/* Dettagli (Turno/Assenza/Nota): più piccoli e “secondo piano” */
+.cviewMetaLine.isSecondary{
+  font-size: 16px;
+  opacity: .72;
+  line-height: 1.15;
+  margin-top: 6px;          /* meno distanza verticale */
+}
+
+/* Nota leggermente separata (resta leggibile ma non “urla”) */
+.cviewMetaLine.isSecondary.isNote{
+  margin-top: 10px;
+  opacity: .70;
+}
