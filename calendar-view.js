@@ -2,7 +2,8 @@
    calendar-view.js (Agenda)
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
-   - ✅ Card: tags sopra, dot+ora+durata (stessa riga), poi lista (pausa/turno/assenza/nota)
+   - ✅ UNA sola card per giorno + più blocchi turno
+   - ✅ Durata "xh" pill accanto all'orario
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -73,10 +74,9 @@
   }
 
   function timeToMin(t){
-    if(!t || !String(t).includes(":")) return NaN;
+    if(!t || !String(t).includes(":")) return 999999;
     const [h,m] = String(t).split(":").map(x => parseInt(x,10));
-    if(!Number.isFinite(h) || !Number.isFinite(m)) return NaN;
-    return (h*60) + m;
+    return (h*60) + (m||0);
   }
   function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 
@@ -108,29 +108,23 @@
     return t;
   }
 
-  function makeDurTag(label){
-    const t = document.createElement("span");
-    t.className = "cviewDurTag";
-    t.textContent = label;
-    return t;
-  }
-
-  // durata (gross) in ore/minuti, compatta tipo "4h" / "4h 30m"
-  function durationLabel(from, to){
+  function durPillText(from, to){
     const a = timeToMin(from);
     const b = timeToMin(to);
-    if(!Number.isFinite(a) || !Number.isFinite(b)) return "";
-
+    if(a === 999999 || b === 999999) return "";
     let diff = b - a;
-    // se attraversa mezzanotte
-    if(diff < 0) diff += 24 * 60;
+    if(diff < 0) diff += 24*60; // overnight
+    const hours = diff / 60;
+    // formato: 5h oppure 7.5h
+    const label = Number.isInteger(hours) ? `${hours}h` : `${hours.toFixed(1)}h`;
+    return label;
+  }
 
-    const h = Math.floor(diff / 60);
-    const m = diff % 60;
-
-    if(h <= 0 && m <= 0) return "";
-    if(m === 0) return `${h}h`;
-    return `${h}h ${m}m`;
+  function makeDurPill(text){
+    const t = document.createElement("span");
+    t.className = "cviewDurPill";
+    t.textContent = text;
+    return t;
   }
 
   /* =========================
@@ -379,12 +373,7 @@
     const day = loadDaySavedOnly(iso);
 
     const shifts = Array.isArray(day.shifts) ? day.shifts.slice() : [];
-    shifts.sort((a,b) => {
-      const aa = timeToMin(a.start); const bb = timeToMin(b.start);
-      if(!Number.isFinite(aa)) return 1;
-      if(!Number.isFinite(bb)) return -1;
-      return aa - bb;
-    });
+    shifts.sort((a,b) => timeToMin(a.start) - timeToMin(b.start));
 
     if(linesEl){
       linesEl.innerHTML = "";
@@ -396,23 +385,22 @@
         empty.textContent = "Nessun turno salvato per questo giorno.";
         linesEl.appendChild(empty);
       }else{
-        shifts.forEach(s => {
-          const row = document.createElement("div");
-          row.className = "cviewLine";
+        // ✅ UNA card unica
+        const dayCard = document.createElement("div");
+        dayCard.className = "cviewDayCard";
 
-          const txt = document.createElement("div");
-          txt.className = "cviewLineText";
+        shifts.forEach((s, idx) => {
+          const block = document.createElement("div");
+          block.className = "cviewShiftBlock";
 
-          // Header: TAGS sopra + (dot + ora + durata) sotto
-          const header = document.createElement("div");
-          header.className = "cviewLineHeader";
-
+          // Tags row (piccoli, secondo piano)
           const tagsWrap = document.createElement("div");
           tagsWrap.className = "cviewLineTags";
           if(s.sunday) tagsWrap.appendChild(makeTag("Domenicale"));
           if(s.holiday) tagsWrap.appendChild(makeTag("Festivo"));
           if(s.overtime) tagsWrap.appendChild(makeTag("Straordinario"));
 
+          // Time row: dot + ora + durata pill (sempre accanto)
           const timeRow = document.createElement("div");
           timeRow.className = "cviewTimeRow";
 
@@ -423,18 +411,15 @@
           time.className = "cviewLineTime";
           time.textContent = `${s.start || "—"} - ${s.end || "—"}`;
 
-          // ✅ DURATA: SEMPRE QUI, dentro timeRow, accanto all’ora
-          const dLab = durationLabel(s.start, s.end);
-          const dur = dLab ? makeDurTag(dLab) : null;
-
           timeRow.appendChild(dot);
           timeRow.appendChild(time);
-          if(dur) timeRow.appendChild(dur);
 
-          header.appendChild(tagsWrap);
-          header.appendChild(timeRow);
+          const durTxt = durPillText(s.start, s.end);
+          if(durTxt){
+            timeRow.appendChild(makeDurPill(durTxt));
+          }
 
-          // Meta list
+          // Meta list (pausa primaria, poi dettagli compatti)
           const meta = document.createElement("div");
           meta.className = "cviewMeta";
 
@@ -443,6 +428,18 @@
             p.className = "cviewMetaLine isPrimary";
             p.textContent = `Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`;
             meta.appendChild(p);
+          }
+
+          // divider sotto pausa (solo se ho altro dopo)
+          const hasDetails =
+            !!s.shiftLabel ||
+            (!!s.advLabel && !!s.advValue) ||
+            !!s.note;
+
+          if((s.pauseMin && s.pauseMin > 0) && hasDetails){
+            const div = document.createElement("div");
+            div.className = "cviewMiniDivider";
+            meta.appendChild(div);
           }
 
           if(s.shiftLabel){
@@ -461,17 +458,25 @@
 
           if(s.note){
             const n = document.createElement("div");
-            n.className = "cviewMetaLine isSecondary";
+            n.className = "cviewMetaLine isSecondary isNote";
             n.textContent = `Nota: ${s.note}`;
             meta.appendChild(n);
           }
 
-          txt.appendChild(header);
-          if(meta.childNodes.length) txt.appendChild(meta);
+          // Compose block
+          if(tagsWrap.childNodes.length) block.appendChild(tagsWrap);
+          block.appendChild(timeRow);
+          if(meta.childNodes.length) block.appendChild(meta);
 
-          row.appendChild(txt);
-          linesEl.appendChild(row);
+          // separatore tra blocchi turno
+          if(idx > 0){
+            block.classList.add("isAfter");
+          }
+
+          dayCard.appendChild(block);
         });
+
+        linesEl.appendChild(dayCard);
       }
     }
 
