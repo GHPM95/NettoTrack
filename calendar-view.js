@@ -2,7 +2,7 @@
    calendar-view.js (Agenda)
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
-   - ✅ Card: tags sopra, dot+ora (+ durata pill) sotto, poi lista (pausa/turno/assenza/nota)
+   - ✅ Card: tags sopra, dot+ora+durata (stessa riga), poi lista (pausa/turno/assenza/nota)
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -75,27 +75,9 @@
   function timeToMin(t){
     if(!t || !String(t).includes(":")) return NaN;
     const [h,m] = String(t).split(":").map(x => parseInt(x,10));
-    if(!Number.isFinite(h)) return NaN;
-    return (h*60) + (Number.isFinite(m) ? m : 0);
+    if(!Number.isFinite(h) || !Number.isFinite(m)) return NaN;
+    return (h*60) + m;
   }
-
-  // ✅ durata come "5h" oppure "5h30" (gestisce anche turno che passa mezzanotte)
-  function formatDurationPill(from, to){
-    const a = timeToMin(from);
-    const b = timeToMin(to);
-    if(!Number.isFinite(a) || !Number.isFinite(b)) return "";
-
-    let diff = b - a;
-    if(diff < 0) diff += 1440; // passa mezzanotte
-
-    const h = Math.floor(diff / 60);
-    const m = diff % 60;
-
-    if(h <= 0 && m <= 0) return "";
-    if(m === 0) return `${h}h`;
-    return `${h}h${String(m).padStart(2,"0")}`;
-  }
-
   function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 
   function dayDiffISO(aISO, bISO){
@@ -119,11 +101,36 @@
     titleEl.textContent = formatMonthYear(previewSelected);
   }
 
-  function makeTag(label, extraClass=""){
+  function makeTag(label){
     const t = document.createElement("span");
-    t.className = `cviewInlineTag ${extraClass}`.trim();
+    t.className = "cviewInlineTag";
     t.textContent = label;
     return t;
+  }
+
+  function makeDurTag(label){
+    const t = document.createElement("span");
+    t.className = "cviewDurTag";
+    t.textContent = label;
+    return t;
+  }
+
+  // durata (gross) in ore/minuti, compatta tipo "4h" / "4h 30m"
+  function durationLabel(from, to){
+    const a = timeToMin(from);
+    const b = timeToMin(to);
+    if(!Number.isFinite(a) || !Number.isFinite(b)) return "";
+
+    let diff = b - a;
+    // se attraversa mezzanotte
+    if(diff < 0) diff += 24 * 60;
+
+    const h = Math.floor(diff / 60);
+    const m = diff % 60;
+
+    if(h <= 0 && m <= 0) return "";
+    if(m === 0) return `${h}h`;
+    return `${h}h ${m}m`;
   }
 
   /* =========================
@@ -139,6 +146,7 @@
     try { model = cal.loadDay(iso); } catch(_) {}
 
     const shiftsRaw = Array.isArray(model?.shifts) ? model.shifts : [];
+
     const typeMap = { morning:"Mattino", afternoon:"Pomeriggio", night:"Notte", none:"" };
 
     const shifts = shiftsRaw.map((s) => {
@@ -372,8 +380,10 @@
 
     const shifts = Array.isArray(day.shifts) ? day.shifts.slice() : [];
     shifts.sort((a,b) => {
-      const ta = timeToMin(a.start); const tb = timeToMin(b.start);
-      return (Number.isFinite(ta)?ta:999999) - (Number.isFinite(tb)?tb:999999);
+      const aa = timeToMin(a.start); const bb = timeToMin(b.start);
+      if(!Number.isFinite(aa)) return 1;
+      if(!Number.isFinite(bb)) return -1;
+      return aa - bb;
     });
 
     if(linesEl){
@@ -409,30 +419,22 @@
           const dot = document.createElement("div");
           dot.className = `cviewDot ${dotClass(s.dotKind)}`.trim();
 
-          const timeMain = document.createElement("div");
-          timeMain.className = "cviewTimeMain";
-
           const time = document.createElement("div");
           time.className = "cviewLineTime";
           time.textContent = `${s.start || "—"} - ${s.end || "—"}`;
 
-          // ✅ durata pill accanto all'orario
-          const dur = formatDurationPill(s.start, s.end);
-          if(dur){
-            const durTag = makeTag(dur, "cviewDurTag");
-            timeMain.appendChild(time);
-            timeMain.appendChild(durTag);
-          }else{
-            timeMain.appendChild(time);
-          }
+          // ✅ DURATA: SEMPRE QUI, dentro timeRow, accanto all’ora
+          const dLab = durationLabel(s.start, s.end);
+          const dur = dLab ? makeDurTag(dLab) : null;
 
           timeRow.appendChild(dot);
-          timeRow.appendChild(timeMain);
+          timeRow.appendChild(time);
+          if(dur) timeRow.appendChild(dur);
 
           header.appendChild(tagsWrap);
           header.appendChild(timeRow);
 
-          // Meta list (pausa/turno/assenza/nota)
+          // Meta list
           const meta = document.createElement("div");
           meta.className = "cviewMeta";
 
