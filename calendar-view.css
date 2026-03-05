@@ -382,3 +382,29 @@
   color: var(--muted);
   font-weight:900;
 }
+
+/* === FIX: Solo "Pausa" allineata all'inizio dell'orario (non al dot) === */
+/* Se il tuo dot o gap sono diversi, cambia i valori qui sotto. */
+.cviewRoot{
+  --cvDotSize: 12px;     /* larghezza/altezza dot */
+  --cvDotGap: 14px;      /* spazio tra dot e ora */
+  --cvTimeIndent: calc(var(--cvDotSize) + var(--cvDotGap));
+}
+
+/* il dot deve rispettare --cvDotSize (se già lo fa, ok) */
+.cviewDot{
+  width: var(--cvDotSize);
+  height: var(--cvDotSize);
+  flex: 0 0 var(--cvDotSize);
+}
+
+/* il gap reale tra dot e ora: se già hai gap su cviewTimeRow, ok,
+   altrimenti questa riga lo impone */
+.cviewTimeRow{
+  column-gap: var(--cvDotGap);
+}
+
+/* ✅ SOLO Pausa (ha la classe alignTime dal JS) */
+.cviewMetaLine.alignTime{
+  padding-left: var(--cvTimeIndent);
+}
