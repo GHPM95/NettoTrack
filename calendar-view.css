@@ -1,8 +1,8 @@
 /* =========================
    Calendar View (Agenda)
-   - pill singolo TODAY + SELECTED (no doppio interno)
-   - empty centrato verticalmente
-   - card: tags sopra, dot+ora (+ durata) e pausa allineata all’ora
+   - Pill singolo per TODAY + SELECTED (no doppio interno)
+   - Empty centrato verticalmente
+   - Card: tags sopra, dot + ora + durata, poi "Pausa" allineata all'ora
    ========================= */
 
 :root{
@@ -19,6 +19,9 @@
   --dotOver: rgba(180,120,255,.95);
   --dotHoliday: rgba(255,180,90,.95);
   --dotSunday: rgba(255,110,180,.95);
+
+  /* allineamento pausa con l'ora (dot 8px + gap 12px = 20px) */
+  --timeIndent: 20px;
 }
 
 /* ROOT */
@@ -150,14 +153,14 @@
   justify-content:center;
 }
 
-/* TODAY: pill singolo (NO after) */
+/* ✅ TODAY: pill singolo (NO after) */
 .cviewDayBtn.isToday{
   background: var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
 .cviewDayBtn.isToday::after{ display:none !important; }
 
-/* SELECTED: pill singolo (NO after) */
+/* ✅ SELECTED: pill singolo (NO after) */
 .cviewDayBtn.isSelected:not(.isToday){
   background: var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
@@ -171,7 +174,7 @@
 }
 
 /* =========================
-   SUMMARY (centratura vuoto robusta)
+   SUMMARY
    ========================= */
 .cviewSummary{
   flex:1;
@@ -201,7 +204,7 @@
   justify-content:flex-end;
 }
 
-/* contenitore righe */
+/* ✅ contenitore righe = prende lo spazio */
 .cviewLines{
   flex:1;
   min-height:0;
@@ -212,13 +215,14 @@
   padding-bottom: 2px;
 }
 
-/* quando vuoto: centra */
+/* ✅ quando vuoto: centra verticalmente e orizzontalmente */
 .cviewLines.isEmpty{
   overflow:hidden;
   align-items:center;
   justify-content:center;
 }
 
+/* Empty message */
 .cviewEmpty{
   width:100%;
   max-width: 90%;
@@ -235,7 +239,7 @@
 }
 
 /* =========================
-   CARD TURNO
+   SHIFT CARD
    ========================= */
 .cviewLine{
   display:flex;
@@ -253,7 +257,7 @@
   width:100%;
 }
 
-/* header (tags sopra + timeRow sotto) */
+/* Header: tags sopra + timeRow sotto */
 .cviewLineHeader{
   display:flex;
   flex-direction:column;
@@ -263,101 +267,89 @@
 /* TAGS */
 .cviewLineTags{
   display:flex;
-  gap:10px;
+  gap:8px;
   flex-wrap:wrap;
   justify-content:flex-start;
   max-width:100%;
 }
-
 .cviewInlineTag{
-  font-size:12px;
+  font-size:10.5px;
   font-weight:1000;
-  padding:6px 12px;
+  padding:6px 10px;
   border-radius:999px;
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.14);
 }
 
-/* dot */
+/* riga dot + ora + durata */
+.cviewTimeRow{
+  display:flex;
+  align-items:center;
+  gap:12px; /* <-- deve restare 12 per far combaciare --timeIndent */
+  min-width:0;
+}
+
 .cviewDot{
   width:8px;
   height:8px;
   border-radius:999px;
-  margin-top:0;
   flex:0 0 auto;
 }
 .cviewDot.isOver{ background: var(--dotOver); }
 .cviewDot.isHoliday{ background: var(--dotHoliday); }
 .cviewDot.isSunday{ background: var(--dotSunday); }
 
-/* riga ora (dot + orario + eventuale pill durata già in DOM) */
-.cviewTimeRow{
-  display:flex;
-  align-items:center;
-  gap:12px; /* IMPORTANT: 8 dot + 12 gap => 20px offset per allineare Pausa */
-  min-width:0;
-}
-
+/* ORA (in primo piano) */
 .cviewLineTime{
   font-weight:1000;
-  font-size:34px;
+  font-size:32px;
   line-height:1.05;
   letter-spacing:.2px;
   font-variant-numeric: tabular-nums;
   white-space:nowrap;
-  min-width:0;
 }
 
-/* META */
+/* Durata (pill, tipo 7h) se la stai rendendo come tag */
+.cviewDurPill{
+  margin-left:12px;
+  flex:0 0 auto;
+  font-size:14px;
+  font-weight:1000;
+  padding:8px 12px;
+  border-radius:999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  color: var(--text);
+}
+
+/* Meta list */
 .cviewMeta{
   display:flex;
   flex-direction:column;
   gap:10px;
-  min-width:0;
 }
 
+/* Riga meta base */
 .cviewMetaLine{
-  color: var(--muted);
   font-weight:900;
-  font-size:18px;
-  line-height:1.2;
-  min-width:0;
+  font-size:16px;
+  color: var(--muted);
+  line-height:1.25;
 }
 
-/* Pausa = primaria */
+/* ✅ Pausa in primo piano */
 .cviewMetaLine.isPrimary{
-  color: var(--text);
   font-weight:1000;
   font-size:28px;
-  line-height:1.12;
+  color: var(--text);
 
-  /* ✅ FIX richiesto: allinea "Pausa" con l’ORA, NON con il dot */
-  padding-left:20px;      /* 8 (dot) + 12 (gap) */
-  white-space:nowrap;     /* evita a capo tipo "(pagata)" */
+  /* ✅ QUI: spostiamo SOLO "Pausa" a destra per allinearla all'ora */
+  padding-left: var(--timeIndent);
 }
 
-/* resto = secondario */
+/* secondarie: turno/assenza/nota */
 .cviewMetaLine.isSecondary{
-  color: var(--muted);
   font-weight:900;
   font-size:18px;
-}
-
-/* Note blocco (se usato) */
-.cviewNotes{
-  border-radius:18px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  padding:14px 16px;
-}
-.cviewNotesTitle{
-  font-weight:1000;
-  font-size:13px;
-  color: var(--text);
-  margin-bottom:6px;
-}
-.cviewNotesText{
-  font-size:13px;
-  color: var(--muted);
-  font-weight:900;
+  color: rgba(255,255,255,.70);
 }
