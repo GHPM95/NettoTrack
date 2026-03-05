@@ -1,8 +1,12 @@
 /* =========================
    Calendar View (Agenda)
-   - pill singolo per TODAY + SELECTED (no doppio interno)
-   - empty centrato verticalmente
-   - FIX: pausa allineata all’ora + divider + dettagli secondari
+   - pill singolo TODAY/SELECTED (no doppio interno)
+   - empty centrato robusto
+   - layout card:
+     tags sopra, dot+ora+durata (stessa riga),
+     pausa primaria allineata all’ora,
+     divider sotto pausa,
+     dettagli secondari più piccoli
    ========================= */
 
 :root{
@@ -20,10 +24,9 @@
   --dotHoliday: rgba(255,180,90,.95);
   --dotSunday: rgba(255,110,180,.95);
 
-  /* indents (dot + gap) */
-  --dotSize: 10px;
-  --dotGap: 12px;
-  --timeIndent: calc(var(--dotSize) + var(--dotGap));
+  /* allineamenti card */
+  --cviewDotSize: 8px;
+  --cviewDotGap: 12px;
 }
 
 /* ROOT */
@@ -155,14 +158,14 @@
   justify-content:center;
 }
 
-/* TODAY */
+/* ✅ TODAY */
 .cviewDayBtn.isToday{
   background: var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
 .cviewDayBtn.isToday::after{ display:none !important; }
 
-/* SELECTED */
+/* ✅ SELECTED */
 .cviewDayBtn.isSelected:not(.isToday){
   background: var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
@@ -206,7 +209,7 @@
   justify-content:flex-end;
 }
 
-/* righe = prende spazio */
+/* lista righe */
 .cviewLines{
   flex:1;
   min-height:0;
@@ -223,6 +226,7 @@
   align-items:center;
   justify-content:center;
 }
+
 .cviewEmpty{
   width:100%;
   max-width: 90%;
@@ -239,11 +243,9 @@
 }
 
 /* =========================
-   CARD TURNO
+   CARD turno (nuovo layout)
    ========================= */
 .cviewLine{
-  display:flex;
-  gap:12px;
   padding:16px;
   border-radius:18px;
   background: rgba(255,255,255,.06);
@@ -257,131 +259,110 @@
   width:100%;
 }
 
-/* TAGS sopra */
+/* header = tags sopra + riga ora sotto */
 .cviewLineHeader{
   display:flex;
   flex-direction:column;
   gap:10px;
+  align-items:flex-start;
 }
 
+/* TAGS (più piccoli, secondo piano) */
 .cviewLineTags{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
   justify-content:flex-start;
 }
-
 .cviewInlineTag{
-  font-size:11px;
+  font-size:10px;
   font-weight:1000;
-  padding:6px 12px;
+  padding:4px 10px;
   border-radius:999px;
   background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.12);
-  color: rgba(255,255,255,.78);
+  color: rgba(255,255,255,.76);
 }
 
-/* dot + ora (riga principale) */
+/* riga dot + ora + durata (NON deve andare a capo) */
 .cviewTimeRow{
   display:flex;
   align-items:center;
-  gap: var(--dotGap);
+  gap: var(--cviewDotGap);
+  flex-wrap: nowrap;
   min-width:0;
 }
 
+/* dot */
 .cviewDot{
-  width: var(--dotSize);
-  height: var(--dotSize);
+  width:var(--cviewDotSize);
+  height:var(--cviewDotSize);
   border-radius:999px;
-  flex: 0 0 auto;
-  background: var(--dotBase);
+  flex:0 0 auto;
 }
-
 .cviewDot.isOver{ background: var(--dotOver); }
 .cviewDot.isHoliday{ background: var(--dotHoliday); }
 .cviewDot.isSunday{ background: var(--dotSunday); }
 
-/* ORA in primo piano */
+/* ORA (prima in gerarchia) */
 .cviewLineTime{
   font-weight:1000;
   font-size:20px;
   letter-spacing:.2px;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
-  color: var(--text);
+  white-space:nowrap;
+  flex:0 0 auto;
 }
 
-/* (se esiste nel tuo JS) pill durata accanto all’ora */
+/* pill durata (come tag, ma un filo più evidente) */
 .cviewDurTag{
-  margin-left:10px;
-  font-size:13px;
+  margin-left:auto;
+  flex:0 0 auto;
+  font-size:12px;
   font-weight:1000;
   padding:6px 12px;
   border-radius:999px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.14);
-  color: rgba(255,255,255,.82);
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.16);
+  color: rgba(255,255,255,.86);
+  white-space:nowrap;
 }
 
-/* META: ALLINEATA ALL’INIZIO DELL’ORA (non al dot) */
+/* META: allineata all’inizio del testo ora (non al dot) */
 .cviewMeta{
-  padding-left: var(--timeIndent); /* ✅ questa è la chiave */
+  padding-left: calc(var(--cviewDotSize) + var(--cviewDotGap));
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:10px;
 }
 
-/* Pausa = secondo “primo piano” insieme all’ora */
-.cviewMetaLine{
+/* Pausa primaria (seconda in gerarchia, grande ma meno dell’ora) */
+.cviewMetaLine.isPrimary{
+  font-size:18px;
+  font-weight:1000;
+  color: rgba(255,255,255,.86);
+  position:relative;
+  padding-bottom:12px;
+  margin-bottom:2px;
+}
+
+/* ✅ divider sotto pausa (stile app) */
+.cviewMetaLine.isPrimary::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+}
+
+/* Dettagli secondari (più piccoli, secondo piano) */
+.cviewMetaLine.isSecondary{
+  font-size:14px;
   font-weight:900;
-  font-size:15px;
   color: var(--muted);
   line-height:1.25;
-}
-.cviewMetaLine.isPrimary{
-  font-weight:1000;
-  font-size:18px;
-  color: rgba(255,255,255,.88);
-}
-
-/* dettagli più piccoli/secondari */
-.cviewMetaLine.isSecondary{
-  font-size:15px;
-  color: rgba(255,255,255,.68);
-}
-
-/* ✅ DIVIDER tra Pausa (primary) e dettagli (secondary) */
-.cviewMetaLine.isPrimary + .cviewMetaLine.isSecondary{
-  margin-top: 6px;
-  padding-top: 10px;
-  position:relative;
-}
-.cviewMetaLine.isPrimary + .cviewMetaLine.isSecondary::before{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  top:0;
-  height:1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
-}
-
-/* se NON c’è pausa, metti comunque una divider prima del primo secondary */
-.cviewMetaLine.isSecondary:first-child{
-  margin-top: 4px;
-  padding-top: 10px;
-  position:relative;
-}
-.cviewMetaLine.isSecondary:first-child::before{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  top:0;
-  height:1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
 }
 
 /* Note blocco (se usato) */
