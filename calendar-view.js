@@ -3,8 +3,7 @@
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
    - ✅ UNA sola card per giorno + più blocchi turno
-   - ✅ Durata "xh" pill accanto all'orario
-   - ✅ Pausa allineata all'orario (non al dot)
+   - ✅ Durata "xh" pill accanto all'orario (minuti solo se servono)
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -109,14 +108,22 @@
     return t;
   }
 
+  // ✅ Durata: "1h" (no 1.0h), minuti solo se presenti: "1h 15m"
   function durPillText(from, to){
     const a = timeToMin(from);
     const b = timeToMin(to);
     if(a === 999999 || b === 999999) return "";
+
     let diff = b - a;
-    if(diff < 0) diff += 24*60;
-    const hours = diff / 60;
-    return Number.isInteger(hours) ? `${hours}h` : `${hours.toFixed(1)}h`;
+    if(diff < 0) diff += 24*60; // overnight
+
+    const h = Math.floor(diff / 60);
+    const m = diff % 60;
+
+    if(h <= 0 && m <= 0) return "";
+    if(m === 0) return `${h}h`;
+    if(h === 0) return `${m}m`;
+    return `${h}h ${m}m`;
   }
 
   function makeDurPill(text){
@@ -139,6 +146,7 @@
     try { model = cal.loadDay(iso); } catch(_) {}
 
     const shiftsRaw = Array.isArray(model?.shifts) ? model.shifts : [];
+
     const typeMap = { morning:"Mattino", afternoon:"Pomeriggio", night:"Notte", none:"" };
 
     const shifts = shiftsRaw.map((s) => {
@@ -369,6 +377,7 @@
     if(dateEl) dateEl.textContent = formatLongDate(iso);
 
     const day = loadDaySavedOnly(iso);
+
     const shifts = Array.isArray(day.shifts) ? day.shifts.slice() : [];
     shifts.sort((a,b) => timeToMin(a.start) - timeToMin(b.start));
 
@@ -388,16 +397,13 @@
         shifts.forEach((s, idx) => {
           const block = document.createElement("div");
           block.className = "cviewShiftBlock";
-          if(idx > 0) block.classList.add("isAfter");
 
-          // Tags row
           const tagsWrap = document.createElement("div");
           tagsWrap.className = "cviewLineTags";
           if(s.sunday) tagsWrap.appendChild(makeTag("Domenicale"));
           if(s.holiday) tagsWrap.appendChild(makeTag("Festivo"));
           if(s.overtime) tagsWrap.appendChild(makeTag("Straordinario"));
 
-          // Time row: dot + ora + durata
           const timeRow = document.createElement("div");
           timeRow.className = "cviewTimeRow";
 
@@ -412,16 +418,16 @@
           timeRow.appendChild(time);
 
           const durTxt = durPillText(s.start, s.end);
-          if(durTxt) timeRow.appendChild(makeDurPill(durTxt));
+          if(durTxt){
+            timeRow.appendChild(makeDurPill(durTxt));
+          }
 
-          // Meta list
           const meta = document.createElement("div");
           meta.className = "cviewMeta";
 
-          // ✅ Pausa: allineata all’orario (NON al dot)
           if(s.pauseMin && s.pauseMin > 0){
             const p = document.createElement("div");
-            p.className = "cviewMetaLine isPrimary alignTime";
+            p.className = "cviewMetaLine isPrimary isPause";
             p.textContent = `Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`;
             meta.appendChild(p);
           }
@@ -437,7 +443,6 @@
             meta.appendChild(div);
           }
 
-          // ✅ Turno / Assenza / Nota: restano allineati al DOT
           if(s.shiftLabel){
             const t = document.createElement("div");
             t.className = "cviewMetaLine isSecondary";
@@ -462,6 +467,10 @@
           if(tagsWrap.childNodes.length) block.appendChild(tagsWrap);
           block.appendChild(timeRow);
           if(meta.childNodes.length) block.appendChild(meta);
+
+          if(idx > 0){
+            block.classList.add("isAfter");
+          }
 
           dayCard.appendChild(block);
         });
