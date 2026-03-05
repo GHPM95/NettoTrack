@@ -1,8 +1,10 @@
 /* =========================
    Calendar View (Agenda)
-   - Pill singolo per TODAY + SELECTED (no doppio interno)
-   - Empty centrato verticalmente
-   - Card: tags sopra, dot + ora + durata, poi "Pausa" allineata all'ora
+   - Compact typography (fix “too big”)
+   - Container restored (glass card per shift)
+   - TimeRow: dot + time + duration pill inline
+   - Pause aligned with time (not with dot)
+   - Empty centered robust
    ========================= */
 
 :root{
@@ -19,9 +21,6 @@
   --dotOver: rgba(180,120,255,.95);
   --dotHoliday: rgba(255,180,90,.95);
   --dotSunday: rgba(255,110,180,.95);
-
-  /* allineamento pausa con l'ora (dot 8px + gap 12px = 20px) */
-  --timeIndent: 20px;
 }
 
 /* ROOT */
@@ -30,7 +29,7 @@
   height:100%;
   display:flex;
   flex-direction:column;
-  gap:14px;
+  gap:12px;
   min-height:0;
   background:transparent;
   box-sizing:border-box;
@@ -69,7 +68,7 @@
   padding: 0 2px;
 }
 
-/* Frecce */
+/* Arrows */
 .cviewNavBtn{
   width:26px;
   height:52px;
@@ -90,20 +89,18 @@
   background: rgba(255,255,255,.12);
 }
 
-/* Wrap giorni */
+/* Days wrap/track */
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
   border-radius:18px;
   padding:0;
 }
-
-/* Track */
 .cviewTrack{ display:flex; }
 .cviewTrack.isSnap{ transition: transform .22s ease; }
 .cviewPage{ flex:0 0 auto; }
 
-/* Griglia 7 giorni */
+/* 7-day grid */
 .cviewDays{
   display:grid;
   grid-template-columns: repeat(7, 1fr);
@@ -127,8 +124,6 @@
   overflow:hidden;
   transition:.12s ease;
 }
-
-/* Cuscinetto solo ai lati */
 .cviewDays .cviewDayBtn:first-child{ margin-left: 4px; }
 .cviewDays .cviewDayBtn:last-child{  margin-right:4px; }
 
@@ -153,14 +148,14 @@
   justify-content:center;
 }
 
-/* ✅ TODAY: pill singolo (NO after) */
+/* TODAY */
 .cviewDayBtn.isToday{
   background: var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
 .cviewDayBtn.isToday::after{ display:none !important; }
 
-/* ✅ SELECTED: pill singolo (NO after) */
+/* SELECTED */
 .cviewDayBtn.isSelected:not(.isToday){
   background: var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
@@ -173,15 +168,13 @@
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
 }
 
-/* =========================
-   SUMMARY
-   ========================= */
+/* SUMMARY */
 .cviewSummary{
   flex:1;
   min-height:0;
   display:flex;
   flex-direction:column;
-  gap:14px;
+  gap:12px;
   overflow:hidden;
 }
 
@@ -204,18 +197,16 @@
   justify-content:flex-end;
 }
 
-/* ✅ contenitore righe = prende lo spazio */
+/* Lines container */
 .cviewLines{
   flex:1;
   min-height:0;
   display:flex;
   flex-direction:column;
-  gap:14px;
+  gap:12px;
   overflow:auto;
   padding-bottom: 2px;
 }
-
-/* ✅ quando vuoto: centra verticalmente e orizzontalmente */
 .cviewLines.isEmpty{
   overflow:hidden;
   align-items:center;
@@ -232,66 +223,69 @@
   text-align:center;
   color: var(--muted);
   font-weight:1000;
-  font-size:16px;
+  font-size:15px;
   padding: 18px;
   margin:0;
   transform: translateY(-6px);
 }
 
 /* =========================
-   SHIFT CARD
+   SHIFT CARD (CONTAINER RESTORED)
    ========================= */
 .cviewLine{
-  display:flex;
-  gap:12px;
   padding:16px;
   border-radius:18px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
 }
 
+/* Text block */
 .cviewLineText{
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:10px; /* tighter */
   width:100%;
 }
 
-/* Header: tags sopra + timeRow sotto */
+/* Header block: tags row + time row */
 .cviewLineHeader{
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:10px; /* tighter */
 }
 
-/* TAGS */
+/* Tags row */
 .cviewLineTags{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
-  justify-content:flex-start;
+  justify-content:flex-start; /* compact & consistent */
   max-width:100%;
 }
+
+/* Tag pill (smaller) */
 .cviewInlineTag{
-  font-size:10.5px;
+  font-size:11px;
   font-weight:1000;
   padding:6px 10px;
   border-radius:999px;
-  background: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.09);
   border: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.90);
 }
 
-/* riga dot + ora + durata */
+/* Time row: dot + time + duration pill inline */
 .cviewTimeRow{
   display:flex;
   align-items:center;
-  gap:12px; /* <-- deve restare 12 per far combaciare --timeIndent */
-  min-width:0;
+  gap:12px;
 }
 
+/* Dot */
 .cviewDot{
-  width:8px;
-  height:8px;
+  width:10px;
+  height:10px;
   border-radius:999px;
   flex:0 0 auto;
 }
@@ -299,57 +293,80 @@
 .cviewDot.isHoliday{ background: var(--dotHoliday); }
 .cviewDot.isSunday{ background: var(--dotSunday); }
 
-/* ORA (in primo piano) */
+/* Time (reduced: NOT gigantic) */
 .cviewLineTime{
   font-weight:1000;
-  font-size:32px;
-  line-height:1.05;
+  font-size:22px;  /* <-- was too big in your screenshot */
   letter-spacing:.2px;
   font-variant-numeric: tabular-nums;
+  line-height:1.05;
+  color: var(--text);
   white-space:nowrap;
 }
 
-/* Durata (pill, tipo 7h) se la stai rendendo come tag */
-.cviewDurPill{
-  margin-left:12px;
-  flex:0 0 auto;
-  font-size:14px;
+/* Duration pill – same family as tags */
+.cviewDurTag{
+  margin-left:10px;
+  font-size:12px;
   font-weight:1000;
-  padding:8px 12px;
+  padding:7px 12px;
   border-radius:999px;
-  background: rgba(255,255,255,.08);
+  background: rgba(255,255,255,.09);
   border: 1px solid rgba(255,255,255,.14);
-  color: var(--text);
+  color: rgba(255,255,255,.88);
+  flex:0 0 auto;
+  white-space:nowrap;
 }
 
-/* Meta list */
+/* Meta block */
 .cviewMeta{
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:6px; /* tighter */
 }
 
-/* Riga meta base */
+/* Pausa – important but SECONDARY to time */
 .cviewMetaLine{
+  color: rgba(255,255,255,.84);
   font-weight:900;
-  font-size:16px;
-  color: var(--muted);
-  line-height:1.25;
+  line-height:1.18;
 }
 
-/* ✅ Pausa in primo piano */
+/* ✅ Pause alignment fix:
+   Meta starts under the TIME (not under the dot)
+   dot(10) + gap(12) = 22px -> plus small optical 2px
+*/
+.cviewMeta{ padding-left:24px; }
+
+/* Pausa primary (smaller than before) */
 .cviewMetaLine.isPrimary{
+  font-size:18px;   /* compact */
   font-weight:1000;
-  font-size:28px;
-  color: var(--text);
-
-  /* ✅ QUI: spostiamo SOLO "Pausa" a destra per allinearla all'ora */
-  padding-left: var(--timeIndent);
+  color: rgba(255,255,255,.90);
 }
 
-/* secondarie: turno/assenza/nota */
+/* Details secondary (smaller, second plane) */
 .cviewMetaLine.isSecondary{
+  font-size:15px;
+  color: rgba(255,255,255,.66);
   font-weight:900;
-  font-size:18px;
-  color: rgba(255,255,255,.70);
+}
+
+/* Notes block (optional in your layout) */
+.cviewNotes{
+  border-radius:18px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  padding:14px 16px;
+}
+.cviewNotesTitle{
+  font-weight:1000;
+  font-size:13px;
+  color: var(--text);
+  margin-bottom:6px;
+}
+.cviewNotesText{
+  font-size:13px;
+  color: var(--muted);
+  font-weight:900;
 }
