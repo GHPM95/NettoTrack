@@ -2,7 +2,8 @@
    Calendar View (Agenda)
    - TODAY + SELECTED pill singolo
    - Empty centrato verticalmente (robusto)
-   - Card premium: tag piccoli, orario/pause chiari, resto secondario
+   - Card: TAG sopra, ORA su 1 riga, PAUSA in primo piano,
+     TURNO/ASSENZA/NOTA secondari (lista pulita)
    ========================= */
 
 :root{
@@ -214,10 +215,9 @@
 }
 
 /* =========================
-   CARD TURNO (pulita, meno voci “urlate”)
+   CARD TURNO (lista pulita)
    ========================= */
 .cviewLine{
-  position:relative;
   display:flex;
   padding:16px;
   border-radius:18px;
@@ -232,7 +232,7 @@
   width:100%;
 }
 
-/* Header: tags piccoli sopra, poi timeRow */
+/* HEADER: tags sopra, poi timeRow */
 .cviewLineHeader{
   display:flex;
   flex-direction:column;
@@ -240,7 +240,7 @@
   gap:8px;
 }
 
-/* TAGS (molto più discreti) */
+/* Tags discreti */
 .cviewLineTags{
   display:flex;
   gap:6px;
@@ -259,13 +259,14 @@
   color: rgba(255,255,255,.78);
 }
 
-/* ORA ROW */
+/* Dot + Ora (sempre 1 riga) */
 .cviewTimeRow{
   display:flex;
   align-items:center;
   gap:10px;
   width:100%;
 }
+
 .cviewDot{
   width:9px;
   height:9px;
@@ -278,35 +279,35 @@
 .cviewDot.isSunday{ background: var(--dotSunday); }
 .cviewDot:not(.isOver):not(.isHoliday):not(.isSunday){ background: var(--dotBase); }
 
-/* ✅ ORARIO: importante ma non enorme */
+/* ORARIO: impatto, ma pulito */
 .cviewLineTime{
   flex:1;
   font-weight:1000;
-  font-size:20px;     /* ⬅️ prima era 22 */
+  font-size:20px;
   letter-spacing:.2px;
   font-variant-numeric: tabular-nums;
   line-height:1.08;
-  white-space:nowrap;
+  white-space:nowrap;     /* ✅ sempre una riga */
 }
 
-/* META */
+/* Meta list */
 .cviewMeta{
   display:flex;
   flex-direction:column;
   gap:7px;
 }
 
-/* ✅ PAUSA: quasi primo piano ma più pulita */
+/* Pausa: quasi primo piano */
 .cviewMetaLine.isPrimary{
-  font-size:16px;     /* ⬅️ stabile, leggibile */
+  font-size:16px;
   font-weight:1000;
   color: rgba(255,255,255,.82);
   line-height:1.15;
 }
 
-/* ✅ SECONDARY: più piccolo, meno “confusione” */
+/* Turno / Assenza / Nota: secondari */
 .cviewMetaLine.isSecondary{
-  font-size:14px;     /* ⬅️ ridotto */
+  font-size:14px;
   font-weight:900;
   color: rgba(255,255,255,.58);
   line-height:1.18;
