@@ -1,8 +1,8 @@
 /* =========================
    Calendar View (Agenda)
    FIX: pill singolo per TODAY + SELECTED (no doppio interno)
-   + FIX: empty centrato verticalmente (robusto)
-   + UI: durata come badge accanto all’orario (classe pronta)
+   + Empty centrato verticalmente
+   + ✅ Durata pill "xh / xhmm" accanto all’orario (stile tag)
    ========================= */
 
 :root{
@@ -171,7 +171,7 @@
 }
 
 /* =========================
-   SUMMARY (fix layout per centratura vuoto)
+   SUMMARY (layout + empty center)
    ========================= */
 .cviewSummary{
   flex:1;
@@ -181,19 +181,16 @@
   gap:14px;
   overflow:hidden;
 }
-
 .cviewSummaryTop{
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
   gap:12px;
 }
-
 .cviewSummaryDate{
   font-weight:1000;
   font-size:16px;
 }
-
 .cviewBadges{
   display:flex;
   gap:8px;
@@ -201,7 +198,7 @@
   justify-content:flex-end;
 }
 
-/* ✅ contenitore righe = prende lo spazio */
+/* contenitore righe = prende lo spazio */
 .cviewLines{
   flex:1;
   min-height:0;
@@ -212,7 +209,7 @@
   padding-bottom: 2px;
 }
 
-/* ✅ quando vuoto: centra verticalmente e orizzontalmente */
+/* quando vuoto: centra verticalmente */
 .cviewLines.isEmpty{
   overflow:hidden;
   align-items:center;
@@ -232,10 +229,11 @@
   font-size:16px;
   padding: 18px;
   margin:0;
+  transform: translateY(-6px);
 }
 
 /* =========================
-   Capsule turni
+   CARD turni
    ========================= */
 .cviewLine{
   display:flex;
@@ -246,118 +244,104 @@
   border: 1px solid rgba(255,255,255,.10);
 }
 
-.cviewDot{
-  width:8px;
-  height:8px;
+/* contenuto */
+.cviewLineText{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  width:100%;
+}
+
+/* header della card: tags sopra, timeRow sotto */
+.cviewLineHeader{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* tags in alto */
+.cviewLineTags{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-start;
+}
+
+/* tag base */
+.cviewInlineTag{
+  font-size:11px;
+  font-weight:1000;
+  padding:6px 12px;
   border-radius:999px;
-  margin-top:8px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.14);
+  color: var(--text);
+  white-space:nowrap;
+}
+
+/* ✅ durata pill (stesso stile, leggermente più “premium”) */
+.cviewDurTag{
+  background: rgba(255,255,255,.12);
+  border-color: rgba(255,255,255,.18);
+}
+
+/* riga dot + orario + durata */
+.cviewTimeRow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.cviewDot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
   flex:0 0 auto;
+  margin-top:2px;
 }
 .cviewDot.isOver{ background: var(--dotOver); }
 .cviewDot.isHoliday{ background: var(--dotHoliday); }
 .cviewDot.isSunday{ background: var(--dotSunday); }
 
-.cviewLineText{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  width:100%;
-  min-width:0;
-}
-
-/* Riga tag (Festivo / Straordinario / Domenicale) */
-.cviewLineHeader{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width:0;
-}
-
-/* Wrapper tags */
-.cviewLineTags{
-  margin-left:auto;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  max-width:100%;
-}
-
-/* Tag base */
-.cviewInlineTag{
-  font-size:10.5px;
-  font-weight:1000;
-  padding:6px 12px;
-  border-radius:999px;
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.18);
-  color: rgba(255,255,255,.85);
-  letter-spacing:.2px;
-  white-space:nowrap;
-}
-
-/* =========================
-   NUOVO: Riga Orario + Durata (badge)
-   ========================= */
-.cviewTimeRow{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  width:100%;
-  min-width:0;
-}
-
-/* Wrapper per ora + durata (stessa riga SEMPRE) */
+/* wrapper per tenere ORA + DURATA sempre insieme */
 .cviewTimeMain{
   display:flex;
   align-items:center;
   gap:10px;
-  flex-wrap:nowrap;
   min-width:0;
+  flex-wrap:nowrap;
 }
 
-/* Orario in primo piano */
+/* ORA: super priorità */
 .cviewLineTime{
   font-weight:1000;
-  font-size:20px;
+  font-size:20px;           /* ✅ impatto (come volevi) */
   letter-spacing:.2px;
+  line-height:1.05;
   font-variant-numeric: tabular-nums;
-  line-height:1.08;
-  white-space:nowrap;      /* ✅ sempre una riga */
+  white-space:nowrap;        /* ✅ NON va a capo */
 }
 
-/* Badge durata tipo tag */
-.cviewDurationTag{
-  font-size:11px;
-  font-weight:1000;
-  letter-spacing:.2px;
-  padding:4px 10px;
-  border-radius:999px;
-  background: rgba(255,255,255,.10);
-  border:1px solid rgba(255,255,255,.18);
-  color: rgba(255,255,255,.85);
+/* meta list: pausa in primo piano, resto più “secondario” */
+.cviewMeta{
   display:flex;
-  align-items:center;
-  justify-content:center;
-  white-space:nowrap;
-  opacity:.92;
+  flex-direction:column;
+  gap:8px;
 }
 
-/* =========================
-   Testi secondari (piano 2)
-   ========================= */
-.cviewLineDetails{
-  font-size:13px;
-  color: var(--muted);
+.cviewMetaLine{
   font-weight:900;
-  line-height:1.25;
+  line-height:1.18;
 }
 
-.cviewLineNote{
-  font-size:13px;
+.cviewMetaLine.isPrimary{
+  font-size:18px;            /* ✅ pausa in primo piano */
+  color: var(--text);
+}
+
+.cviewMetaLine.isSecondary{
+  font-size:15px;            /* ✅ sotto-voce più piccola */
   color: var(--muted);
-  font-weight:900;
-  line-height:1.25;
 }
 
 /* Note blocco (se usato) */
