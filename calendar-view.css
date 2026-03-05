@@ -1,12 +1,10 @@
-/* =========================
+l/* =========================
    Calendar View (Agenda)
-   - pill singolo TODAY/SELECTED (no doppio interno)
-   - empty centrato robusto
-   - layout card:
-     tags sopra, dot+ora+durata (stessa riga),
-     pausa primaria allineata all’ora,
-     divider sotto pausa,
-     dettagli secondari più piccoli
+   - ✅ TODAY/SELECTED pill singolo
+   - ✅ Empty centrato
+   - ✅ UNA card per giorno + blocchi turno
+   - ✅ Durata pill accanto all'orario
+   - ✅ Spaziature premium (compatte)
    ========================= */
 
 :root{
@@ -23,10 +21,6 @@
   --dotOver: rgba(180,120,255,.95);
   --dotHoliday: rgba(255,180,90,.95);
   --dotSunday: rgba(255,110,180,.95);
-
-  /* allineamenti card */
-  --cviewDotSize: 8px;
-  --cviewDotGap: 12px;
 }
 
 /* ROOT */
@@ -133,7 +127,7 @@
   transition:.12s ease;
 }
 
-/* Cuscinetto solo ai lati */
+/* Cuscinetto ai lati */
 .cviewDays .cviewDayBtn:first-child{ margin-left: 4px; }
 .cviewDays .cviewDayBtn:last-child{  margin-right:4px; }
 
@@ -179,7 +173,7 @@
 }
 
 /* =========================
-   SUMMARY (centratura vuoto)
+   SUMMARY
    ========================= */
 .cviewSummary{
   flex:1;
@@ -209,7 +203,7 @@
   justify-content:flex-end;
 }
 
-/* lista righe */
+/* contenitore righe */
 .cviewLines{
   flex:1;
   min-height:0;
@@ -243,60 +237,62 @@
 }
 
 /* =========================
-   CARD turno (nuovo layout)
+   DAY CARD (una sola)
    ========================= */
-.cviewLine{
-  padding:16px;
+.cviewDayCard{
   border-radius:18px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.10);
+  overflow:hidden;
 }
 
-.cviewLineText{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  width:100%;
+/* blocco turno */
+.cviewShiftBlock{
+  padding:16px;
 }
 
-/* header = tags sopra + riga ora sotto */
-.cviewLineHeader{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  align-items:flex-start;
+/* separatore tra blocchi turno */
+.cviewShiftBlock.isAfter{
+  border-top: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
 }
 
-/* TAGS (più piccoli, secondo piano) */
+/* =========================
+   TAGS (più piccoli, secondo piano)
+   ========================= */
 .cviewLineTags{
   display:flex;
-  gap:8px;
+  gap:6px;
   flex-wrap:wrap;
   justify-content:flex-start;
+  margin-bottom: 10px; /* poco sopra all’orario */
 }
+
 .cviewInlineTag{
-  font-size:10px;
+  font-size:9.5px;
   font-weight:1000;
-  padding:4px 10px;
+  letter-spacing:.2px;
+  padding:4px 8px;
   border-radius:999px;
   background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.12);
-  color: rgba(255,255,255,.76);
+  color: rgba(255,255,255,.78);
 }
 
-/* riga dot + ora + durata (NON deve andare a capo) */
+/* =========================
+   TIME ROW (dot + ora + durata)
+   ========================= */
 .cviewTimeRow{
   display:flex;
   align-items:center;
-  gap: var(--cviewDotGap);
-  flex-wrap: nowrap;
-  min-width:0;
+  gap:12px;
+  margin-bottom: 8px; /* ✅ ora + pausa più vicini */
 }
 
 /* dot */
 .cviewDot{
-  width:var(--cviewDotSize);
-  height:var(--cviewDotSize);
+  width:10px;
+  height:10px;
   border-radius:999px;
   flex:0 0 auto;
 }
@@ -304,68 +300,71 @@
 .cviewDot.isHoliday{ background: var(--dotHoliday); }
 .cviewDot.isSunday{ background: var(--dotSunday); }
 
-/* ORA (prima in gerarchia) */
+/* ora */
 .cviewLineTime{
   font-weight:1000;
-  font-size:20px;
+  font-size:20px; /* impatto */
   letter-spacing:.2px;
   font-variant-numeric: tabular-nums;
-  white-space:nowrap;
-  flex:0 0 auto;
+  white-space:nowrap; /* ✅ non spezza */
 }
 
-/* pill durata (come tag, ma un filo più evidente) */
-.cviewDurTag{
-  margin-left:auto;
-  flex:0 0 auto;
+/* durata pill (sempre accanto) */
+.cviewDurPill{
   font-size:12px;
   font-weight:1000;
-  padding:6px 12px;
+  padding:6px 10px;
   border-radius:999px;
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.16);
-  color: rgba(255,255,255,.86);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.84);
   white-space:nowrap;
+  margin-left: 10px; /* ✅ micro fix: più “attaccata” all’ora */
 }
 
-/* META: allineata all’inizio del testo ora (non al dot) */
+/* =========================
+   META (dettagli)
+   - ✅ allineati al DOT (non rientrati)
+   ========================= */
 .cviewMeta{
-  padding-left: calc(var(--cviewDotSize) + var(--cviewDotGap));
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:6px; /* ✅ meno distanziati */
 }
 
-/* Pausa primaria (seconda in gerarchia, grande ma meno dell’ora) */
+/* pausa: primo piano ma subito sotto l’ora */
 .cviewMetaLine.isPrimary{
   font-size:18px;
   font-weight:1000;
-  color: rgba(255,255,255,.86);
-  position:relative;
-  padding-bottom:12px;
-  margin-bottom:2px;
+  color: rgba(255,255,255,.90);
+  line-height:1.15;
 }
 
-/* ✅ divider sotto pausa (stile app) */
-.cviewMetaLine.isPrimary::after{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
+/* divider mini, stile app */
+.cviewMiniDivider{
   height:1px;
+  width:100%;
+  margin: 6px 0 4px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
 }
 
-/* Dettagli secondari (più piccoli, secondo piano) */
+/* secondarie: più piccole, secondo piano */
 .cviewMetaLine.isSecondary{
-  font-size:14px;
+  font-size:15px;
   font-weight:900;
-  color: var(--muted);
-  line-height:1.25;
+  color: rgba(255,255,255,.66);
+  line-height:1.18;
 }
 
-/* Note blocco (se usato) */
+/* nota: un po’ di stacco extra */
+.cviewMetaLine.isSecondary.isNote{
+  margin-top: 8px;
+  color: rgba(255,255,255,.62);
+}
+
+/* =========================
+   Note blocco (giorno, se usato)
+   ========================= */
 .cviewNotes{
   border-radius:18px;
   background: rgba(255,255,255,.06);
