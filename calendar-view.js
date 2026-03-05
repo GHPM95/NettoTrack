@@ -2,7 +2,7 @@
    calendar-view.js (Agenda)
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
-   - ✅ Card: tags sopra, dot+ora, poi lista (pausa/turno/assenza/nota)
+   - ✅ Card: tags sopra, dot+ora(+durata badge), poi lista (pausa/turno/assenza/nota)
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -77,6 +77,30 @@
     const [h,m] = String(t).split(":").map(x => parseInt(x,10));
     return (h*60) + (m||0);
   }
+
+  // ✅ durata (gestisce anche turni che passano mezzanotte)
+  function calcDuration(start, end){
+    if(!start || !end) return "";
+
+    const [sh, sm] = String(start).split(":").map(Number);
+    const [eh, em] = String(end).split(":").map(Number);
+
+    if(!Number.isFinite(sh) || !Number.isFinite(sm) || !Number.isFinite(eh) || !Number.isFinite(em)) return "";
+
+    let startMin = sh*60 + sm;
+    let endMin = eh*60 + em;
+
+    if(endMin < startMin) endMin += 1440; // passa mezzanotte
+
+    const diff = Math.max(0, endMin - startMin);
+    const h = Math.floor(diff/60);
+    const m = diff % 60;
+
+    if(h === 0 && m === 0) return "0h";
+    if(m === 0) return `${h}h`;
+    return `${h}h${String(m).padStart(2,"0")}`;
+  }
+
   function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 
   function dayDiffISO(aISO, bISO){
@@ -120,7 +144,6 @@
     try { model = cal.loadDay(iso); } catch(_) {}
 
     const shiftsRaw = Array.isArray(model?.shifts) ? model.shifts : [];
-
     const typeMap = { morning:"Mattino", afternoon:"Pomeriggio", night:"Notte", none:"" };
 
     const shifts = shiftsRaw.map((s) => {
@@ -372,7 +395,7 @@
           const txt = document.createElement("div");
           txt.className = "cviewLineText";
 
-          // Header: TAGS sopra + (dot + ora) sotto
+          // Header: TAGS sopra + (dot + ora + durata) sotto
           const header = document.createElement("div");
           header.className = "cviewLineHeader";
 
@@ -388,12 +411,25 @@
           const dot = document.createElement("div");
           dot.className = `cviewDot ${dotClass(s.dotKind)}`.trim();
 
+          const timeMain = document.createElement("div");
+          timeMain.className = "cviewTimeMain";
+
           const time = document.createElement("div");
           time.className = "cviewLineTime";
           time.textContent = `${s.start || "—"} - ${s.end || "—"}`;
 
+          timeMain.appendChild(time);
+
+          const dur = calcDuration(s.start, s.end);
+          if(dur){
+            const durTag = document.createElement("span");
+            durTag.className = "cviewDurationTag";
+            durTag.textContent = dur;
+            timeMain.appendChild(durTag);
+          }
+
           timeRow.appendChild(dot);
-          timeRow.appendChild(time);
+          timeRow.appendChild(timeMain);
 
           header.appendChild(tagsWrap);
           header.appendChild(timeRow);
