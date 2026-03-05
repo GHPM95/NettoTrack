@@ -362,3 +362,50 @@
   color: var(--muted);
   font-weight:900;
 }
+
+/* ===== Premium polish: durata pill + allineamenti ===== */
+
+.cviewTimeRow{
+  gap:12px;               /* ok */
+}
+
+.cviewDot{
+  width:10px;
+  height:10px;
+  margin-top:1px;         /* ✅ micro allineamento ottico */
+}
+
+.cviewTimeMain{
+  gap:10px;
+  align-items:baseline;   /* ✅ ora e pill sembrano “una cosa sola” */
+}
+
+.cviewLineTime{
+  letter-spacing:.2px;
+}
+
+/* ✅ durata pill più compatta e identica ai tag */
+.cviewInlineTag.cviewDurTag{
+  font-size:11px;
+  padding:6px 12px;       /* stessa “tag height” */
+  line-height:1;
+  transform: translateY(-1px); /* ✅ baseline premium */
+  background: rgba(255,255,255,.11);
+  border-color: rgba(255,255,255,.16);
+}
+
+/* ✅ respiro tra orario e meta */
+.cviewMeta{
+  margin-top: 2px;
+}
+
+/* ✅ secondarie più “secondo piano” ma leggibili */
+.cviewMetaLine.isSecondary{
+  font-size:14.5px;
+  color: rgba(255,255,255,.58);
+}
+
+/* opzionale: nota ancora un pelo più soft */
+.cviewMetaLine.isSecondary:last-child{
+  color: rgba(255,255,255,.54);
+}
