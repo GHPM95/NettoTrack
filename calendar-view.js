@@ -3,7 +3,9 @@
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
    - ✅ UNA sola card per giorno + più blocchi turno
-   - ✅ Durata "xh" pill accanto all'orario (minuti solo se servono)
+   - ✅ Durata "xh" pill accanto all'orario (minuti solo se presenti)
+   - ✅ Pausa allineata SOTTO l'orario (non sotto il dot)
+   - ✅ Turno/Assenza/Nota leggermente più piccoli
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -108,19 +110,17 @@
     return t;
   }
 
-  // ✅ Durata: "1h" (no 1.0h), minuti solo se presenti: "1h 15m"
+  // ✅ pill durata: "xh" + minuti solo se presenti (es. "1h 15m")
   function durPillText(from, to){
     const a = timeToMin(from);
     const b = timeToMin(to);
     if(a === 999999 || b === 999999) return "";
-
     let diff = b - a;
     if(diff < 0) diff += 24*60; // overnight
 
     const h = Math.floor(diff / 60);
     const m = diff % 60;
 
-    if(h <= 0 && m <= 0) return "";
     if(m === 0) return `${h}h`;
     if(h === 0) return `${m}m`;
     return `${h}h ${m}m`;
@@ -130,6 +130,8 @@
     const t = document.createElement("span");
     t.className = "cviewDurPill";
     t.textContent = text;
+    // leggermente più discreto (senza stravolgere)
+    t.style.fontSize = "0.92em";
     return t;
   }
 
@@ -365,6 +367,25 @@
     return "";
   }
 
+  // ✅ allinea SOLO "Pausa" sotto il testo dell'orario (non sotto il dot)
+  function alignPauseUnderTime(dayCard){
+    if(!dayCard) return;
+
+    const blocks = dayCard.querySelectorAll(".cviewShiftBlock");
+    blocks.forEach(block => {
+      const timeRow = block.querySelector(".cviewTimeRow");
+      const timeEl  = block.querySelector(".cviewLineTime");
+      const pauseEl = block.querySelector(".cviewMetaLine.isPrimary");
+
+      if(!timeRow || !timeEl || !pauseEl) return;
+
+      // offsetLeft del testo orario dentro la timeRow (include dot+gap)
+      const x = timeEl.offsetLeft;
+      // sposto SOLO la pausa (gli altri dettagli restano allineati al dot)
+      pauseEl.style.marginLeft = `${Math.max(0, x)}px`;
+    });
+  }
+
   async function renderSummary(iso){
     const mount = getMount();
     if(!mount) return;
@@ -391,6 +412,7 @@
         empty.textContent = "Nessun turno salvato per questo giorno.";
         linesEl.appendChild(empty);
       }else{
+        // ✅ UNA card unica
         const dayCard = document.createElement("div");
         dayCard.className = "cviewDayCard";
 
@@ -398,12 +420,14 @@
           const block = document.createElement("div");
           block.className = "cviewShiftBlock";
 
+          // Tags row
           const tagsWrap = document.createElement("div");
           tagsWrap.className = "cviewLineTags";
           if(s.sunday) tagsWrap.appendChild(makeTag("Domenicale"));
           if(s.holiday) tagsWrap.appendChild(makeTag("Festivo"));
           if(s.overtime) tagsWrap.appendChild(makeTag("Straordinario"));
 
+          // Time row: dot + ora + durata pill
           const timeRow = document.createElement("div");
           timeRow.className = "cviewTimeRow";
 
@@ -422,16 +446,19 @@
             timeRow.appendChild(makeDurPill(durTxt));
           }
 
+          // Meta
           const meta = document.createElement("div");
           meta.className = "cviewMeta";
 
+          // Pausa (primaria)
           if(s.pauseMin && s.pauseMin > 0){
             const p = document.createElement("div");
-            p.className = "cviewMetaLine isPrimary isPause";
+            p.className = "cviewMetaLine isPrimary";
             p.textContent = `Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`;
             meta.appendChild(p);
           }
 
+          // divider sotto pausa (solo se ho altro dopo)
           const hasDetails =
             !!s.shiftLabel ||
             (!!s.advLabel && !!s.advValue) ||
@@ -443,10 +470,17 @@
             meta.appendChild(div);
           }
 
+          // Dettagli: leggermente più piccoli (solo un filo)
+          const secondaryStyle = (el) => {
+            el.style.fontSize = "0.92em";
+            el.style.opacity = "0.85";
+          };
+
           if(s.shiftLabel){
             const t = document.createElement("div");
             t.className = "cviewMetaLine isSecondary";
             t.textContent = `Turno: ${s.shiftLabel}`;
+            secondaryStyle(t);
             meta.appendChild(t);
           }
 
@@ -454,6 +488,7 @@
             const a = document.createElement("div");
             a.className = "cviewMetaLine isSecondary";
             a.textContent = `${s.advLabel}: ${s.advValue}`;
+            secondaryStyle(a);
             meta.appendChild(a);
           }
 
@@ -461,9 +496,11 @@
             const n = document.createElement("div");
             n.className = "cviewMetaLine isSecondary isNote";
             n.textContent = `Nota: ${s.note}`;
+            secondaryStyle(n);
             meta.appendChild(n);
           }
 
+          // Compose block
           if(tagsWrap.childNodes.length) block.appendChild(tagsWrap);
           block.appendChild(timeRow);
           if(meta.childNodes.length) block.appendChild(meta);
@@ -476,6 +513,9 @@
         });
 
         linesEl.appendChild(dayCard);
+
+        // ✅ applico l’allineamento pausa sotto l’orario
+        requestAnimationFrame(() => alignPauseUnderTime(dayCard));
       }
     }
 
