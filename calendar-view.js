@@ -2,7 +2,7 @@
    calendar-view.js (Agenda)
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
-   - ✅ Card: tags sopra, dot+ora(+durata badge), poi lista (pausa/turno/assenza/nota)
+   - ✅ Card: tags sopra, dot+ora (+ durata pill) sotto, poi lista (pausa/turno/assenza/nota)
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -73,30 +73,25 @@
   }
 
   function timeToMin(t){
-    if(!t || !String(t).includes(":")) return 999999;
+    if(!t || !String(t).includes(":")) return NaN;
     const [h,m] = String(t).split(":").map(x => parseInt(x,10));
-    return (h*60) + (m||0);
+    if(!Number.isFinite(h)) return NaN;
+    return (h*60) + (Number.isFinite(m) ? m : 0);
   }
 
-  // ✅ durata (gestisce anche turni che passano mezzanotte)
-  function calcDuration(start, end){
-    if(!start || !end) return "";
+  // ✅ durata come "5h" oppure "5h30" (gestisce anche turno che passa mezzanotte)
+  function formatDurationPill(from, to){
+    const a = timeToMin(from);
+    const b = timeToMin(to);
+    if(!Number.isFinite(a) || !Number.isFinite(b)) return "";
 
-    const [sh, sm] = String(start).split(":").map(Number);
-    const [eh, em] = String(end).split(":").map(Number);
+    let diff = b - a;
+    if(diff < 0) diff += 1440; // passa mezzanotte
 
-    if(!Number.isFinite(sh) || !Number.isFinite(sm) || !Number.isFinite(eh) || !Number.isFinite(em)) return "";
-
-    let startMin = sh*60 + sm;
-    let endMin = eh*60 + em;
-
-    if(endMin < startMin) endMin += 1440; // passa mezzanotte
-
-    const diff = Math.max(0, endMin - startMin);
-    const h = Math.floor(diff/60);
+    const h = Math.floor(diff / 60);
     const m = diff % 60;
 
-    if(h === 0 && m === 0) return "0h";
+    if(h <= 0 && m <= 0) return "";
     if(m === 0) return `${h}h`;
     return `${h}h${String(m).padStart(2,"0")}`;
   }
@@ -124,9 +119,9 @@
     titleEl.textContent = formatMonthYear(previewSelected);
   }
 
-  function makeTag(label){
+  function makeTag(label, extraClass=""){
     const t = document.createElement("span");
-    t.className = "cviewInlineTag";
+    t.className = `cviewInlineTag ${extraClass}`.trim();
     t.textContent = label;
     return t;
   }
@@ -376,7 +371,10 @@
     const day = loadDaySavedOnly(iso);
 
     const shifts = Array.isArray(day.shifts) ? day.shifts.slice() : [];
-    shifts.sort((a,b) => timeToMin(a.start) - timeToMin(b.start));
+    shifts.sort((a,b) => {
+      const ta = timeToMin(a.start); const tb = timeToMin(b.start);
+      return (Number.isFinite(ta)?ta:999999) - (Number.isFinite(tb)?tb:999999);
+    });
 
     if(linesEl){
       linesEl.innerHTML = "";
@@ -418,14 +416,14 @@
           time.className = "cviewLineTime";
           time.textContent = `${s.start || "—"} - ${s.end || "—"}`;
 
-          timeMain.appendChild(time);
-
-          const dur = calcDuration(s.start, s.end);
+          // ✅ durata pill accanto all'orario
+          const dur = formatDurationPill(s.start, s.end);
           if(dur){
-            const durTag = document.createElement("span");
-            durTag.className = "cviewDurationTag";
-            durTag.textContent = dur;
+            const durTag = makeTag(dur, "cviewDurTag");
+            timeMain.appendChild(time);
             timeMain.appendChild(durTag);
+          }else{
+            timeMain.appendChild(time);
           }
 
           timeRow.appendChild(dot);
@@ -434,11 +432,10 @@
           header.appendChild(tagsWrap);
           header.appendChild(timeRow);
 
-          // Meta list
+          // Meta list (pausa/turno/assenza/nota)
           const meta = document.createElement("div");
           meta.className = "cviewMeta";
 
-          // Pausa (primary)
           if(s.pauseMin && s.pauseMin > 0){
             const p = document.createElement("div");
             p.className = "cviewMetaLine isPrimary";
@@ -446,7 +443,6 @@
             meta.appendChild(p);
           }
 
-          // Turno (secondary)
           if(s.shiftLabel){
             const t = document.createElement("div");
             t.className = "cviewMetaLine isSecondary";
@@ -454,7 +450,6 @@
             meta.appendChild(t);
           }
 
-          // Assenza/Congedo (secondary)
           if(s.advLabel && s.advValue){
             const a = document.createElement("div");
             a.className = "cviewMetaLine isSecondary";
@@ -462,7 +457,6 @@
             meta.appendChild(a);
           }
 
-          // Nota (secondary)
           if(s.note){
             const n = document.createElement("div");
             n.className = "cviewMetaLine isSecondary";
