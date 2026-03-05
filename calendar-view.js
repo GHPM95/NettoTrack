@@ -2,11 +2,7 @@
    calendar-view.js (Agenda)
    - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
-   - ✅ Card premium:
-       TAG sopra
-       ● + ORARIO su una riga
-       Pausa (primary)
-       Turno / Assenza / Nota (secondary)
+   - ✅ Card: tags sopra, dot+ora, poi lista (pausa/turno/assenza/nota)
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -109,13 +105,6 @@
     t.className = "cviewInlineTag";
     t.textContent = label;
     return t;
-  }
-
-  function makeMetaLine(text, kind){
-    const d = document.createElement("div");
-    d.className = `cviewMetaLine ${kind ? `is${kind}` : ""}`.trim();
-    d.textContent = text;
-    return d;
   }
 
   /* =========================
@@ -380,12 +369,10 @@
           const row = document.createElement("div");
           row.className = "cviewLine";
 
-          const dot = document.createElement("div");
-          dot.className = `cviewDot ${dotClass(s.dotKind)}`.trim();
-
           const txt = document.createElement("div");
           txt.className = "cviewLineText";
 
+          // Header: TAGS sopra + (dot + ora) sotto
           const header = document.createElement("div");
           header.className = "cviewLineHeader";
 
@@ -395,48 +382,67 @@
           if(s.holiday) tagsWrap.appendChild(makeTag("Festivo"));
           if(s.overtime) tagsWrap.appendChild(makeTag("Straordinario"));
 
+          const timeRow = document.createElement("div");
+          timeRow.className = "cviewTimeRow";
+
+          const dot = document.createElement("div");
+          dot.className = `cviewDot ${dotClass(s.dotKind)}`.trim();
+
           const time = document.createElement("div");
           time.className = "cviewLineTime";
           time.textContent = `${s.start || "—"} - ${s.end || "—"}`;
 
-          header.appendChild(tagsWrap);
-          header.appendChild(time);
+          timeRow.appendChild(dot);
+          timeRow.appendChild(time);
 
+          header.appendChild(tagsWrap);
+          header.appendChild(timeRow);
+
+          // Meta list
           const meta = document.createElement("div");
           meta.className = "cviewMeta";
 
+          // Pausa (primary)
           if(s.pauseMin && s.pauseMin > 0){
-            meta.appendChild(
-              makeMetaLine(
-                `Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`,
-                "Primary"
-              )
-            );
+            const p = document.createElement("div");
+            p.className = "cviewMetaLine isPrimary";
+            p.textContent = `Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`;
+            meta.appendChild(p);
           }
 
+          // Turno (secondary)
           if(s.shiftLabel){
-            meta.appendChild(makeMetaLine(`Turno: ${s.shiftLabel}`, "Secondary"));
+            const t = document.createElement("div");
+            t.className = "cviewMetaLine isSecondary";
+            t.textContent = `Turno: ${s.shiftLabel}`;
+            meta.appendChild(t);
           }
 
+          // Assenza/Congedo (secondary)
           if(s.advLabel && s.advValue){
-            meta.appendChild(makeMetaLine(`${s.advLabel}: ${s.advValue}`, "Secondary"));
+            const a = document.createElement("div");
+            a.className = "cviewMetaLine isSecondary";
+            a.textContent = `${s.advLabel}: ${s.advValue}`;
+            meta.appendChild(a);
           }
 
+          // Nota (secondary)
           if(s.note){
-            meta.appendChild(makeMetaLine(`Nota: ${s.note}`, "Secondary"));
+            const n = document.createElement("div");
+            n.className = "cviewMetaLine isSecondary";
+            n.textContent = `Nota: ${s.note}`;
+            meta.appendChild(n);
           }
 
           txt.appendChild(header);
           if(meta.childNodes.length) txt.appendChild(meta);
 
-          row.appendChild(dot);
           row.appendChild(txt);
           linesEl.appendChild(row);
         });
       }
     }
 
-    // note “giorno” (se mai le userai)
     const notes = (day.notes || "").trim();
     if(notesWrap && notesText){
       if(notes){
