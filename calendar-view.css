@@ -85,20 +85,26 @@
   display:flex;
   align-items:center;
   justify-content:center;
+  position:relative;
+  z-index:2;
 }
 
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
   border-radius:18px;
+  padding:0 6px;
+  box-sizing:border-box;
 }
 
 .cviewTrack{
   display:flex;
 }
+
 .cviewTrack.isSnap{
-  transition:transform .22s ease;
+  transition: transform .22s ease;
 }
+
 .cviewPage{
   flex:0 0 auto;
 }
@@ -107,7 +113,7 @@
   display:grid;
   grid-template-columns:repeat(7,1fr);
   gap:6px;
-  padding:0 6px;
+  padding:0;
   box-sizing:border-box;
 }
 
