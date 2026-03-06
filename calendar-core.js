@@ -1,32 +1,33 @@
 window.NTCal = (() => {
-  // Parametri Default (Verranno sovrascritti dalle impostazioni dell'utente)
+  // CONFIGURAZIONE CONTABILE (Default)
   const CONFIG = {
     baseHourly: 10.00,
     nightStart: 1320, // 22:00 in minuti
-    nightEnd: 360,   // 06:00 in minuti
+    nightEnd: 360,    // 06:00 in minuti
     taxRate: 0.23,    // 23% tasse stimate
     multipliers: {
-      overtime: 1.25, // +25%
-      holiday: 1.50,  // +50%
-      night: 1.15     // +15%
+      overtime: 1.25,
+      holiday: 1.50,
+      night: 1.15
     }
   };
 
+  // Trasforma "HH:MM" in minuti totali dall'inizio del giorno
   const parseHHMM = (s) => {
-    const [h, m] = String(s).split(':').map(Number);
+    if (!s) return null;
+    const [h, m] = s.split(':').map(Number);
     return h * 60 + m;
   };
 
-  // Funzione Magica: Calcola quanti minuti di un intervallo cadono in fascia notturna
-  const calculateNightMinutes = (start, end) => {
+  // L'algoritmo che seziona il turno per trovare le ore notturne
+  const getNightMinutes = (start, end) => {
     let nightMin = 0;
-    let current = start;
-    const totalDuration = end < start ? (end + 1440) - start : end - start;
+    const isOvernight = end < start;
+    const totalMin = isOvernight ? (end + 1440) - start : end - start;
 
-    for (let i = 0; i < totalDuration; i++) {
-      let minuteOfDay = (current + i) % 1440;
-      // Controllo se il minuto cade tra le 22:00 e le 06:00
-      if (minuteOfDay >= CONFIG.nightStart || minuteOfDay < CONFIG.nightEnd) {
+    for (let i = 0; i < totalMin; i++) {
+      let currentMinute = (start + i) % 1440;
+      if (currentMinute >= CONFIG.nightStart || currentMinute < CONFIG.nightEnd) {
         nightMin++;
       }
     }
@@ -34,44 +35,48 @@ window.NTCal = (() => {
   };
 
   const calculateFinance = (dayData) => {
-    let gross = 0;
-    let details = { baseH: 0, extraH: 0, nightH: 0 };
+    let totalGross = 0;
+    let stats = { baseH: 0, nightH: 0, extraH: 0 };
+
+    if (!dayData || !dayData.shifts) return { gross: 0, net: 0, ...stats };
 
     dayData.shifts.forEach(shift => {
       const start = parseHHMM(shift.from);
       const end = parseHHMM(shift.to);
-      if (isNaN(start) || isNaN(end)) return;
+      if (start === null || end === null) return;
 
       let totalMin = end < start ? (end + 1440) - start : end - start;
-      totalMin -= (shift.pausePaid ? 0 : Number(shift.pauseMin || 0));
-      
-      const nightMin = calculateNightMinutes(start, end);
-      const dayMin = totalMin - nightMin;
+      const pause = Number(shift.pauseMin || 0);
+      totalMin = Math.max(0, totalMin - (shift.pausePaid ? 0 : pause));
 
-      // Calcolo Moltiplicatori (Straordinario o Festivo)
+      const nightMin = getNightMinutes(start, end);
+      const dayMin = Math.max(0, totalMin - nightMin);
+
+      // Gestione Maggiorazioni (Straordinario/Festivo)
       let m = 1.0;
       if (shift.tags?.overtime) m = CONFIG.multipliers.overtime;
       if (shift.tags?.holiday || shift.tags?.sunday) m = CONFIG.multipliers.holiday;
 
-      // Somma Lorda: (Ore Diurne * Paga * M) + (Ore Notturne * Paga * M * Magg.Notte)
+      // Calcolo economico del singolo turno
       const shiftGross = ((dayMin / 60) * CONFIG.baseHourly * m) + 
                          ((nightMin / 60) * CONFIG.baseHourly * m * CONFIG.multipliers.night);
       
-      gross += shiftGross;
-      details.baseH += (dayMin / 60);
-      details.nightH += (nightMin / 60);
-      if (m > 1) details.extraH += (totalMin / 60);
+      totalGross += shiftGross;
+      stats.baseH += (dayMin / 60);
+      stats.nightH += (nightMin / 60);
+      if (m > 1) stats.extraH += (totalMin / 60);
     });
 
-    const net = gross * (1 - CONFIG.taxRate);
-    return { gross, net, ...details };
+    return {
+      gross: totalGross,
+      net: totalGross * (1 - CONFIG.taxRate),
+      ...stats
+    };
   };
 
   return {
-    // Esponiamo le funzioni per gli altri file
-    saveDay: (key, data) => localStorage.setItem(`nt_${key}`, JSON.stringify(data)),
-    loadDay: (key) => JSON.parse(localStorage.getItem(`nt_${key}`)) || { shifts: [] },
     calculateFinance,
-    formatEuro: (val) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(val)
+    saveDay: (key, data) => localStorage.setItem(`nt_${key}`, JSON.stringify(data)),
+    loadDay: (key) => JSON.parse(localStorage.getItem(`nt_${key}`)) || { shifts: [] }
   };
 })();
