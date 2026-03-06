@@ -1,9 +1,6 @@
 /* =========================
    Calendar View (Agenda)
-   - Premium card layout
-   - Compact pause
-   - Paid / not paid pill
-   - Detail rows in two columns
+   Premium refined layout
    ========================= */
 
 :root{
@@ -27,6 +24,7 @@
 }
 
 /* ROOT */
+
 .cviewRoot{
   width:100%;
   height:100%;
@@ -35,22 +33,27 @@
   gap:14px;
   min-height:0;
   background:transparent;
+}
+
+.cviewRoot *{
   box-sizing:border-box;
 }
-.cviewRoot *{ box-sizing:border-box; }
 
 /* HEADER */
+
 .cviewHeader{
   display:grid;
   grid-template-columns:38px 1fr 38px;
   align-items:center;
   gap:10px;
 }
+
 .cviewTitle{
   font-weight:1000;
   font-size:16px;
   text-align:center;
 }
+
 .cviewClose{
   width:38px;
   height:38px;
@@ -63,6 +66,7 @@
 }
 
 /* WEEK STRIP */
+
 .cviewWeekStrip{
   display:grid;
   grid-template-columns:26px 1fr 26px;
@@ -70,6 +74,7 @@
   gap:6px;
   padding:0 2px;
 }
+
 .cviewNavBtn{
   width:26px;
   height:52px;
@@ -83,22 +88,25 @@
   display:flex;
   align-items:center;
   justify-content:center;
-  transition:.12s ease;
-}
-.cviewNavBtn:active{
-  transform:scale(.96);
-  background:rgba(255,255,255,.12);
 }
 
-/* DAYS WRAP */
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
   border-radius:18px;
 }
-.cviewTrack{ display:flex; }
-.cviewTrack.isSnap{ transition: transform .22s ease; }
-.cviewPage{ flex:0 0 auto; }
+
+.cviewTrack{
+  display:flex;
+}
+
+.cviewTrack.isSnap{
+  transition: transform .22s ease;
+}
+
+.cviewPage{
+  flex:0 0 auto;
+}
 
 .cviewDays{
   display:grid;
@@ -117,109 +125,76 @@
   align-items:center;
   justify-content:center;
   gap:4px;
-  position:relative;
-  transition:.12s ease;
 }
+
 .cviewDow{
   font-size:11px;
   font-weight:900;
   color:var(--muted);
 }
+
 .cviewNum{
   font-size:15px;
   font-weight:1000;
-  font-variant-numeric: tabular-nums;
 }
+
 .cviewDayBtn.isToday{
   background:var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
+
 .cviewDayBtn.isSelected:not(.isToday){
   background:var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
 }
 
 /* DIVIDER */
+
 .cviewDivider{
   height:1px;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
 }
 
 /* SUMMARY */
+
 .cviewSummary{
   flex:1;
-  min-height:0;
   display:flex;
   flex-direction:column;
   gap:14px;
-  overflow:hidden;
 }
+
 .cviewSummaryTop{
   display:flex;
-  align-items:flex-start;
   justify-content:space-between;
-  gap:12px;
 }
+
 .cviewSummaryDate{
   font-weight:1000;
   font-size:16px;
 }
-.cviewBadges{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-.cviewLines{
-  flex:1;
-  min-height:0;
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  overflow:auto;
-}
-.cviewLines.isEmpty{
-  overflow:hidden;
-  align-items:center;
-  justify-content:center;
-}
-.cviewEmpty{
-  width:100%;
-  max-width:90%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  color:var(--muted);
-  font-weight:1000;
-  font-size:16px;
-  padding:18px;
-  margin:0;
-  transform:translateY(-6px);
-}
 
-/* DAY CARD */
+/* CARD */
+
 .cviewDayCard{
   border-radius:18px;
   background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.10);
   overflow:hidden;
 }
+
 .cviewShiftBlock{
   padding:16px;
 }
-.cviewShiftBlock.isAfter{
-  border-top:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.02);
-}
 
 /* TAGS */
+
 .cviewLineTags{
   display:flex;
   gap:8px;
-  flex-wrap:wrap;
   margin-bottom:10px;
 }
+
 .cviewInlineTag{
   font-size:12px;
   font-weight:1000;
@@ -227,22 +202,22 @@
   border-radius:999px;
   background:rgba(255,255,255,.08);
   border:1px solid rgba(255,255,255,.12);
-  color:rgba(255,255,255,.82);
 }
 
 /* TIME ROW */
+
 .cviewTimeRow{
   display:flex;
   align-items:center;
   gap:var(--cvDotGap);
-  min-width:0;
 }
+
 .cviewDot{
   width:var(--cvDotSize);
   height:var(--cvDotSize);
-  flex:0 0 var(--cvDotSize);
   border-radius:999px;
 }
+
 .cviewDot.isOver{ background:var(--dotOver); }
 .cviewDot.isHoliday{ background:var(--dotHoliday); }
 .cviewDot.isSunday{ background:var(--dotSunday); }
@@ -250,11 +225,6 @@
 .cviewLineTime{
   font-weight:1000;
   font-size:24px;
-  line-height:1.06;
-  letter-spacing:.2px;
-  font-variant-numeric: tabular-nums;
-  white-space:nowrap;
-  color:var(--text);
 }
 
 .cviewDurPill{
@@ -264,99 +234,72 @@
   border-radius:999px;
   background:rgba(255,255,255,.08);
   border:1px solid rgba(255,255,255,.12);
-  color:rgba(255,255,255,.84);
-  white-space:nowrap;
-  opacity:.92;
   margin-left:10px;
 }
 
-/* META */
-.cviewMeta{
-  display:flex;
-  flex-direction:column;
-  gap:0;
-}
+/* PAUSA */
 
-/* PAUSE */
 .cviewPauseRow{
-  margin-top:2px;
+  margin-top:3px;
   margin-left:var(--cvTimeIndent);
   display:flex;
-  align-items:center;
   gap:8px;
-  flex-wrap:wrap;
 }
+
 .cviewPauseText{
   font-size:13px;
   font-weight:800;
   color:rgba(255,255,255,.78);
-  letter-spacing:.1px;
-  text-transform:lowercase;
-  line-height:1.05;
 }
+
+/* pill pagata/non pagata più piccola */
+
 .cviewPauseBadge{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size:10px;
+  font-size:9px;
   font-weight:900;
-  padding:4px 8px;
+  padding:3px 7px;
   border-radius:999px;
   background:rgba(255,255,255,.08);
   border:1px solid rgba(255,255,255,.12);
   color:rgba(255,255,255,.74);
-  line-height:1;
 }
 
-/* SOFT DIVIDER */
+/* DIVIDER */
+
 .cviewMiniDivider{
   height:1px;
   margin:6px 0 4px;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);
 }
 
-/* DETAIL GRID */
+/* DETAILS */
+
 .cviewDetailGrid{
   display:flex;
   flex-direction:column;
   gap:5px;
 }
+
 .cviewDetailRow{
   display:grid;
   grid-template-columns:74px 1fr;
   gap:10px;
-  align-items:start;
 }
+
+/* spazio leggermente maggiore prima della nota */
+
 .cviewDetailRow.isNote{
-  margin-top:4px;
+  margin-top:6px;
 }
+
 .cviewDetailKey{
   font-size:13px;
   font-weight:900;
   color:rgba(255,255,255,.48);
 }
+
 .cviewDetailVal{
   font-size:14px;
   font-weight:900;
-  line-height:1.18;
   color:rgba(255,255,255,.72);
-}
-
-/* NOTE BLOCK OUTSIDE CARD (if used) */
-.cviewNotes{
-  border-radius:18px;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.10);
-  padding:14px 16px;
-}
-.cviewNotesTitle{
-  font-weight:1000;
-  font-size:13px;
-  color:var(--text);
-  margin-bottom:6px;
-}
-.cviewNotesText{
-  font-size:13px;
-  color:var(--muted);
-  font-weight:900;
 }
