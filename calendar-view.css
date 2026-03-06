@@ -1,6 +1,9 @@
 /* =========================
    Calendar View (Agenda)
    Layout pulito senza card interne
+   - scrollbar visibile
+   - box conteggio invisibile
+   - messaggio vuoto centrato
    ========================= */
 
 :root{
@@ -24,7 +27,6 @@
 }
 
 /* ROOT */
-
 .cviewRoot{
   width:100%;
   height:100%;
@@ -32,26 +34,24 @@
   flex-direction:column;
   gap:14px;
   min-height:0;
+  background:transparent;
 }
-
 .cviewRoot *{
   box-sizing:border-box;
 }
 
 /* HEADER */
-
 .cviewHeader{
   display:grid;
   grid-template-columns:38px 1fr 38px;
   align-items:center;
+  gap:10px;
 }
-
 .cviewTitle{
   font-weight:1000;
   font-size:16px;
   text-align:center;
 }
-
 .cviewClose{
   width:38px;
   height:38px;
@@ -64,36 +64,37 @@
 }
 
 /* WEEK STRIP */
-
 .cviewWeekStrip{
   display:grid;
   grid-template-columns:26px 1fr 26px;
   align-items:center;
   gap:6px;
 }
-
 .cviewNavBtn{
   width:26px;
   height:52px;
   border-radius:20px;
   border:none;
   background:rgba(255,255,255,.08);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
   color:var(--text);
   font-weight:900;
+  font-size:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-
 .cviewDaysWrap{
   overflow:hidden;
+  border-radius:18px;
+  min-width:0;
 }
-
 .cviewTrack{
   display:flex;
 }
-
 .cviewTrack.isSnap{
   transition:transform .22s ease;
 }
-
 .cviewPage{
   flex:0 0 auto;
 }
@@ -103,7 +104,6 @@
   grid-template-columns:repeat(7,1fr);
   gap:5px;
 }
-
 .cviewDayBtn{
   border:none;
   background:transparent;
@@ -116,35 +116,31 @@
   justify-content:center;
   gap:4px;
 }
-
 .cviewDow{
   font-size:11px;
   font-weight:900;
   color:var(--muted);
 }
-
 .cviewNum{
   font-size:15px;
   font-weight:1000;
 }
-
 .cviewDayBtn.isToday{
   background:var(--todayFill);
+  box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
-
-.cviewDayBtn.isSelected{
+.cviewDayBtn.isSelected:not(.isToday){
   background:var(--selFill);
+  box-shadow: inset 0 0 0 1px var(--selBorder);
 }
 
 /* DIVIDER */
-
 .cviewDivider{
   height:1px;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
 }
 
 /* SUMMARY */
-
 .cviewSummary{
   flex:1;
   display:flex;
@@ -153,87 +149,115 @@
   min-height:0;
   overflow:hidden;
 }
-
+.cviewSummaryTop{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+}
 .cviewSummaryDate{
   font-weight:1000;
   font-size:16px;
 }
+.cviewBadges{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
 
 /* SCROLL AREA */
-
 .cviewLines{
   flex:1;
+  min-height:0;
   overflow:auto;
   padding-right:4px;
 
   scrollbar-width:thin;
   scrollbar-color: rgba(255,255,255,.22) transparent;
 }
-
 .cviewLines::-webkit-scrollbar{
   width:6px;
 }
-
 .cviewLines::-webkit-scrollbar-track{
   background:transparent;
 }
-
 .cviewLines::-webkit-scrollbar-thumb{
   background:rgba(255,255,255,.22);
   border-radius:999px;
 }
 
-/* CONTENITORE TURNI (completamente invisibile) */
-
-.cviewDayCard{
-  border:none;
-  background:transparent;
-  padding:0;
+/* EMPTY */
+.cviewLines.isEmpty{
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.cviewEmpty{
+  width:100%;
+  min-height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:var(--muted);
+  font-weight:1000;
+  font-size:16px;
+  line-height:1.2;
+  padding:18px;
   margin:0;
 }
 
-/* BLOCCO TURNO */
+/* CONTENITORE TURNI INVISIBILE */
+.cviewDayCard{
+  border:none;
+  background:transparent;
+  box-shadow:none;
+  padding:0;
+  margin:0;
+  overflow:visible;
+}
 
+/* BLOCCO TURNO */
 .cviewShiftBlock{
   padding:14px 16px;
   background:transparent;
 }
-
 .cviewShiftBlock.isAfter{
   border:none;
   background:transparent;
 }
 
 /* TAG */
-
 .cviewLineTags{
   display:flex;
   gap:8px;
+  flex-wrap:wrap;
   margin-bottom:10px;
 }
-
 .cviewInlineTag{
   font-size:11px;
   font-weight:900;
   padding:5px 10px;
   border-radius:999px;
   background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.82);
 }
 
 /* TIME ROW */
-
 .cviewTimeRow{
   display:flex;
   align-items:center;
   gap:var(--cvDotGap);
+  min-width:0;
 }
-
 .cviewDot{
   width:var(--cvDotSize);
   height:var(--cvDotSize);
   border-radius:999px;
+  flex:0 0 var(--cvDotSize);
 }
-
 .cviewDot.isBase{ background:var(--dotBase); }
 .cviewDot.isOver{ background:var(--dotOver); }
 .cviewDot.isHoliday{ background:var(--dotHoliday); }
@@ -243,38 +267,63 @@
   font-weight:1000;
   font-size:24px;
   letter-spacing:.2px;
+  line-height:1.06;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+  color:var(--text);
 }
-
 .cviewDurPill{
   font-size:13px;
   font-weight:800;
   padding:5px 10px;
   border-radius:999px;
   background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.84);
+  white-space:nowrap;
+  opacity:.92;
+  margin-left:10px;
 }
 
 /* PAUSA */
-
 .cviewPauseRow{
   margin-left:var(--cvTimeIndent);
+  margin-top:2px;
   display:flex;
+  align-items:center;
   gap:8px;
+  flex-wrap:wrap;
 }
-
 .cviewPauseText{
   font-size:13px;
   font-weight:800;
+  color:rgba(255,255,255,.78);
+  letter-spacing:.1px;
+  text-transform:lowercase;
+  line-height:1.05;
 }
-
 .cviewPauseBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
   font-size:10px;
-  padding:3px 7px;
+  font-weight:900;
+  letter-spacing:.1px;
+  padding:4px 9px;
   border-radius:999px;
   background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.78);
+  line-height:1;
+  white-space:nowrap;
 }
 
-/* DETTAGLI */
-
+/* META + DETAILS */
+.cviewMeta{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+}
 .cviewMiniDivider{
   height:1px;
   margin:6px 0 4px;
@@ -286,21 +335,42 @@
   flex-direction:column;
   gap:5px;
 }
-
 .cviewDetailRow{
   display:grid;
   grid-template-columns:74px 1fr;
   gap:10px;
+  align-items:start;
 }
-
+.cviewDetailRow.isNote{
+  margin-top:4px;
+}
 .cviewDetailKey{
   font-size:13px;
   font-weight:900;
   color:rgba(255,255,255,.48);
 }
-
 .cviewDetailVal{
   font-size:14px;
   font-weight:900;
   color:rgba(255,255,255,.72);
+  line-height:1.18;
+}
+
+/* NOTE BLOCK OUTSIDE CARD (se usato) */
+.cviewNotes{
+  border-radius:18px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  padding:14px 16px;
+}
+.cviewNotesTitle{
+  font-weight:1000;
+  font-size:13px;
+  color:var(--text);
+  margin-bottom:6px;
+}
+.cviewNotesText{
+  font-size:13px;
+  color:var(--muted);
+  font-weight:900;
 }
