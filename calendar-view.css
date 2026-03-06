@@ -67,17 +67,20 @@
   font-size:18px;
 }
 
-/* WEEK STRIP */
+/* =========================
+   WEEK STRIP — FIX definitivo
+   ========================= */
+
 .cviewWeekStrip{
   display:grid;
-  grid-template-columns:26px 1fr 26px;
+  grid-template-columns:44px 1fr 44px;
   align-items:center;
-  gap:6px;
-  padding:0 2px;
+  gap:8px;
+  padding:0;
 }
 
 .cviewNavBtn{
-  width:26px;
+  width:44px;
   height:52px;
   border-radius:20px;
   border:none;
@@ -91,11 +94,14 @@
   justify-content:center;
   position:relative;
   z-index:2;
+  flex:0 0 44px;
+  overflow:hidden;
 }
 
 .cviewDaysWrap{
-  overflow:hidden;
   min-width:0;
+  overflow:hidden;
+  border-radius:18px;
 }
 
 .cviewTrack{
@@ -107,13 +113,15 @@
 }
 
 .cviewPage{
-  flex:0 0 100%;
+  flex:0 0 auto;
 }
 
 .cviewDays{
   display:grid;
-  grid-template-columns:repeat(7,1fr);
+  grid-template-columns:repeat(7, minmax(0, 1fr));
   gap:6px;
+  padding:0;
+  box-sizing:border-box;
 }
 
 .cviewDayBtn{
@@ -128,6 +136,7 @@
   justify-content:center;
   gap:4px;
   min-width:0;
+  overflow:hidden;
 }
 
 .cviewDow{
