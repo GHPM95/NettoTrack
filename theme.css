@@ -1,99 +1,66 @@
-:root {
-  /* --- TIPOGRAFIA --- */
-  --font-main: 'Inter', -apple-system, system-ui, sans-serif;
-  --font-num: 'Montserrat', sans-serif;
-
-  /* --- PALETTE OLED PREMIUM --- */
-  --bg-dark: #0A0A0C;
-  --text-hi: #FFFFFF;
-  --text-lo: rgba(255, 255, 255, 0.55);
-  
-  --accent-blue: #82AAFF;
-  --accent-purple: #B478FF;
-  --accent-pink: #FF6EB4;
-
-  /* --- L'IDENTITÀ "TODAY" UNIFICATA --- */
-  --today-grad: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-  --today-glow: 0 0 20px rgba(130, 170, 255, 0.4);
-  --today-text: #ffffff;
-
-  /* --- GLASS LAYERS --- */
-  --glass-1: rgba(255, 255, 255, 0.05);
-  --glass-2: rgba(255, 255, 255, 0.10);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --blur: 20px;
-
-  /* --- LAYOUT ADATTIVO (iPhone 14 Pro/Max) --- */
-  --p-side: clamp(20px, 6vw, 32px);
-  --p-top: env(safe-area-inset-top, 44px);
-  --p-bottom: env(safe-area-inset-bottom, 34px);
-  
-  --r-card: 32px;
-  --r-btn: 18px;
-  --touch-target: clamp(48px, 12vw, 56px);
-  
-  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Base Reset */
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { 
-  background-color: var(--bg-dark); 
-  color: var(--text-hi); 
-  font-family: var(--font-main);
-  margin: 0;
-  overflow: hidden;
-}
-
 /* =====================================================
    NETTOTRACK - MASTER DESIGN SYSTEM
-   (Variabili + UI Layout + Glassmorphism)
    ===================================================== */
 
 :root {
-    /* 1. VARIABILI (Il vecchio theme.css) */
+    /* Variabili Colore & Font */
     --bg-oled: #000000;
+    --text-hi: #FFFFFF;
+    --text-lo: #8E8E93;
     --accent-blue: #007AFF;
-    /* ... le altre tue variabili ... */
+    --glass-1: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --blur: 20px;
+    --font-main: 'Inter', sans-serif;
+    --font-title: 'Montserrat', sans-serif;
+    
+    /* Safe Areas iPhone 14 Pro */
+    --p-top: 59px;    /* Dynamic Island */
+    --p-bottom: 34px; /* Home Indicator */
+    --touch-target: 60px;
 }
 
-/* 2. RESET GLOBALI */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
 body {
     background-color: var(--bg-oled);
     color: var(--text-hi);
-    margin: 0;
     font-family: var(--font-main);
-    overflow: hidden; /* Fondamentale per il feeling App */
+    margin: 0;
+    overflow: hidden; /* Blocca lo scroll della pagina intera */
+    height: 100vh;
 }
 
-/* 3. LAYOUT UI (Quello che era in ui.css) */
+/* Layout Principale */
 #app-content {
     position: relative;
     width: 100%;
-    height: 100vh;
-    padding-top: var(--p-top);
+    height: 100%;
 }
 
 .appSection {
     position: absolute;
-    top: var(--p-top);
+    top: 0;
     left: 0;
     right: 0;
     bottom: calc(var(--touch-target) + var(--p-bottom));
-    display: none;
+    padding: var(--p-top) 20px 20px 20px;
+    display: none; /* Nascosto di default */
     flex-direction: column;
-    padding: 20px;
     overflow-y: auto;
 }
 
+/* Questa classe viene aggiunta dal JS per mostrare la sezione */
 .activeSection {
-    display: flex; /* Mostra la sezione attiva */
+    display: flex !important;
 }
 
-/* 4. COMPONENTI GLASSMORPHISM */
+/* Stile Vetro per le Card (Useremo questo nelle sezioni) */
 .glass-panel {
     background: var(--glass-1);
     backdrop-filter: blur(var(--blur));
-    border-radius: 24px;
+    -webkit-backdrop-filter: blur(var(--blur));
     border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 16px;
 }
