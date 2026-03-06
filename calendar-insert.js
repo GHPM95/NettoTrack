@@ -25,10 +25,8 @@
           <button class="ntBtn" id="cinsClose" type="button" aria-label="Chiudi">×</button>
         </div>
 
-        <div class="cinsBody">
-          <div class="cinsWeekdays" id="cinsWeekdays" aria-hidden="true"></div>
-          <div class="cinsGrid" id="cinsGrid" aria-label="Giorni del mese"></div>
-        </div>
+        <div class="cinsWeekdays" id="cinsWeekdays" aria-hidden="true"></div>
+        <div class="cinsGrid" id="cinsGrid" aria-label="Giorni del mese"></div>
 
         <div class="cinsPickerLayer" id="cinsPickerLayer" aria-hidden="true">
           <div class="cinsPickerCard" id="cinsPickerCard" role="dialog" aria-label="Seleziona mese e anno">
@@ -56,6 +54,7 @@
 
     mount.querySelector("#cinsPrev").addEventListener("click", () => stepMonth(-1));
     mount.querySelector("#cinsNext").addEventListener("click", () => stepMonth(+1));
+
     mount.querySelector("#cinsClose").addEventListener("click", () => {
       document.dispatchEvent(new Event("nettotrack:closeCalendarInsert"));
     });
@@ -97,8 +96,17 @@
 
   function stepMonth(delta) {
     m += delta;
-    if (m < 0) { m = 11; y -= 1; }
-    if (m > 11) { m = 0; y += 1; }
+
+    if (m < 0) {
+      m = 11;
+      y -= 1;
+    }
+
+    if (m > 11) {
+      m = 0;
+      y += 1;
+    }
+
     renderMonth();
   }
 
@@ -109,6 +117,7 @@
     const layer = mount.querySelector("#cinsPickerLayer");
     layer.classList.toggle("isOn", !!on);
     layer.setAttribute("aria-hidden", on ? "false" : "true");
+
     mount.querySelector("#cinsRoot")?.classList.toggle("isPickerOn", !!on);
 
     if (on) renderPicker();
@@ -117,11 +126,13 @@
   function renderPicker() {
     const mount = document.getElementById("calInsertMount");
     if (!mount) return;
+
     mount.querySelector("#cinsYearVal").textContent = String(y);
   }
 
   function hasMeaningfulDayData(model) {
     if (!model || !Array.isArray(model.shifts) || model.shifts.length === 0) return false;
+
     return model.shifts.some((s) => {
       const hasTimes = !!(s?.from || s?.to);
       const hasPause = Number(s?.pauseMin || 0) > 0 || !!s?.pausePaid;
@@ -129,6 +140,7 @@
       const hasExtra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
       const hasAdv = (s?.advA && s.advA !== "-") || (s?.advB && s?.advB !== "-");
       const hasNote = !!(s?.note && String(s.note).trim().length);
+
       return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
     });
   }
@@ -138,6 +150,7 @@
     if (!mount) return;
 
     mount.querySelector("#cinsTitle").textContent = `${MONTHS[m]} ${y}`;
+
     const grid = mount.querySelector("#cinsGrid");
     grid.innerHTML = "";
 
@@ -219,15 +232,18 @@
 
   document.addEventListener("nettotrack:calendarInsertOpened", () => {
     mountIfNeeded();
+
     const t = todayParts();
     y = t.y;
     m = t.m;
+
     renderMonth();
   });
 
   document.addEventListener("nettotrack:dataChanged", () => {
     const mount = document.getElementById("calInsertMount");
     if (!mount || !mount.querySelector("#cinsRoot")) return;
+
     renderMonth();
   });
 })();
