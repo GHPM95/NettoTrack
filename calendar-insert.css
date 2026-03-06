@@ -1,5 +1,6 @@
 /* =========================
    Calendar Insert (month grid)
+   - restore visual look like previous version
    ========================= */
 
 .cinsRoot{
@@ -7,7 +8,7 @@
   height:100%;
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:10px;
   min-height:0;
   position:relative;
 
@@ -24,7 +25,9 @@
   grid-template-columns:auto 1fr auto;
   align-items:center;
   gap:10px;
+  padding:2px 0 0;
 }
+
 .cinsLeft{
   display:flex;
   gap:8px;
@@ -43,20 +46,24 @@
   line-height:1;
   transition:transform .12s ease, filter .12s ease, background .12s ease;
 }
+
 .ntBtn:active{
   transform:scale(.96);
   filter:brightness(1.08);
   background:rgba(255,255,255,.14);
 }
 
+/* titolo come nella seconda immagine:
+   meno "button-like", più compatto */
 .cinsTitle{
   border:none;
   background:transparent;
   color:var(--text);
   font-weight:1000;
-  letter-spacing:.2px;
-  font-size:clamp(14px, 3.6vw, 17px);
-  padding:10px;
+  letter-spacing:.15px;
+  font-size:clamp(15px, 3.8vw, 18px);
+  line-height:1.1;
+  padding:8px 10px;
   border-radius:14px;
   text-align:center;
   white-space:nowrap;
@@ -73,7 +80,7 @@
   min-height:0;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:8px;
 }
 
 /* Weekdays */
@@ -83,8 +90,9 @@
   gap:8px;
   padding:0 6px;
 }
+
 .cinsWD{
-  height:24px;
+  height:22px;
   padding:0 2px;
   display:flex;
   align-items:center;
@@ -108,50 +116,64 @@
   grid-template-columns:repeat(7, 1fr);
   grid-template-rows:repeat(6, 1fr);
   gap:8px;
-  padding:6px;
+  padding:4px 6px 6px;
 }
 
+/* giorno base più soft come nella seconda immagine */
 .cinsDay{
   aspect-ratio:1/1;
   border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.12);
   background:
-    radial-gradient(120% 160% at 30% 0%, rgba(255,255,255,.10), transparent 60%),
-    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
+    radial-gradient(120% 160% at 30% 0%, rgba(255,255,255,.07), transparent 58%),
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.08));
   display:flex;
   align-items:center;
   justify-content:center;
   position:relative;
   overflow:hidden;
   min-width:0;
+  transition:
+    transform .12s ease,
+    background .16s ease,
+    border-color .16s ease,
+    box-shadow .16s ease;
+}
+
+.cinsDay:active{
+  transform:scale(.97);
 }
 
 .cinsDay.isOff{
-  opacity:.28;
+  opacity:.24;
   pointer-events:none;
 }
 
 .cinsNum{
   font-weight:1000;
+  font-size:clamp(13px, 4vw, 15px);
   font-variant-numeric:tabular-nums;
   color:var(--text);
   position:relative;
   z-index:2;
 }
 
-/* TODAY */
+/* TODAY / selected look più simile alla seconda immagine:
+   highlight più soft, meno "acceso" */
 .cinsDay.isToday{
   border:none;
   overflow:hidden;
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 55%),
-    linear-gradient(135deg, rgba(130,170,255,.92), rgba(170,130,255,.92));
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.18), transparent 55%),
+    linear-gradient(135deg, rgba(145,175,255,.78), rgba(182,154,255,.76));
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.18),
+    0 6px 18px rgba(130,150,255,.10);
 }
 
 .cinsDay.isToday .cinsNum{
   color:#fff;
-  text-shadow:0 1px 2px rgba(0,0,0,.22);
+  text-shadow:0 1px 2px rgba(0,0,0,.18);
 }
 
 .cinsDay.isToday::after{
@@ -159,12 +181,19 @@
   position:absolute;
   inset:0;
   border-radius:inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06));
+  background:linear-gradient(
+    180deg,
+    rgba(255,255,255,.16),
+    rgba(255,255,255,.04)
+  );
   pointer-events:none;
   z-index:1;
 }
 
-/* Dots */
+/* =========================
+   Dots
+   ========================= */
+
 .cinsDots{
   position:absolute;
   bottom:4px;
@@ -176,17 +205,25 @@
   z-index:3;
   pointer-events:none;
 }
+
 .cinsDot{
   width:7px;
   height:7px;
   border-radius:999px;
   opacity:1;
 }
+
 .cinsDot + .cinsDot{
   margin-left:-3px;
 }
-.cinsDot.premium{ background:var(--cinsDotPremium); }
-.cinsDot.premiumExtra{ background:var(--cinsDotPremiumExtra); }
+
+.cinsDot.premium{
+  background:var(--cinsDotPremium);
+}
+
+.cinsDot.premiumExtra{
+  background:var(--cinsDotPremiumExtra);
+}
 
 /* =========================
    Picker mese/anno
@@ -204,9 +241,12 @@
   padding:14px;
   z-index:20;
 }
-.cinsPickerLayer.isOn{ display:flex; }
 
-/* quando picker aperto, il calendario sotto sparisce */
+.cinsPickerLayer.isOn{
+  display:flex;
+}
+
+/* quando picker aperto, sotto sparisce */
 .cinsRoot.isPickerOn .cinsHeader,
 .cinsRoot.isPickerOn .cinsBody{
   visibility:hidden;
@@ -234,6 +274,7 @@
   grid-template-columns:1fr auto;
   align-items:center;
 }
+
 .cinsPickerTitle{
   font-weight:1000;
   color:var(--text);
@@ -247,6 +288,7 @@
   gap:10px;
   margin:6px 0 10px;
 }
+
 .cinsYearVal{
   text-align:center;
   font-weight:1000;
@@ -260,6 +302,7 @@
   gap:10px;
 }
 
+/* pulsanti mese non bianchi pieni */
 .cinsMonthBtn{
   height:44px;
   border-radius:16px;
@@ -268,15 +311,17 @@
   color:var(--text);
   font-weight:1000;
   font-size:15px;
-  transition:transform .12s ease, background .12s ease, filter .12s ease;
+  transition:transform .12s ease, background .12s ease, filter .12s ease, border-color .12s ease;
 }
+
 .cinsMonthBtn:active{
   transform:scale(.98);
 }
+
 .cinsMonthBtn.isActive{
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.18), transparent 55%),
-    linear-gradient(135deg, rgba(130,170,255,.78), rgba(170,130,255,.78));
-  border-color:rgba(255,255,255,.20);
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.16), transparent 55%),
+    linear-gradient(135deg, rgba(130,170,255,.72), rgba(170,130,255,.72));
+  border-color:rgba(255,255,255,.18);
   color:#fff;
 }
