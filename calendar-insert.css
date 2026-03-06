@@ -1,23 +1,21 @@
 /* =========================
-   Calendar Insert (month grid)
+   Calendar Insert
    ========================= */
 
 .cinsRoot{
   width:100%;
   height:100%;
+  min-height:0;
   display:flex;
   flex-direction:column;
   gap:12px;
-  min-height:0;
   position:relative;
 
   --cinsDotPremium: rgba(120,170,255,.95);
   --cinsDotPremiumExtra: rgba(180,120,255,.95);
 }
 
-/* =========================
-   Header
-   ========================= */
+/* Header */
 
 .cinsHeader{
   display:grid;
@@ -28,8 +26,8 @@
 
 .cinsLeft{
   display:flex;
-  gap:8px;
   align-items:center;
+  gap:8px;
 }
 
 .ntBtn{
@@ -37,13 +35,17 @@
   appearance:none;
   width:38px;
   height:38px;
-  border-radius:14px;
   border:none;
+  border-radius:14px;
   background:rgba(255,255,255,.10);
   color:var(--text);
   font-weight:900;
   font-size:16px;
   line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.10);
   transition:transform .12s ease, filter .12s ease, background .12s ease;
 }
 
@@ -68,12 +70,9 @@
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-  box-shadow:none;
 }
 
-/* =========================
-   Body
-   ========================= */
+/* Body */
 
 .cinsBody{
   flex:1;
@@ -83,9 +82,7 @@
   gap:10px;
 }
 
-/* =========================
-   Weekdays
-   ========================= */
+/* Weekdays */
 
 .cinsWeekdays{
   display:grid;
@@ -96,24 +93,18 @@
 
 .cinsW{
   height:24px;
-  padding:0 2px;
   display:flex;
   align-items:center;
   justify-content:center;
-  border:none;
-  background:transparent;
-  border-radius:0;
   font-size:12px;
   font-weight:900;
   line-height:1;
   color:var(--muted);
-  pointer-events:none;
   text-align:center;
+  pointer-events:none;
 }
 
-/* =========================
-   Grid giorni
-   ========================= */
+/* Grid */
 
 .cinsGrid{
   flex:1;
@@ -128,14 +119,13 @@
 .cinsDay{
   -webkit-appearance:none;
   appearance:none;
-  aspect-ratio:1/1;
+  aspect-ratio:1 / 1;
+  width:100%;
+  border:none;
   border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);
-  background:linear-gradient(
-    180deg,
-    rgba(255,255,255,.08),
-    rgba(255,255,255,.05)
-  );
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -149,49 +139,35 @@
 }
 
 .cinsNum{
-  font-weight:1000;
-  font-variant-numeric:tabular-nums;
-  color:var(--text);
   position:relative;
   z-index:2;
+  color:var(--text);
+  font-weight:1000;
+  font-variant-numeric:tabular-nums;
 }
 
-/* =========================
-   TODAY — stesso effetto del view ma cerchio
-   ========================= */
+/* Today = same viewer feel, but circular */
 
 .cinsDay.isToday{
-  border-radius:999px;
-  border:none;
   background:
-    radial-gradient(
-      circle at 30% 25%,
-      rgba(255,255,255,.28),
-      transparent 60%
-    ),
-    linear-gradient(
-      135deg,
-      rgba(120,170,255,.75),
-      rgba(170,120,255,.75)
-    );
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 58%),
+    linear-gradient(135deg, rgba(120,170,255,.72), rgba(170,120,255,.72));
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,.22),
-    0 6px 16px rgba(0,0,0,.18);
+    0 6px 16px rgba(0,0,0,.16);
 }
 
 .cinsDay.isToday .cinsNum{
   color:#fff;
-  text-shadow:0 1px 3px rgba(0,0,0,.35);
+  text-shadow:0 1px 3px rgba(0,0,0,.28);
 }
 
-/* =========================
-   Dots
-   ========================= */
+/* Dots */
 
 .cinsDots{
   position:absolute;
-  bottom:4px;
   left:50%;
+  bottom:4px;
   transform:translateX(-50%);
   display:flex;
   align-items:center;
@@ -218,21 +194,19 @@
   background:var(--accent1);
 }
 
-/* =========================
-   Picker mese/anno
-   ========================= */
+/* Picker */
 
 .cinsPickerLayer{
   position:absolute;
   inset:0;
-  border-radius:var(--rCard);
-  background:rgba(0,0,0,.12);
-  backdrop-filter:blur(10px);
+  z-index:20;
   display:none;
   align-items:center;
   justify-content:center;
   padding:14px;
-  z-index:20;
+  border-radius:var(--rCard);
+  background:rgba(0,0,0,.12);
+  backdrop-filter:blur(10px);
 }
 
 .cinsPickerLayer.isOn{
@@ -251,16 +225,8 @@
   border-radius:var(--rCard);
   border:1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(
-      140% 220% at 25% 0%,
-      rgba(255,255,255,.12),
-      transparent 55%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.11),
-      rgba(255,255,255,.06)
-    );
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.06));
   backdrop-filter:blur(var(--blur));
   box-shadow:var(--shadow);
   padding:16px;
@@ -276,8 +242,8 @@
 }
 
 .cinsPickerTitle{
-  font-weight:1000;
   color:var(--text);
+  font-weight:1000;
 }
 
 .cinsYearRow{
@@ -289,9 +255,9 @@
 }
 
 .cinsYearVal{
+  color:var(--text);
   text-align:center;
   font-weight:1000;
-  color:var(--text);
 }
 
 .cinsMonthGrid{
@@ -304,9 +270,10 @@
   -webkit-appearance:none;
   appearance:none;
   height:44px;
+  border:none;
   border-radius:16px;
-  border:1px solid rgba(255,255,255,.14);
   background:rgba(255,255,255,.10);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
   color:var(--text);
   font-weight:1000;
 }
@@ -320,6 +287,6 @@
   padding-top:10px;
   text-align:center;
   font-size:11px;
-  opacity:.55;
   font-weight:800;
+  opacity:.55;
 }
