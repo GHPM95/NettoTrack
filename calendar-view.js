@@ -6,7 +6,7 @@
      tags sopra
      dot + orario + durata
      pausa compatta sotto orario + pill pagata/non pagata
-     divider soft
+     divider sempre presente prima dei dettagli
      dettagli in due colonne
    ========================= */
 (() => {
@@ -180,7 +180,6 @@
     try { model = cal.loadDay(iso); } catch(_) {}
 
     const shiftsRaw = Array.isArray(model?.shifts) ? model.shifts : [];
-
     const typeMap = { morning:"Mattino", afternoon:"Pomeriggio", night:"Notte", none:"" };
 
     const shifts = shiftsRaw.map((s) => {
@@ -229,9 +228,6 @@
     return { shifts, notes };
   }
 
-  /* =========================
-     Mount UI
-     ========================= */
   function mountIfNeeded(){
     const mount = getMount();
     if(!mount) return;
@@ -303,9 +299,6 @@
     mounted = true;
   }
 
-  /* =========================
-     FIX iOS: track/pagine in px
-     ========================= */
   function measure(mount){
     const wrap  = $("#cvDaysWrap", mount);
     const track = $("#cvTrack", mount);
@@ -396,7 +389,7 @@
     if(kind === "over") return "isOver";
     if(kind === "holiday") return "isHoliday";
     if(kind === "sunday") return "isSunday";
-    return "";
+    return "isBase";
   }
 
   async function renderSummary(iso){
@@ -481,7 +474,7 @@
             (!!s.advLabel && !!s.advValue) ||
             !!s.note;
 
-          if(meta.childNodes.length && hasDetails){
+          if(hasDetails){
             const div = document.createElement("div");
             div.className = "cviewMiniDivider";
             meta.appendChild(div);
