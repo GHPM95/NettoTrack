@@ -1,78 +1,18 @@
-/* =========================
-   calendar-insert.js (Month Grid)
-   - non crasha se NTCal non è pronto
-   - Month/Year picker
-   - Dots: saved + draft
-   - picker apre/chiude correttamente
-   ========================= */
 (() => {
+  const { dateKey, todayParts, loadDay, loadDraft } = window.NTCal;
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
   const WDN = ["L","M","M","G","V","S","D"];
-  const $ = (sel, root=document) => root.querySelector(sel);
 
   let mounted = false;
-  let y = null;
-  let m = null;
-
-  function getMount(){ return document.getElementById("calInsertMount"); }
-  function isActuallyMounted(mount){ return !!(mount && mount.querySelector("#cinsRoot")); }
-
-  function getCal(){
-    return (window.NTCal && typeof window.NTCal.todayParts === "function") ? window.NTCal : null;
-  }
-
-  function safeTodayParts(){
-    const cal = getCal();
-    if (cal) return cal.todayParts();
-    const d = new Date();
-    return { y: d.getFullYear(), m: d.getMonth(), d: d.getDate() };
-  }
-
-  function dateKeySafe(yy, mm, dd){
-    const cal = getCal();
-    if (cal && typeof cal.dateKey === "function") return cal.dateKey(yy, mm, dd);
-    return `${yy}-${String(mm+1).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;
-  }
-
-  function loadDaySafe(key){
-    const cal = getCal();
-    if (cal && typeof cal.loadDay === "function") {
-      try { return cal.loadDay(key); } catch(_) {}
-    }
-    return null;
-  }
-
-  function loadDraftSafe(key){
-    const cal = getCal();
-    if (cal && typeof cal.loadDraft === "function") {
-      try { return cal.loadDraft(key); } catch(_) {}
-    }
-    return null;
-  }
-
-  function hasMeaningfulDayData(model) {
-    if (!model || !Array.isArray(model.shifts) || model.shifts.length === 0) return false;
-    return model.shifts.some((s) => {
-      const hasTimes = !!(s?.from || s?.to);
-      const hasPause = Number(s?.pauseMin || 0) > 0 || !!s?.pausePaid;
-      const hasFascia = !!(s?.shiftType && s.shiftType !== "none");
-      const hasExtra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
-      const hasAdv = (s?.advA && s.advA !== "-") || (s?.advB && s?.advB !== "-");
-      const hasNote = !!(s?.note && String(s.note).trim().length);
-      return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
-    });
-  }
-
-  function ensureInitYM(){
-    const t = safeTodayParts();
-    if (typeof y !== "number") y = Number(t.y);
-    if (typeof m !== "number") m = Number(t.m);
-  }
+  let y = todayParts().y;
+  let m = todayParts().m;
 
   function mountIfNeeded() {
-    const mount = getMount();
+    const mount = document.getElementById("calInsertMount");
     if (!mount) return;
-    if (mounted && isActuallyMounted(mount)) return;
+
+    // se la slide è stata chiusa/riaperta, il mount torna vuoto: rimonta
+    if (mounted && mount.querySelector("#cinsRoot")) return;
 
     mount.innerHTML = `
       <div class="cinsRoot" id="cinsRoot">
@@ -82,12 +22,12 @@
             <button class="ntBtn" id="cinsNext" type="button" aria-label="Mese successivo">›</button>
           </div>
 
-          <button class="cinsTitle" id="cinsTitle" type="button" aria-label="Seleziona mese e anno">—</button>
+          <button class="cinsTitleBtn" id="cinsTitle" type="button" aria-label="Seleziona mese e anno">—</button>
 
           <button class="ntBtn" id="cinsClose" type="button" aria-label="Chiudi">×</button>
         </div>
 
-        <div class="cinsBody" id="cinsBody">
+        <div class="cinsBody">
           <div class="cinsWeekdays" id="cinsWeekdays" aria-hidden="true"></div>
           <div class="cinsGrid" id="cinsGrid" aria-label="Giorni del mese"></div>
         </div>
@@ -106,103 +46,234 @@
             </div>
 
             <div class="cinsMonthGrid" id="cinsMonthGrid"></div>
+
+            <div class="cinsSwipeHint">Swipe down per chiudere</div>
           </div>
         </div>
       </div>
     `;
 
-    const wd = $("#cinsWeekdays", mount);
-    if (wd) wd.innerHTML = WDN.map(x => `<div class="cinsWD">${x}</div>`).join("");
+    // ✅ Weekdays = DIV statici (nessun button)
+    const wd = mount.querySelector("#cinsWeekdays");
+    wd.innerHTML = WDN.map(x => `
+      <div class="cinsW">${x}</div>
+    `).join("");
 
-    const monthGrid = $("#cinsMonthGrid", mount);
-    if (monthGrid){
-      monthGrid.innerHTML = MONTHS.map((name, idx) =>
-        `<button class="cinsMonthBtn" type="button" data-m="${idx}" aria-label="${name}">${name.slice(0,3)}</button>`
-      ).join("");
-
-      monthGrid.querySelectorAll(".cinsMonthBtn").forEach(b => {
-        b.addEventListener("click", () => {
-          m = Number(b.dataset.m);
-          closePicker();
-          renderMonth();
-        });
-      });
-    }
-
-    const layer = $("#cinsPickerLayer", mount);
-    const rootEl = $("#cinsRoot", mount);
-
-    function openPicker(on){
-      if (!layer || !rootEl) return;
-      layer.classList.toggle("isOn", !!on);
-      layer.setAttribute("aria-hidden", on ? "false" : "true");
-      rootEl.classList.toggle("isPickerOn", !!on);
-      if (on) renderPicker();
-    }
-
-    function closePicker(){
-      openPicker(false);
-    }
-
-    $("#cinsPrev", mount)?.addEventListener("click", () => stepMonth(-1));
-    $("#cinsNext", mount)?.addEventListener("click", () => stepMonth(+1));
-    $("#cinsClose", mount)?.addEventListener("click", () => {
+    // events header
+    mount.querySelector("#cinsPrev").addEventListener("click", () => {
+      stepMonth(-1);
+    });
+    mount.querySelector("#cinsNext").addEventListener("click", () => {
+      stepMonth(+1);
+    });
+    mount.querySelector("#cinsClose").addEventListener("click", () => {
       document.dispatchEvent(new Event("nettotrack:closeCalendarInsert"));
     });
 
-    $("#cinsTitle", mount)?.addEventListener("click", () => openPicker(true));
-    $("#cinsPickerClose", mount)?.addEventListener("click", () => closePicker());
-
-    $("#cinsYearMinus", mount)?.addEventListener("click", () => { y -= 1; renderPicker(); });
-    $("#cinsYearPlus", mount)?.addEventListener("click", () => { y += 1; renderPicker(); });
-
-    layer?.addEventListener("click", (e) => {
-      if (e.target === layer) closePicker();
+    // picker open/close
+    mount.querySelector("#cinsTitle").addEventListener("click", () => openPicker(true));
+    mount.querySelector("#cinsPickerClose").addEventListener("click", () => openPicker(false));
+    mount.querySelector("#cinsYearMinus").addEventListener("click", () => {
+      y -= 1;
+      renderPicker();
+    });
+    mount.querySelector("#cinsYearPlus").addEventListener("click", () => {
+      y += 1;
+      renderPicker();
     });
 
-    function renderPicker(){
-      const yEl = $("#cinsYearVal", mount);
-      if (yEl) yEl.textContent = String(y);
+    // =========================
+    // Swipe down per chiudere picker
+    // =========================
+    (function enablePickerSwipeDown(){
+      const rootEl = document.querySelector('.cinsRoot');
+      if (!rootEl) return;
 
-      monthGrid?.querySelectorAll(".cinsMonthBtn").forEach(btn => {
-        btn.classList.toggle("isActive", Number(btn.dataset.m) === m);
+      const pickerLayer = rootEl.querySelector('.cinsPickerLayer');
+      const pickerCard = rootEl.querySelector('.cinsPickerCard');
+      if (!pickerLayer || !pickerCard) return;
+
+      let startY = 0;
+      let lastY = 0;
+      let dragging = false;
+
+      function isPickerOpen(){
+        return pickerLayer.classList.contains('isOn') && rootEl.classList.contains('isPickerOn');
+      }
+
+      // Devi avere già una funzione "closePicker()" nel tuo file.
+      // Se si chiama diversamente, rinominala qui.
+      function closePickerSafe(){
+        if (typeof window.closeCinsPicker === 'function') {
+          window.closeCinsPicker();
+          return;
+        }
+
+        // fallback: chiude via classi (non rompe nulla)
+        pickerLayer.classList.remove('isOn');
+        rootEl.classList.remove('isPickerOn');
+      }
+
+      pickerCard.addEventListener('touchstart', (e) => {
+        if (!isPickerOpen()) return;
+        if (!e.touches || !e.touches.length) return;
+
+        dragging = true;
+        startY = e.touches[0].clientY;
+        lastY = startY;
+        pickerCard.style.transition = 'none';
+      }, { passive: true });
+
+      pickerCard.addEventListener('touchmove', (e) => {
+        if (!dragging || !isPickerOpen()) return;
+        if (!e.touches || !e.touches.length) return;
+
+        lastY = e.touches[0].clientY;
+        const dy = Math.max(0, lastY - startY); // solo verso il basso
+
+        // piccola traslazione + fade leggero
+        pickerCard.style.transform = `translateY(${dy}px)`;
+        const fade = Math.max(0.55, 1 - dy / 420);
+        pickerCard.style.opacity = String(fade);
+      }, { passive: true });
+
+      pickerCard.addEventListener('touchend', () => {
+        if (!dragging) return;
+        dragging = false;
+
+        const dy = Math.max(0, lastY - startY);
+        const shouldClose = dy > 80; // soglia
+
+        pickerCard.style.transition = 'transform .18s ease, opacity .18s ease';
+
+        if (shouldClose) {
+          // reset stile e chiudi
+          pickerCard.style.transform = '';
+          pickerCard.style.opacity = '';
+          closePickerSafe();
+          return;
+        }
+
+        // torna su
+        pickerCard.style.transform = '';
+        pickerCard.style.opacity = '';
+      }, { passive: true });
+
+      // anche clic sul velo scuro chiude (se vuoi tenerlo)
+      pickerLayer.addEventListener('click', (e) => {
+        if (e.target === pickerLayer) closePickerSafe();
       });
-    }
+    })();
+
+    // swipe down (pointer) sul pickerCard
+    const layer = mount.querySelector("#cinsPickerLayer");
+    const card = mount.querySelector("#cinsPickerCard");
+
+    let pDown = false;
+    let x0 = 0, y0 = 0;
+
+    card.addEventListener("pointerdown", (e) => {
+      pDown = true;
+      x0 = e.clientX;
+      y0 = e.clientY;
+      card.setPointerCapture?.(e.pointerId);
+    }, { passive:true });
+
+    card.addEventListener("pointermove", (e) => {
+      if (!pDown) return;
+      const dy = e.clientY - y0;
+      const dx = e.clientX - x0;
+      if (dy > 80 && Math.abs(dx) < 60) {
+        pDown = false;
+        openPicker(false);
+      }
+    }, { passive:true });
+
+    card.addEventListener("pointerup", () => { pDown = false; }, { passive:true });
+    card.addEventListener("pointercancel", () => { pDown = false; }, { passive:true });
+
+    // click fuori card chiude
+    layer.addEventListener("click", (e) => {
+      if (e.target === layer) openPicker(false);
+    });
+
+    // month buttons
+    const monthGrid = mount.querySelector("#cinsMonthGrid");
+    monthGrid.innerHTML = MONTHS.map((name, idx) => (
+      `<button class="cinsPickBtn" type="button" data-m="${idx}" aria-label="${name}">${name.slice(0,3)}</button>`
+    )).join("");
+
+    monthGrid.querySelectorAll("button").forEach(b => {
+      b.addEventListener("click", () => {
+        m = Number(b.dataset.m);
+        openPicker(false);
+        renderMonth();
+      });
+    });
 
     mounted = true;
-    ensureInitYM();
     renderMonth();
   }
 
   function stepMonth(delta) {
-    ensureInitYM();
     m += delta;
-    if (m < 0) { m = 11; y -= 1; }
-    if (m > 11) { m = 0; y += 1; }
+    if (m < 0) {
+      m = 11;
+      y -= 1;
+    }
+    if (m > 11) {
+      m = 0;
+      y += 1;
+    }
     renderMonth();
   }
 
-  function renderMonth() {
-    const mount = getMount();
+  function openPicker(on) {
+    const mount = document.getElementById("calInsertMount");
     if (!mount) return;
-    if (!mount.querySelector("#cinsRoot")) return;
 
-    ensureInitYM();
+    const layer = mount.querySelector("#cinsPickerLayer");
+    layer.classList.toggle("isOn", !!on);
+    layer.setAttribute("aria-hidden", on ? "false" : "true");
+    mount.querySelector("#cinsRoot")?.classList.toggle("isPickerOn", !!on);
 
-    const titleBtn = $("#cinsTitle", mount);
-    if (titleBtn) titleBtn.textContent = `${MONTHS[m]} ${y}`;
+    if (on) renderPicker();
+  }
 
-    const grid = $("#cinsGrid", mount);
-    if (!grid) return;
+  function renderPicker() {
+    const mount = document.getElementById("calInsertMount");
+    if (!mount) return;
+    mount.querySelector("#cinsYearVal").textContent = String(y);
+  }
+
+  function hasMeaningfulDayData(model) {
+    if (!model || !Array.isArray(model.shifts) || model.shifts.length === 0) return false;
+    return model.shifts.some((s) => {
+      const hasTimes = !!(s?.from || s?.to);
+      const hasPause = Number(s?.pauseMin || 0) > 0 || !!s?.pausePaid;
+      const hasFascia = !!(s?.shiftType && s.shiftType !== "none");
+      const hasExtra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
+      const hasAdv = (s?.advA && s.advA !== "-") || (s?.advB && s?.advB !== "-");
+      const hasNote = !!(s?.note && String(s.note).trim().length);
+      return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
+    });
+  }
+
+  function renderMonth() {
+    const mount = document.getElementById("calInsertMount");
+    if (!mount) return;
+
+    mount.querySelector("#cinsTitle").textContent = `${MONTHS[m]} ${y}`;
+
+    const grid = mount.querySelector("#cinsGrid");
     grid.innerHTML = "";
 
     const first = new Date(y, m, 1);
-    const firstDay = first.getDay();
-    const offset = (firstDay === 0 ? 6 : firstDay - 1);
+    const firstDay = first.getDay(); // 0 Sun..6 Sat
+    const offset = (firstDay === 0 ? 6 : firstDay - 1); // Monday-based
     const daysInMonth = new Date(y, m + 1, 0).getDate();
 
-    const t = safeTodayParts();
-    const ty = Number(t.y), tm = Number(t.m), td = Number(t.d);
+    const { y:ty, m:tm, d:td } = todayParts();
 
     for (let i = 0; i < 42; i++) {
       const dayNum = i - offset + 1;
@@ -213,21 +284,27 @@
       btn.className = "cinsDay" + (isValid ? "" : " isOff");
 
       if (isValid) {
-        const key = dateKeySafe(y, m, dayNum);
+        const key = dateKey(y, m, dayNum);
 
         if (y === ty && m === tm && dayNum === td) btn.classList.add("isToday");
 
+        // numero
         const num = document.createElement("span");
         num.className = "cinsNum";
         num.textContent = String(dayNum);
         btn.appendChild(num);
 
-        const saved = loadDaySafe(key);
-        const draft = loadDraftSafe(key);
+        // dot premium: saved o draft
+        const saved = loadDay(key);
+        const draft = loadDraft(key);
         const model = saved || draft;
 
         if (hasMeaningfulDayData(model)) {
-          const hasExtra = !!model?.shifts?.some((s) => !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday)));
+          const hasExtra = !!model?.shifts?.some((s) =>
+            !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday))
+          );
+
+          // "normale" = almeno un turno significativo che NON è extra
           const hasNormal = !!model?.shifts?.some((s) => {
             const meaningful =
               !!(s?.from || s?.to) ||
@@ -236,6 +313,7 @@
               !!(s?.shiftType && s.shiftType !== "none") ||
               ((s?.advA && s.advA !== "-") || (s?.advB && s?.advB !== "-")) ||
               !!(s?.note && String(s.note).trim().length);
+
             const extra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
             return meaningful && !extra;
           });
@@ -243,25 +321,25 @@
           const dots = document.createElement("div");
           dots.className = "cinsDots";
 
+          // blu se c'è almeno un turno normale
           if (hasNormal) {
             const base = document.createElement("div");
             base.className = "cinsDot premium";
             dots.appendChild(base);
           }
+
+          // viola se c'è almeno un turno extra
           if (hasExtra) {
-            const ex = document.createElement("div");
-            ex.className = "cinsDot premiumExtra";
-            dots.appendChild(ex);
+            const extra = document.createElement("div");
+            extra.className = "cinsDot premiumExtra";
+            dots.appendChild(extra);
           }
+
           btn.appendChild(dots);
         }
 
         btn.addEventListener("click", () => {
-          if (window.NettoTrackUI && typeof window.NettoTrackUI.openDayEditor === "function") {
-            window.NettoTrackUI.openDayEditor(key);
-          } else {
-            document.dispatchEvent(new CustomEvent("nettotrack:dayEditorOpened", { detail: { dateKey: key } }));
-          }
+          window.NettoTrackUI?.openDayEditor(key);
         });
       }
 
@@ -271,14 +349,14 @@
 
   document.addEventListener("nettotrack:calendarInsertOpened", () => {
     mountIfNeeded();
-    const t = safeTodayParts();
-    y = Number(t.y);
-    m = Number(t.m);
+    const t = todayParts();
+    y = t.y;
+    m = t.m;
     renderMonth();
   });
 
   document.addEventListener("nettotrack:dataChanged", () => {
-    const mount = getMount();
+    const mount = document.getElementById("calInsertMount");
     if (!mount || !mount.querySelector("#cinsRoot")) return;
     renderMonth();
   });
