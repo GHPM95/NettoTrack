@@ -1,0 +1,46 @@
+:root {
+  /* --- TIPOGRAFIA --- */
+  --font-main: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-num: 'Montserrat', sans-serif;
+
+  /* --- PALETTE OLED PREMIUM --- */
+  --bg-dark: #0A0A0C;
+  --text-hi: #FFFFFF;
+  --text-lo: rgba(255, 255, 255, 0.55);
+  
+  --accent-blue: #82AAFF;
+  --accent-purple: #B478FF;
+  --accent-pink: #FF6EB4;
+
+  /* --- L'IDENTITÀ "TODAY" UNIFICATA --- */
+  --today-grad: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  --today-glow: 0 0 20px rgba(130, 170, 255, 0.4);
+  --today-text: #ffffff;
+
+  /* --- GLASS LAYERS --- */
+  --glass-1: rgba(255, 255, 255, 0.05);
+  --glass-2: rgba(255, 255, 255, 0.10);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --blur: 20px;
+
+  /* --- LAYOUT ADATTIVO (iPhone 14 Pro/Max) --- */
+  --p-side: clamp(20px, 6vw, 32px);
+  --p-top: env(safe-area-inset-top, 44px);
+  --p-bottom: env(safe-area-inset-bottom, 34px);
+  
+  --r-card: 32px;
+  --r-btn: 18px;
+  --touch-target: clamp(48px, 12vw, 56px);
+  
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Base Reset */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { 
+  background-color: var(--bg-dark); 
+  color: var(--text-hi); 
+  font-family: var(--font-main);
+  margin: 0;
+  overflow: hidden;
+}
