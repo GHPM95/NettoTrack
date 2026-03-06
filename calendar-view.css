@@ -2,7 +2,8 @@
    Calendar View (Agenda)
    Premium refined layout
    - scroll interno al contenitore conteggio
-   - scrollbar invisibile
+   - scrollbar visibile
+   - box interna invisibile
    - divider sempre presente prima dettagli
    - tag più piccoli
    - dot base celeste
@@ -158,15 +159,21 @@
   flex:1;
   min-height:0;
   overflow:auto;
-  padding-right:2px;
+  padding-right:4px;
 
-  scrollbar-width:none;          /* Firefox */
-  -ms-overflow-style:none;       /* IE/Edge old */
+  scrollbar-width:thin;
+  scrollbar-color: rgba(255,255,255,.22) transparent;
 }
+
 .cviewLines::-webkit-scrollbar{
-  width:0;
-  height:0;
-  display:none;
+  width:6px;
+}
+.cviewLines::-webkit-scrollbar-track{
+  background:transparent;
+}
+.cviewLines::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.22);
+  border-radius:999px;
 }
 
 .cviewLines.isEmpty{
@@ -189,13 +196,14 @@
   transform:translateY(-6px);
 }
 
-/* CARD */
+/* ✅ box interna invisibile */
 .cviewDayCard{
   border-radius:18px;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.10);
-  overflow:hidden;
+  background:transparent;
+  border:none;
+  overflow:visible;
 }
+
 .cviewShiftBlock{
   padding:16px;
 }
@@ -299,7 +307,7 @@
   line-height:1;
 }
 
-/* ✅ divider sempre presente prima dettagli */
+/* divider sempre presente prima dettagli */
 .cviewMiniDivider{
   height:1px;
   margin:6px 0 4px;
