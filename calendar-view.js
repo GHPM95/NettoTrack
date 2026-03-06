@@ -1,10 +1,13 @@
 /* =========================
    calendar-view.js (Agenda)
-   - ✅ SOLO NTCal.loadDay (salvati), ❌ MAI draft/autosave
+   - SOLO NTCal.loadDay (salvati), MAI draft/autosave
    - Carousel settimane: prev | current | next (drag + snap)
-   - ✅ UNA sola card per giorno + più blocchi turno
-   - ✅ Durata "xh" pill accanto all'orario (niente 1.0h)
-   - ✅ Pausa allineata all'inizio dell'orario (NON al dot)
+   - Card premium:
+     tags sopra
+     dot + orario + durata
+     pausa compatta sotto orario
+     divider soft
+     dettagli in due colonne
    ========================= */
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -109,29 +112,59 @@
     return t;
   }
 
-  // ✅ Durata: niente "1.0h". Minuti solo se presenti.
-  function durPillText(from, to){
-    const a = timeToMin(from);
-    const b = timeToMin(to);
-    if(a === 999999 || b === 999999) return "";
-
-    let diff = b - a;
-    if(diff < 0) diff += 24*60; // overnight
-
-    const h = Math.floor(diff / 60);
-    const m = diff % 60;
-
-    if(h > 0 && m === 0) return `${h}h`;
-    if(h > 0 && m > 0) return `${h}h ${m}m`;
-    if(h === 0 && m > 0) return `${m}m`;
-    return "";
-  }
-
   function makeDurPill(text){
     const t = document.createElement("span");
     t.className = "cviewDurPill";
     t.textContent = text;
     return t;
+  }
+
+  function durationParts(from, to){
+    const a = timeToMin(from);
+    const b = timeToMin(to);
+    if(a === 999999 || b === 999999) return null;
+
+    let diff = b - a;
+    if(diff < 0) diff += 24 * 60;
+
+    const h = Math.floor(diff / 60);
+    const m = diff % 60;
+    return { h, m, total: diff };
+  }
+
+  function durationLabel(from, to){
+    const p = durationParts(from, to);
+    if(!p || p.total <= 0) return "";
+    if(p.h > 0 && p.m === 0) return `${p.h}h`;
+    if(p.h > 0 && p.m > 0) return `${p.h}h ${p.m}m`;
+    return `${p.m}m`;
+  }
+
+  function pauseCompactLabel(min){
+    const n = Number(min || 0);
+    if(!Number.isFinite(n) || n <= 0) return "";
+    const h = Math.floor(n / 60);
+    const m = n % 60;
+    if(h > 0 && m === 0) return `pausa ${h}h`;
+    if(h > 0 && m > 0) return `pausa ${h}h ${m}m`;
+    return `pausa ${m}m`;
+  }
+
+  function makeDetailRow(label, value, isNote=false){
+    const row = document.createElement("div");
+    row.className = `cviewDetailRow${isNote ? " isNote" : ""}`;
+
+    const k = document.createElement("div");
+    k.className = "cviewDetailKey";
+    k.textContent = label;
+
+    const v = document.createElement("div");
+    v.className = "cviewDetailVal";
+    v.textContent = value;
+
+    row.appendChild(k);
+    row.appendChild(v);
+    return row;
   }
 
   /* =========================
@@ -378,7 +411,6 @@
     if(dateEl) dateEl.textContent = formatLongDate(iso);
 
     const day = loadDaySavedOnly(iso);
-
     const shifts = Array.isArray(day.shifts) ? day.shifts.slice() : [];
     shifts.sort((a,b) => timeToMin(a.start) - timeToMin(b.start));
 
@@ -395,16 +427,19 @@
         const dayCard = document.createElement("div");
         dayCard.className = "cviewDayCard";
 
-        shifts.forEach((s) => {
+        shifts.forEach((s, idx) => {
           const block = document.createElement("div");
           block.className = "cviewShiftBlock";
+          if(idx > 0) block.classList.add("isAfter");
 
+          // tags
           const tagsWrap = document.createElement("div");
           tagsWrap.className = "cviewLineTags";
           if(s.sunday) tagsWrap.appendChild(makeTag("Domenicale"));
           if(s.holiday) tagsWrap.appendChild(makeTag("Festivo"));
           if(s.overtime) tagsWrap.appendChild(makeTag("Straordinario"));
 
+          // time row
           const timeRow = document.createElement("div");
           timeRow.className = "cviewTimeRow";
 
@@ -418,22 +453,33 @@
           timeRow.appendChild(dot);
           timeRow.appendChild(time);
 
-          const durTxt = durPillText(s.start, s.end);
-          if(durTxt) timeRow.appendChild(makeDurPill(durTxt));
+          const durTxt = durationLabel(s.start, s.end);
+          if(durTxt){
+            timeRow.appendChild(makeDurPill(durTxt));
+          }
 
+          // pause row
           const meta = document.createElement("div");
           meta.className = "cviewMeta";
 
-          // ✅ Pausa: allineata all'inizio ORARIO (NON al dot)
           if(s.pauseMin && s.pauseMin > 0){
-            const p = document.createElement("div");
-            p.className = "cviewMetaLine isPrimary isPauseAlignTime";
-            p.textContent = `Pausa: ${s.pauseMin} min${s.pausePaid ? " (pagata)" : ""}`;
+            const pauseRow = document.createElement("div");
+            pauseRow.className = "cviewPauseRow";
 
-            // fallback: sposta a destra di (dot+gap) se manca il CSS
-            p.style.marginLeft = "calc(var(--cvTimeIndent, 28px))";
+            const pauseText = document.createElement("div");
+            pauseText.className = "cviewPauseText";
+            pauseText.textContent = pauseCompactLabel(s.pauseMin);
 
-            meta.appendChild(p);
+            pauseRow.appendChild(pauseText);
+
+            if(s.pausePaid){
+              const paid = document.createElement("span");
+              paid.className = "cviewPauseBadge";
+              paid.textContent = "pagata";
+              pauseRow.appendChild(paid);
+            }
+
+            meta.appendChild(pauseRow);
           }
 
           const hasDetails =
@@ -441,31 +487,29 @@
             (!!s.advLabel && !!s.advValue) ||
             !!s.note;
 
-          if((s.pauseMin && s.pauseMin > 0) && hasDetails){
+          if(meta.childNodes.length && hasDetails){
             const div = document.createElement("div");
             div.className = "cviewMiniDivider";
             meta.appendChild(div);
           }
 
+          const detailGrid = document.createElement("div");
+          detailGrid.className = "cviewDetailGrid";
+
           if(s.shiftLabel){
-            const t = document.createElement("div");
-            t.className = "cviewMetaLine isSecondary";
-            t.textContent = `Turno: ${s.shiftLabel}`;
-            meta.appendChild(t);
+            detailGrid.appendChild(makeDetailRow("Turno", s.shiftLabel));
           }
 
           if(s.advLabel && s.advValue){
-            const a = document.createElement("div");
-            a.className = "cviewMetaLine isSecondary";
-            a.textContent = `${s.advLabel}: ${s.advValue}`;
-            meta.appendChild(a);
+            detailGrid.appendChild(makeDetailRow(s.advLabel, s.advValue));
           }
 
           if(s.note){
-            const n = document.createElement("div");
-            n.className = "cviewMetaLine isSecondary isNote";
-            n.textContent = `Nota: ${s.note}`;
-            meta.appendChild(n);
+            detailGrid.appendChild(makeDetailRow("Nota", s.note, true));
+          }
+
+          if(detailGrid.childNodes.length){
+            meta.appendChild(detailGrid);
           }
 
           if(tagsWrap.childNodes.length) block.appendChild(tagsWrap);
