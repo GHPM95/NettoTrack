@@ -198,14 +198,17 @@
 
 /* ✅ box interna invisibile */
 .cviewDayCard{
-  border-radius:18px;
+  border-radius:0;
   background:transparent;
   border:none;
+  box-shadow:none;
   overflow:visible;
+  padding:0;
+  margin:0;
 }
 
 .cviewShiftBlock{
-  padding:16px;
+  padding:14px 16px;
 }
 .cviewShiftBlock.isAfter{
   border-top:1px solid rgba(255,255,255,.10);
