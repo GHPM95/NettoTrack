@@ -1,9 +1,5 @@
 /* =========================
    Calendar View (Agenda)
-   Layout pulito senza card interne
-   - scrollbar visibile
-   - box conteggio invisibile
-   - messaggio vuoto centrato
    ========================= */
 
 :root{
@@ -36,6 +32,7 @@
   min-height:0;
   background:transparent;
 }
+
 .cviewRoot *{
   box-sizing:border-box;
 }
@@ -47,11 +44,18 @@
   align-items:center;
   gap:10px;
 }
+
+.cviewHeaderSpacer{
+  width:38px;
+  height:38px;
+}
+
 .cviewTitle{
   font-weight:1000;
   font-size:16px;
   text-align:center;
 }
+
 .cviewClose{
   width:38px;
   height:38px;
@@ -90,9 +94,8 @@
 }
 
 .cviewDaysWrap{
-  min-width:0;
   overflow:hidden;
-  border-radius:18px;
+  min-width:0;
 }
 
 .cviewTrack{
@@ -100,21 +103,17 @@
 }
 
 .cviewTrack.isSnap{
-  transition: transform .22s ease;
+  transition:transform .22s ease;
 }
 
 .cviewPage{
-  flex:0 0 auto;
-  box-sizing:border-box;
-  padding:0 10px;
+  flex:0 0 100%;
 }
 
 .cviewDays{
   display:grid;
   grid-template-columns:repeat(7,1fr);
   gap:6px;
-  padding:0;
-  box-sizing:border-box;
 }
 
 .cviewDayBtn{
@@ -128,20 +127,28 @@
   align-items:center;
   justify-content:center;
   gap:4px;
+  min-width:0;
 }
+
 .cviewDow{
   font-size:11px;
   font-weight:900;
   color:var(--muted);
+  line-height:1;
 }
+
 .cviewNum{
   font-size:15px;
   font-weight:1000;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
 }
+
 .cviewDayBtn.isToday{
   background:var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
+
 .cviewDayBtn.isSelected:not(.isToday){
   background:var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
@@ -150,7 +157,7 @@
 /* DIVIDER */
 .cviewDivider{
   height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
 }
 
 /* SUMMARY */
@@ -162,20 +169,16 @@
   min-height:0;
   overflow:hidden;
 }
+
 .cviewSummaryTop{
   display:flex;
   justify-content:space-between;
   gap:12px;
 }
+
 .cviewSummaryDate{
   font-weight:1000;
   font-size:16px;
-}
-.cviewBadges{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
 }
 
 /* SCROLL AREA */
@@ -188,12 +191,15 @@
   scrollbar-width:thin;
   scrollbar-color: rgba(255,255,255,.22) transparent;
 }
+
 .cviewLines::-webkit-scrollbar{
   width:6px;
 }
+
 .cviewLines::-webkit-scrollbar-track{
   background:transparent;
 }
+
 .cviewLines::-webkit-scrollbar-thumb{
   background:rgba(255,255,255,.22);
   border-radius:999px;
@@ -206,6 +212,7 @@
   align-items:center;
   justify-content:center;
 }
+
 .cviewEmpty{
   width:100%;
   min-height:100%;
@@ -221,7 +228,7 @@
   margin:0;
 }
 
-/* CONTENITORE TURNI INVISIBILE */
+/* DAY CARD */
 .cviewDayCard{
   border:none;
   background:transparent;
@@ -231,23 +238,25 @@
   overflow:visible;
 }
 
-/* BLOCCO TURNO */
+/* SHIFT BLOCK */
 .cviewShiftBlock{
   padding:14px 16px;
   background:transparent;
 }
+
 .cviewShiftBlock.isAfter{
   border:none;
   background:transparent;
 }
 
-/* TAG */
+/* TAGS */
 .cviewLineTags{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
   margin-bottom:10px;
 }
+
 .cviewInlineTag{
   font-size:11px;
   font-weight:900;
@@ -265,12 +274,14 @@
   gap:var(--cvDotGap);
   min-width:0;
 }
+
 .cviewDot{
   width:var(--cvDotSize);
   height:var(--cvDotSize);
   border-radius:999px;
   flex:0 0 var(--cvDotSize);
 }
+
 .cviewDot.isBase{ background:var(--dotBase); }
 .cviewDot.isOver{ background:var(--dotOver); }
 .cviewDot.isHoliday{ background:var(--dotHoliday); }
@@ -285,6 +296,7 @@
   white-space:nowrap;
   color:var(--text);
 }
+
 .cviewDurPill{
   font-size:13px;
   font-weight:800;
@@ -298,7 +310,7 @@
   margin-left:10px;
 }
 
-/* PAUSA */
+/* PAUSE */
 .cviewPauseRow{
   margin-left:var(--cvTimeIndent);
   margin-top:2px;
@@ -307,6 +319,7 @@
   gap:8px;
   flex-wrap:wrap;
 }
+
 .cviewPauseText{
   font-size:13px;
   font-weight:800;
@@ -315,6 +328,7 @@
   text-transform:lowercase;
   line-height:1.05;
 }
+
 .cviewPauseBadge{
   display:inline-flex;
   align-items:center;
@@ -331,37 +345,43 @@
   white-space:nowrap;
 }
 
-/* META + DETAILS */
+/* META */
 .cviewMeta{
   display:flex;
   flex-direction:column;
   gap:0;
 }
+
 .cviewMiniDivider{
   height:1px;
   margin:6px 0 4px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
 }
 
+/* DETAILS */
 .cviewDetailGrid{
   display:flex;
   flex-direction:column;
   gap:5px;
 }
+
 .cviewDetailRow{
   display:grid;
   grid-template-columns:74px 1fr;
   gap:10px;
   align-items:start;
 }
+
 .cviewDetailRow.isNote{
   margin-top:4px;
 }
+
 .cviewDetailKey{
   font-size:13px;
   font-weight:900;
   color:rgba(255,255,255,.48);
 }
+
 .cviewDetailVal{
   font-size:14px;
   font-weight:900;
@@ -369,19 +389,21 @@
   line-height:1.18;
 }
 
-/* NOTE BLOCK OUTSIDE CARD (se usato) */
+/* NOTE BLOCK */
 .cviewNotes{
   border-radius:18px;
   background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.10);
   padding:14px 16px;
 }
+
 .cviewNotesTitle{
   font-weight:1000;
   font-size:13px;
   color:var(--text);
   margin-bottom:6px;
 }
+
 .cviewNotesText{
   font-size:13px;
   color:var(--muted);
