@@ -1,5 +1,5 @@
 /* =========================
-   Calendar Insert (Month Grid)
+   Calendar Insert (month grid)
    ========================= */
 
 .cinsRoot{
@@ -61,7 +61,7 @@
   color:var(--text);
   font-weight:1000;
   letter-spacing:.2px;
-  font-size:clamp(14px, 3.6vw, 17px);
+  font-size:clamp(14px,3.6vw,17px);
   padding:10px;
   border-radius:14px;
   text-align:center;
@@ -72,29 +72,40 @@
 }
 
 /* =========================
-   Weekdays
+   Body
    ========================= */
 
+.cinsBody{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* Weekdays */
 .cinsWeekdays{
   display:grid;
-  grid-template-columns:repeat(7, 1fr);
+  grid-template-columns:repeat(7,1fr);
   gap:8px;
   padding:0 6px;
 }
 
 .cinsW{
   height:24px;
+  padding:0 2px;
   display:flex;
   align-items:center;
   justify-content:center;
   border:none;
   background:transparent;
+  border-radius:0;
   font-size:12px;
   font-weight:900;
+  line-height:1;
   color:var(--muted);
   pointer-events:none;
   text-align:center;
-  line-height:1;
 }
 
 /* =========================
@@ -105,8 +116,8 @@
   flex:1;
   min-height:0;
   display:grid;
-  grid-template-columns:repeat(7, 1fr);
-  grid-template-rows:repeat(6, 1fr);
+  grid-template-columns:repeat(7,1fr);
+  grid-template-rows:repeat(6,1fr);
   gap:8px;
   padding:6px;
 }
@@ -117,17 +128,11 @@
   aspect-ratio:1/1;
   border-radius:999px;
   border:1px solid rgba(255,255,255,.14);
-  background:
-    radial-gradient(
-      120% 160% at 30% 0%,
-      rgba(255,255,255,.10),
-      transparent 60%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(0,0,0,.18),
-      rgba(0,0,0,.10)
-    );
+  background:linear-gradient(
+    180deg,
+    rgba(255,255,255,.08),
+    rgba(255,255,255,.05)
+  );
   display:flex;
   align-items:center;
   justify-content:center;
@@ -195,15 +200,15 @@
 }
 
 .cinsDot.premium{
-  background:var(--cinsDotPremium);
+  background:var(--accent2);
 }
 
 .cinsDot.premiumExtra{
-  background:var(--cinsDotPremiumExtra);
+  background:var(--accent1);
 }
 
 /* =========================
-   Picker mese / anno
+   Picker mese/anno
    ========================= */
 
 .cinsPickerLayer{
@@ -224,8 +229,7 @@
 }
 
 .cinsRoot.isPickerOn .cinsHeader,
-.cinsRoot.isPickerOn .cinsGrid,
-.cinsRoot.isPickerOn .cinsWeekdays{
+.cinsRoot.isPickerOn .cinsBody{
   visibility:hidden;
 }
 
@@ -281,7 +285,7 @@
 
 .cinsMonthGrid{
   display:grid;
-  grid-template-columns:repeat(3, 1fr);
+  grid-template-columns:repeat(3,1fr);
   gap:10px;
 }
 
