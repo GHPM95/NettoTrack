@@ -5,7 +5,7 @@
    - Card premium:
      tags sopra
      dot + orario + durata
-     pausa compatta sotto orario
+     pausa compatta sotto orario + pill pagata/non pagata
      divider soft
      dettagli in due colonne
    ========================= */
@@ -432,14 +432,12 @@
           block.className = "cviewShiftBlock";
           if(idx > 0) block.classList.add("isAfter");
 
-          // tags
           const tagsWrap = document.createElement("div");
           tagsWrap.className = "cviewLineTags";
           if(s.sunday) tagsWrap.appendChild(makeTag("Domenicale"));
           if(s.holiday) tagsWrap.appendChild(makeTag("Festivo"));
           if(s.overtime) tagsWrap.appendChild(makeTag("Straordinario"));
 
-          // time row
           const timeRow = document.createElement("div");
           timeRow.className = "cviewTimeRow";
 
@@ -458,7 +456,6 @@
             timeRow.appendChild(makeDurPill(durTxt));
           }
 
-          // pause row
           const meta = document.createElement("div");
           meta.className = "cviewMeta";
 
@@ -470,15 +467,12 @@
             pauseText.className = "cviewPauseText";
             pauseText.textContent = pauseCompactLabel(s.pauseMin);
 
+            const paid = document.createElement("span");
+            paid.className = "cviewPauseBadge";
+            paid.textContent = s.pausePaid ? "Pagata" : "Non pagata";
+
             pauseRow.appendChild(pauseText);
-
-            if(s.pausePaid){
-              const paid = document.createElement("span");
-              paid.className = "cviewPauseBadge";
-              paid.textContent = "pagata";
-              pauseRow.appendChild(paid);
-            }
-
+            pauseRow.appendChild(paid);
             meta.appendChild(pauseRow);
           }
 
