@@ -1,5 +1,9 @@
 /* =========================
    Calendar Insert (month grid)
+   - stato quasi definitivo
+   - fix weekdays
+   - fix title button
+   - fix picker card
    ========================= */
 
 .cinsRoot{
@@ -10,6 +14,15 @@
   gap:12px;
   min-height:0;
   position:relative;
+
+  --cinsDotPremium: rgba(120,170,255,.95);
+  --cinsDotPremiumExtra: rgba(180,120,255,.95);
+}
+
+/* reset button look iOS/Safari */
+.cinsRoot button{
+  -webkit-appearance:none;
+  appearance:none;
 }
 
 /* =========================
@@ -18,7 +31,7 @@
 
 .cinsHeader{
   display:grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns:auto 1fr auto;
   align-items:center;
   gap:10px;
 }
@@ -48,7 +61,10 @@
   background:rgba(255,255,255,.14);
 }
 
+/* titolo mese */
 .cinsTitleBtn{
+  -webkit-appearance:none;
+  appearance:none;
   border:none;
   background:transparent;
   color:var(--text);
@@ -61,6 +77,7 @@
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
+  box-shadow:none;
 }
 
 /* =========================
@@ -85,15 +102,18 @@
 
 .cinsW{
   height:24px;
-  padding:0 2px; /* micro respiro */
+  padding:0;
+  margin:0;
   display:flex;
   align-items:center;
   justify-content:center;
+  text-align:center;
   border:none;
   background:transparent;
   border-radius:0;
-  font-size:12px;
+  font-size:13px;
   font-weight:900;
+  line-height:1;
   color:var(--muted);
   pointer-events:none;
 }
@@ -142,18 +162,12 @@
 }
 
 /* =========================
-   TODAY — PULSANTE SELEZIONATO (CHIARO, LEGGIBILE)
+   TODAY
    ========================= */
 
-.cinsDay.isToday .cinsDot{
-  box-shadow:0 0 0 1.5px rgba(255,255,255,.65);
-}
-
 .cinsDay.isToday{
-  position:relative;
-  border-radius:999px;
-  overflow:hidden;
   border:none;
+  overflow:hidden;
   background:
     radial-gradient(
       circle at 30% 25%,
@@ -178,19 +192,13 @@
     rgba(255,255,255,.18),
     rgba(255,255,255,.06)
   );
+  pointer-events:none;
   z-index:1;
 }
 
 .cinsDay.isToday .cinsNum{
-  position:relative;
-  z-index:2;
   color:#fff;
-  font-weight:1000;
-  text-shadow:0 1px 2px rgba(0,0,0,.25);
-}
-
-.cinsDay.isToday .cinsDots{
-  z-index:3;
+  text-shadow:0 1px 2px rgba(0,0,0,.22);
 }
 
 /* =========================
@@ -203,7 +211,6 @@
   left:50%;
   transform:translateX(-50%);
   display:flex;
-  flex-direction:row;
   align-items:center;
   justify-content:center;
   z-index:3;
@@ -243,6 +250,7 @@
   align-items:center;
   justify-content:center;
   padding:14px;
+  z-index:20;
 }
 
 .cinsPickerLayer.isOn{
@@ -254,7 +262,7 @@
   visibility:hidden;
 }
 
-/* CARD — NIENTE DOPPIO BORDO */
+/* box picker */
 .cinsPickerCard{
   width:100%;
   height:100%;
@@ -280,7 +288,6 @@
   gap:12px;
 }
 
-/* Header picker */
 .cinsPickerTop{
   display:grid;
   grid-template-columns:1fr auto;
@@ -289,9 +296,9 @@
 
 .cinsPickerTitle{
   font-weight:1000;
+  color:var(--text);
 }
 
-/* Anno */
 .cinsYearRow{
   display:grid;
   grid-template-columns:auto 1fr auto;
@@ -303,9 +310,10 @@
 .cinsYearVal{
   text-align:center;
   font-weight:1000;
+  color:var(--text);
 }
 
-/* Mesi */
+/* mesi */
 .cinsMonthGrid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -313,23 +321,17 @@
 }
 
 .cinsPickBtn{
+  -webkit-appearance:none;
+  appearance:none;
   height:44px;
   border-radius:16px;
   border:1px solid rgba(255,255,255,.14);
   background:rgba(255,255,255,.10);
   color:var(--text);
   font-weight:1000;
+  box-shadow:none;
 }
 
-/* =========================
-   Swipe hint — FINALE
-   ========================= */
-
-.cinsSwipeHint{
-  margin-top:auto;
-  padding-top:10px;
-  text-align:center;
-  font-size:11px;
-  opacity:.55;
-  font-weight:800;
+.cinsPickBtn:active{
+  transform:scale(.98);
 }
