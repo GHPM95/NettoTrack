@@ -1,39 +1,103 @@
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>NettoTrack</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="css/theme.css">
-<link rel="stylesheet" href="css/calendar-insert.css">
-<link rel="stylesheet" href="css/calendar-view.css">
-<link rel="stylesheet" href="css/day-editor.css">
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="calendar-insert.css">
+    <link rel="stylesheet" href="calendar-view.css">
+    <link rel="stylesheet" href="day-editor.css">
+    <link rel="stylesheet" href="menu.css">
+</head>
+<body>
 
-<script src="calendar-core.js"></script>
-<script src="calendar-insert.js"></script>
+    <main id="app-content">
+        
+        <section id="calendar-insert" class="appSection">
+            <header class="cinsHeader">
+                <button class="cinsPrev">‹</button>
+                <h2 class="cinsMonthLabel">Mese Anno</h2>
+                <button class="cinsNext">›</button>
+            </header>
+            <div class="cinsGrid"></div>
+        </section>
 
-    <main>
-        <section id="calendar-insert" class="appSection"> </section>
-        <section id="calendar-view" class="appSection" style="display:none;"> </section>
-        <section id="stats" class="appSection" style="display:none;"> </section>
+        <section id="calendar-view" class="appSection" style="display:none;">
+            <div class="cviewDayStrip"></div>
+            <div class="cviewFinanceHeader">
+                <span>Guadagno Giorno:</span>
+                <span class="cviewTotalNet">0,00€</span>
+            </div>
+            <div class="cviewShiftList"></div>
+        </section>
+
+        <section id="stats" class="appSection" style="display:none;"></section>
+
+        <section id="settings" class="appSection" style="display:none;">
+            <div class="settingsContent">
+                <h2>Impostazioni</h2>
+                <p>Configura qui la tua paga oraria e le tasse.</p>
+                </div>
+        </section>
+
     </main>
 
+    <div class="deRoot">
+        <div class="deContainer">
+            <header class="deHeader">
+                <h3>Modifica Turno</h3>
+                <button onclick="closeEditor()" class="deClose">✕</button>
+            </header>
+            <div class="deBody">
+                <div class="deField">
+                    <label>Inizio</label>
+                    <input type="time" id="timeFrom" class="deInput">
+                </div>
+                <div class="deField">
+                    <label>Fine</label>
+                    <input type="time" id="timeTo" class="deInput">
+                </div>
+                <div class="deField">
+                    <label>Pausa (min)</label>
+                    <input type="number" id="pauseMin" class="deInput">
+                </div>
+                <div class="deField">
+                    <label><input type="checkbox" id="isOvertime"> Straordinario</label>
+                </div>
+                <textarea id="dayNotes" placeholder="Note del giorno..." class="deTextarea"></textarea>
+            </div>
+            <footer class="deFooter">
+                <button onclick="saveEntry()" class="deSaveBtn">Salva Turno</button>
+            </footer>
+        </div>
+    </div>
+
     <nav class="mainNav">
-        <button class="navBtn isActive" data-section="calendar-insert" onclick="switchSection('calendar-insert')">
-            <i class="icon-calendar"></i>
+        <button class="navBtn" data-section="calendar-insert" onclick="switchSection('calendar-insert')">
             <span>Mese</span>
         </button>
         <button class="navBtn" data-section="calendar-view" onclick="switchSection('calendar-view')">
-            <i class="icon-agenda"></i>
             <span>Agenda</span>
         </button>
         <button class="navBtn" data-section="stats" onclick="switchSection('stats')">
-            <i class="icon-stats"></i>
             <span>Stats</span>
         </button>
         <button class="navBtn" data-section="settings" onclick="switchSection('settings')">
-            <i class="icon-settings"></i>
-            <span>Impostazioni</span>
+            <span>Set</span>
         </button>
     </nav>
 
-    <script src="js/calendar-core.js"></script>
-    <script src="js/menu.js"></script>
-    </body>
+    <script src="calendar-core.js"></script>
+    <script src="calendar-insert.js"></script>
+    <script src="calendar-view.js"></script>
+    <script src="day-editor.js"></script>
+    <script src="menu.js"></script>
+    <script src="stats.js"></script>
+
+</body>
+</html>
