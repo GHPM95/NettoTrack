@@ -93,8 +93,6 @@
   min-width:0;
   overflow:hidden;
   border-radius:18px;
-  padding:0 6px;
-  box-sizing:border-box;
 }
 
 .cviewTrack{
@@ -107,6 +105,8 @@
 
 .cviewPage{
   flex:0 0 auto;
+  box-sizing:border-box;
+  padding:0 10px;
 }
 
 .cviewDays{
