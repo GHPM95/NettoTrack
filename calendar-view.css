@@ -1,10 +1,9 @@
 /* =========================
    Calendar View (Agenda)
-   - ✅ TODAY/SELECTED pill singolo
-   - ✅ Empty centrato
-   - ✅ UNA card per giorno + blocchi turno
-   - ✅ Durata pill accanto all'orario
-   - ✅ Spaziature premium (compatte)
+   - Premium card layout
+   - Compact pause
+   - Paid / not paid pill
+   - Detail rows in two columns
    ========================= */
 
 :root{
@@ -21,6 +20,10 @@
   --dotOver: rgba(180,120,255,.95);
   --dotHoliday: rgba(255,180,90,.95);
   --dotSunday: rgba(255,110,180,.95);
+
+  --cvDotSize: 12px;
+  --cvDotGap: 14px;
+  --cvTimeIndent: calc(var(--cvDotSize) + var(--cvDotGap));
 }
 
 /* ROOT */
@@ -39,7 +42,7 @@
 /* HEADER */
 .cviewHeader{
   display:grid;
-  grid-template-columns: 38px 1fr 38px;
+  grid-template-columns:38px 1fr 38px;
   align-items:center;
   gap:10px;
 }
@@ -53,8 +56,8 @@
   height:38px;
   border-radius:14px;
   border:none;
-  background: rgba(255,255,255,.10);
-  color: var(--text);
+  background:rgba(255,255,255,.10);
+  color:var(--text);
   font-weight:900;
   font-size:18px;
 }
@@ -62,21 +65,19 @@
 /* WEEK STRIP */
 .cviewWeekStrip{
   display:grid;
-  grid-template-columns: 26px 1fr 26px;
+  grid-template-columns:26px 1fr 26px;
   align-items:center;
   gap:6px;
-  padding: 0 2px;
+  padding:0 2px;
 }
-
-/* Frecce */
 .cviewNavBtn{
   width:26px;
   height:52px;
   border-radius:20px;
   border:none;
-  background: rgba(255,255,255,.08);
+  background:rgba(255,255,255,.08);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
-  color: var(--text);
+  color:var(--text);
   font-weight:1000;
   font-size:18px;
   display:flex;
@@ -86,36 +87,30 @@
 }
 .cviewNavBtn:active{
   transform:scale(.96);
-  background: rgba(255,255,255,.12);
+  background:rgba(255,255,255,.12);
 }
 
-/* Wrap giorni */
+/* DAYS WRAP */
 .cviewDaysWrap{
   min-width:0;
   overflow:hidden;
   border-radius:18px;
-  padding:0;
 }
-
-/* Track */
 .cviewTrack{ display:flex; }
 .cviewTrack.isSnap{ transition: transform .22s ease; }
 .cviewPage{ flex:0 0 auto; }
 
-/* Griglia 7 giorni */
 .cviewDays{
   display:grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns:repeat(7,1fr);
   gap:5px;
 }
 
-/* Day pill */
 .cviewDayBtn{
   border:none;
   background:transparent;
   color:var(--text);
   height:54px;
-  padding:0;
   border-radius:18px;
   display:flex;
   flex-direction:column;
@@ -123,58 +118,34 @@
   justify-content:center;
   gap:4px;
   position:relative;
-  overflow:hidden;
   transition:.12s ease;
 }
-
-/* Cuscinetto ai lati */
-.cviewDays .cviewDayBtn:first-child{ margin-left: 4px; }
-.cviewDays .cviewDayBtn:last-child{  margin-right:4px; }
-
 .cviewDow{
   font-size:11px;
   font-weight:900;
   color:var(--muted);
-  height:12px;
-  line-height:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
 }
 .cviewNum{
   font-size:15px;
   font-weight:1000;
   font-variant-numeric: tabular-nums;
-  height:18px;
-  line-height:18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
 }
-
-/* ✅ TODAY */
 .cviewDayBtn.isToday{
-  background: var(--todayFill);
+  background:var(--todayFill);
   box-shadow: inset 0 0 0 1px var(--todayBorder);
 }
-.cviewDayBtn.isToday::after{ display:none !important; }
-
-/* ✅ SELECTED */
 .cviewDayBtn.isSelected:not(.isToday){
-  background: var(--selFill);
+  background:var(--selFill);
   box-shadow: inset 0 0 0 1px var(--selBorder);
 }
-.cviewDayBtn.isSelected:not(.isToday)::after{ display:none !important; }
 
-/* Divider */
+/* DIVIDER */
 .cviewDivider{
   height:1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
 }
 
-/* =========================
-   SUMMARY
-   ========================= */
+/* SUMMARY */
 .cviewSummary{
   flex:1;
   min-height:0;
@@ -183,27 +154,22 @@
   gap:14px;
   overflow:hidden;
 }
-
 .cviewSummaryTop{
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
   gap:12px;
 }
-
 .cviewSummaryDate{
   font-weight:1000;
   font-size:16px;
 }
-
 .cviewBadges{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
   justify-content:flex-end;
 }
-
-/* contenitore righe */
 .cviewLines{
   flex:1;
   min-height:0;
@@ -211,311 +177,186 @@
   flex-direction:column;
   gap:14px;
   overflow:auto;
-  padding-bottom: 2px;
 }
-
-/* vuoto centrato */
 .cviewLines.isEmpty{
   overflow:hidden;
   align-items:center;
   justify-content:center;
 }
-
 .cviewEmpty{
   width:100%;
-  max-width: 90%;
+  max-width:90%;
   display:flex;
   align-items:center;
   justify-content:center;
   text-align:center;
-  color: var(--muted);
+  color:var(--muted);
   font-weight:1000;
   font-size:16px;
-  padding: 18px;
+  padding:18px;
   margin:0;
-  transform: translateY(-6px);
+  transform:translateY(-6px);
 }
 
-/* =========================
-   DAY CARD (una sola)
-   ========================= */
+/* DAY CARD */
 .cviewDayCard{
   border-radius:18px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
   overflow:hidden;
 }
-
-/* blocco turno */
 .cviewShiftBlock{
   padding:16px;
 }
-
-/* separatore tra blocchi turno */
 .cviewShiftBlock.isAfter{
-  border-top: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.02);
+  border-top:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.02);
 }
 
-/* =========================
-   TAGS (più piccoli, secondo piano)
-   ========================= */
+/* TAGS */
 .cviewLineTags{
   display:flex;
-  gap:6px;
+  gap:8px;
   flex-wrap:wrap;
-  justify-content:flex-start;
-  margin-bottom: 10px; /* poco sopra all’orario */
+  margin-bottom:10px;
 }
-
 .cviewInlineTag{
-  font-size:9.5px;
-  font-weight:1000;
-  letter-spacing:.2px;
-  padding:4px 8px;
-  border-radius:999px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.12);
-  color: rgba(255,255,255,.78);
-}
-
-/* =========================
-   TIME ROW (dot + ora + durata)
-   ========================= */
-.cviewTimeRow{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-bottom: 8px; /* ✅ ora + pausa più vicini */
-}
-
-/* dot */
-.cviewDot{
-  width:10px;
-  height:10px;
-  border-radius:999px;
-  flex:0 0 auto;
-}
-.cviewDot.isOver{ background: var(--dotOver); }
-.cviewDot.isHoliday{ background: var(--dotHoliday); }
-.cviewDot.isSunday{ background: var(--dotSunday); }
-
-/* ora */
-.cviewLineTime{
-  font-weight:1000;
-  font-size:20px; /* impatto */
-  letter-spacing:.2px;
-  font-variant-numeric: tabular-nums;
-  white-space:nowrap; /* ✅ non spezza */
-}
-
-/* durata pill (sempre accanto) */
-.cviewDurPill{
   font-size:12px;
   font-weight:1000;
   padding:6px 10px;
   border-radius:999px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.14);
-  color: rgba(255,255,255,.84);
-  white-space:nowrap;
-  margin-left: 10px; /* ✅ micro fix: più “attaccata” all’ora */
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.82);
 }
 
-/* =========================
-   META (dettagli)
-   - ✅ allineati al DOT (non rientrati)
-   ========================= */
+/* TIME ROW */
+.cviewTimeRow{
+  display:flex;
+  align-items:center;
+  gap:var(--cvDotGap);
+  min-width:0;
+}
+.cviewDot{
+  width:var(--cvDotSize);
+  height:var(--cvDotSize);
+  flex:0 0 var(--cvDotSize);
+  border-radius:999px;
+}
+.cviewDot.isOver{ background:var(--dotOver); }
+.cviewDot.isHoliday{ background:var(--dotHoliday); }
+.cviewDot.isSunday{ background:var(--dotSunday); }
+
+.cviewLineTime{
+  font-weight:1000;
+  font-size:24px;
+  line-height:1.06;
+  letter-spacing:.2px;
+  font-variant-numeric: tabular-nums;
+  white-space:nowrap;
+  color:var(--text);
+}
+
+.cviewDurPill{
+  font-size:13px;
+  font-weight:800;
+  padding:5px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.84);
+  white-space:nowrap;
+  opacity:.92;
+  margin-left:10px;
+}
+
+/* META */
 .cviewMeta{
   display:flex;
   flex-direction:column;
-  gap:6px; /* ✅ meno distanziati */
+  gap:0;
 }
 
-/* pausa: primo piano ma subito sotto l’ora */
-.cviewMetaLine.isPrimary{
-  font-size:18px;
-  font-weight:1000;
-  color: rgba(255,255,255,.90);
-  line-height:1.15;
+/* PAUSE */
+.cviewPauseRow{
+  margin-top:2px;
+  margin-left:var(--cvTimeIndent);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.cviewPauseText{
+  font-size:13px;
+  font-weight:800;
+  color:rgba(255,255,255,.78);
+  letter-spacing:.1px;
+  text-transform:lowercase;
+  line-height:1.05;
+}
+.cviewPauseBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:900;
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.74);
+  line-height:1;
 }
 
-/* divider mini, stile app */
+/* SOFT DIVIDER */
 .cviewMiniDivider{
   height:1px;
-  width:100%;
-  margin: 6px 0 4px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+  margin:6px 0 4px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);
 }
 
-/* secondarie: più piccole, secondo piano */
-.cviewMetaLine.isSecondary{
-  font-size:15px;
+/* DETAIL GRID */
+.cviewDetailGrid{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.cviewDetailRow{
+  display:grid;
+  grid-template-columns:74px 1fr;
+  gap:10px;
+  align-items:start;
+}
+.cviewDetailRow.isNote{
+  margin-top:4px;
+}
+.cviewDetailKey{
+  font-size:13px;
   font-weight:900;
-  color: rgba(255,255,255,.66);
+  color:rgba(255,255,255,.48);
+}
+.cviewDetailVal{
+  font-size:14px;
+  font-weight:900;
   line-height:1.18;
+  color:rgba(255,255,255,.72);
 }
 
-/* nota: un po’ di stacco extra */
-.cviewMetaLine.isSecondary.isNote{
-  margin-top: 8px;
-  color: rgba(255,255,255,.62);
-}
-
-/* =========================
-   Note blocco (giorno, se usato)
-   ========================= */
+/* NOTE BLOCK OUTSIDE CARD (if used) */
 .cviewNotes{
   border-radius:18px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
   padding:14px 16px;
 }
 .cviewNotesTitle{
   font-weight:1000;
   font-size:13px;
-  color: var(--text);
+  color:var(--text);
   margin-bottom:6px;
 }
 .cviewNotesText{
   font-size:13px;
-  color: var(--muted);
+  color:var(--muted);
   font-weight:900;
-}
-
-/* === FIX: Solo "Pausa" allineata all'inizio dell'orario (non al dot) === */
-/* Se il tuo dot o gap sono diversi, cambia i valori qui sotto. */
-.cviewRoot{
-  --cvDotSize: 12px;     /* larghezza/altezza dot */
-  --cvDotGap: 14px;      /* spazio tra dot e ora */
-  --cvTimeIndent: calc(var(--cvDotSize) + var(--cvDotGap));
-}
-
-/* il dot deve rispettare --cvDotSize (se già lo fa, ok) */
-.cviewDot{
-  width: var(--cvDotSize);
-  height: var(--cvDotSize);
-  flex: 0 0 var(--cvDotSize);
-}
-
-/* il gap reale tra dot e ora: se già hai gap su cviewTimeRow, ok,
-   altrimenti questa riga lo impone */
-.cviewTimeRow{
-  column-gap: var(--cvDotGap);
-}
-
-/* ✅ SOLO Pausa (ha la classe alignTime dal JS) */
-.cviewMetaLine.alignTime{
-  padding-left: var(--cvTimeIndent);
-}
-
-/* Durata pill: un filo più piccola/leggera */
-.cviewDurPill{
-  font-size: 14px;          /* prima era troppo presente */
-  font-weight: 800;
-  padding: 6px 12px;
-  opacity: .92;
-}
-
-/* Dettagli (Turno/Assenza/Nota): più piccoli e “secondo piano” */
-.cviewMetaLine.isSecondary{
-  font-size: 16px;
-  opacity: .72;
-  line-height: 1.15;
-  margin-top: 6px;          /* meno distanza verticale */
-}
-
-/* Nota leggermente separata (resta leggibile ma non “urla”) */
-.cviewMetaLine.isSecondary.isNote{
-  margin-top: 10px;
-  opacity: .70;
-}
-
-:root{
-  /* dot + gap = indent verso l'inizio dell'orario */
-  --cvTimeIndent: 28px; /* se vuoi più/meno: 24-32px */
-}
-
-.cviewMetaLine.isPauseAlignTime{
-  margin-left: var(--cvTimeIndent);
-}
-
-/* ===== Premium card layout ===== */
-
-/* durata leggermente più discreta */
-.cviewDurPill{
-  font-size: 13px;
-  font-weight: 800;
-  padding: 5px 10px;
-  opacity: .92;
-  white-space: nowrap;
-}
-
-/* pausa integrata sotto l'orario */
-.cviewPauseRow{
-  margin-top: 6px;
-  margin-left: var(--cvTimeIndent, 28px);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.cviewPauseText{
-  font-size: 15px;
-  font-weight: 900;
-  color: rgba(255,255,255,.88);
-  letter-spacing: .1px;
-  text-transform: lowercase;
-}
-
-.cviewPauseBadge{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 900;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.12);
-  color: rgba(255,255,255,.78);
-}
-
-/* divider più leggero */
-.cviewMiniDivider{
-  height: 1px;
-  margin: 10px 0 8px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
-}
-
-/* dettagli ordinati in due colonne */
-.cviewDetailGrid{
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.cviewDetailRow{
-  display: grid;
-  grid-template-columns: 74px 1fr;
-  gap: 10px;
-  align-items: start;
-}
-
-.cviewDetailRow.isNote{
-  margin-top: 4px;
-}
-
-.cviewDetailKey{
-  font-size: 13px;
-  font-weight: 900;
-  color: rgba(255,255,255,.48);
-}
-
-.cviewDetailVal{
-  font-size: 14px;
-  font-weight: 900;
-  line-height: 1.18;
-  color: rgba(255,255,255,.72);
 }
