@@ -1,11 +1,53 @@
 (() => {
-  const { dateKey, todayParts, loadDay, loadDraft } = window.NTCal;
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
   const WDN = ["L","M","M","G","V","S","D"];
 
   let mounted = false;
-  let y = todayParts().y;
-  let m = todayParts().m;
+  let y = null;
+  let m = null;
+
+  function getCal(){
+    return window.NTCal || null;
+  }
+
+  function todayPartsSafe(){
+    const cal = getCal();
+    if (cal && typeof cal.todayParts === "function"){
+      try { return cal.todayParts(); } catch(_) {}
+    }
+    const d = new Date();
+    return { y:d.getFullYear(), m:d.getMonth(), d:d.getDate() };
+  }
+
+  function dateKeySafe(yy, mm, dd){
+    const cal = getCal();
+    if (cal && typeof cal.dateKey === "function"){
+      try { return cal.dateKey(yy, mm, dd); } catch(_) {}
+    }
+    return `${yy}-${String(mm+1).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;
+  }
+
+  function loadDaySafe(key){
+    const cal = getCal();
+    if (cal && typeof cal.loadDay === "function"){
+      try { return cal.loadDay(key); } catch(_) {}
+    }
+    return null;
+  }
+
+  function loadDraftSafe(key){
+    const cal = getCal();
+    if (cal && typeof cal.loadDraft === "function"){
+      try { return cal.loadDraft(key); } catch(_) {}
+    }
+    return null;
+  }
+
+  function ensureYM(){
+    const t = todayPartsSafe();
+    if (typeof y !== "number") y = t.y;
+    if (typeof m !== "number") m = t.m;
+  }
 
   function mountIfNeeded() {
     const mount = document.getElementById("calInsertMount");
@@ -93,11 +135,14 @@
     });
 
     mounted = true;
+    ensureYM();
     renderMonth();
   }
 
   function stepMonth(delta) {
+    ensureYM();
     m += delta;
+
     if (m < 0) {
       m = 11;
       y -= 1;
@@ -106,6 +151,7 @@
       m = 0;
       y += 1;
     }
+
     renderMonth();
   }
 
@@ -116,6 +162,7 @@
     const layer = mount.querySelector("#cinsPickerLayer");
     layer.classList.toggle("isOn", !!on);
     layer.setAttribute("aria-hidden", on ? "false" : "true");
+
     mount.querySelector("#cinsRoot")?.classList.toggle("isPickerOn", !!on);
 
     if (on) renderPicker();
@@ -137,7 +184,6 @@
       const hasExtra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
       const hasAdv = (s?.advA && s.advA !== "-") || (s?.advB && s?.advB !== "-");
       const hasNote = !!(s?.note && String(s.note).trim().length);
-
       return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
     });
   }
@@ -145,6 +191,8 @@
   function renderMonth() {
     const mount = document.getElementById("calInsertMount");
     if (!mount) return;
+
+    ensureYM();
 
     mount.querySelector("#cinsTitle").textContent = `${MONTHS[m]} ${y}`;
 
@@ -156,7 +204,10 @@
     const offset = (firstDay === 0 ? 6 : firstDay - 1);
     const daysInMonth = new Date(y, m + 1, 0).getDate();
 
-    const { y:ty, m:tm, d:td } = todayParts();
+    const t = todayPartsSafe();
+    const ty = Number(t.y);
+    const tm = Number(t.m);
+    const td = Number(t.d);
 
     for (let i = 0; i < 42; i++) {
       const dayNum = i - offset + 1;
@@ -167,7 +218,7 @@
       btn.className = "cinsDay" + (isValid ? "" : " isOff");
 
       if (isValid) {
-        const key = dateKey(y, m, dayNum);
+        const key = dateKeySafe(y, m, dayNum);
 
         if (y === ty && m === tm && dayNum === td) {
           btn.classList.add("isToday");
@@ -178,8 +229,8 @@
         num.textContent = String(dayNum);
         btn.appendChild(num);
 
-        const saved = loadDay(key);
-        const draft = loadDraft(key);
+        const saved = loadDaySafe(key);
+        const draft = loadDraftSafe(key);
         const model = saved || draft;
 
         if (hasMeaningfulDayData(model)) {
@@ -229,7 +280,7 @@
 
   document.addEventListener("nettotrack:calendarInsertOpened", () => {
     mountIfNeeded();
-    const t = todayParts();
+    const t = todayPartsSafe();
     y = t.y;
     m = t.m;
     renderMonth();
