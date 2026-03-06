@@ -1,6 +1,6 @@
 /* =========================
    Calendar Insert (month grid)
-   ========================= */
+   ========================= /
 
 .cinsRoot{
   width:100%;
@@ -15,9 +15,9 @@
   --cinsDotPremiumExtra: rgba(180,120,255,.95);
 }
 
-/* =========================
+/ =========================
    Header
-   ========================= */
+   ========================= /
 
 .cinsHeader{
   display:grid;
@@ -68,12 +68,11 @@
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-  box-shadow:none;
 }
 
-/* =========================
+/ =========================
    Body
-   ========================= */
+   ========================= /
 
 .cinsBody{
   flex:1;
@@ -83,7 +82,8 @@
   gap:10px;
 }
 
-/* Weekdays */
+/ Weekdays /
+
 .cinsWeekdays{
   display:grid;
   grid-template-columns:repeat(7,1fr);
@@ -93,24 +93,18 @@
 
 .cinsW{
   height:24px;
-  padding:0 2px;
   display:flex;
   align-items:center;
   justify-content:center;
-  border:none;
-  background:transparent;
-  border-radius:0;
   font-size:12px;
   font-weight:900;
-  line-height:1;
   color:var(--muted);
   pointer-events:none;
-  text-align:center;
 }
 
-/* =========================
+/ =========================
    Grid giorni
-   ========================= */
+   ========================= /
 
 .cinsGrid{
   flex:1;
@@ -153,19 +147,26 @@
   z-index:2;
 }
 
-/* =========================
-   TODAY — pill soft visibile
-   ========================= */
-
-/* TODAY — stesso pill del calendar-view */
+/ =========================
+   TODAY — pill identico al view
+   ========================= /
 
 .cinsDay.isToday{
+  aspect-ratio:auto;
+  width:44px;
+  height:72px;
+  justify-self:center;
+  align-self:center;
+
   border-radius:18px;
-  background:rgba(120,150,255,.16);
-  border:1px solid rgba(160,180,255,.45);
+  border:none;
+  overflow:hidden;
+
+  background:rgba(120,140,255,.22);
+
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.10),
-    0 4px 12px rgba(0,0,0,.12);
+    inset 0 0 0 1px rgba(180,200,255,.25),
+    inset 0 1px 0 rgba(255,255,255,.08);
 }
 
 .cinsDay.isToday::after{
@@ -175,8 +176,8 @@
   border-radius:inherit;
   background:linear-gradient(
     180deg,
-    rgba(255,255,255,.18),
-    rgba(255,255,255,.06)
+    rgba(255,255,255,.05),
+    rgba(255,255,255,.01)
   );
   pointer-events:none;
   z-index:1;
@@ -184,12 +185,17 @@
 
 .cinsDay.isToday .cinsNum{
   color:#fff;
-  font-weight:1000;
+  text-shadow:none;
+  z-index:2;
 }
 
-/* =========================
+.cinsDay.isToday .cinsDots{
+  z-index:3;
+}
+
+/ =========================
    Dots
-   ========================= */
+   ========================= /
 
 .cinsDots{
   position:absolute;
@@ -207,7 +213,6 @@
   width:7px;
   height:7px;
   border-radius:999px;
-  opacity:1;
 }
 
 .cinsDot + .cinsDot{
@@ -222,7 +227,7 @@
   background:var(--accent1);
 }
 
-/* =========================
+/ =========================
    Picker mese/anno
    ========================= */
 
@@ -313,16 +318,11 @@
   background:rgba(255,255,255,.10);
   color:var(--text);
   font-weight:1000;
-  box-shadow:none;
 }
 
 .cinsPickBtn:active{
   transform:scale(.98);
 }
-
-/* =========================
-   Swipe hint
-   ========================= */
 
 .cinsSwipeHint{
   margin-top:auto;
