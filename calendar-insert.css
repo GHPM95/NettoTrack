@@ -1,6 +1,6 @@
 /* =========================
    Calendar Insert (month grid)
-   ========================= /
+   ========================= */
 
 .cinsRoot{
   width:100%;
@@ -15,9 +15,9 @@
   --cinsDotPremiumExtra: rgba(180,120,255,.95);
 }
 
-/ =========================
+/* =========================
    Header
-   ========================= /
+   ========================= */
 
 .cinsHeader{
   display:grid;
@@ -68,11 +68,12 @@
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
+  box-shadow:none;
 }
 
-/ =========================
+/* =========================
    Body
-   ========================= /
+   ========================= */
 
 .cinsBody{
   flex:1;
@@ -82,7 +83,9 @@
   gap:10px;
 }
 
-/ Weekdays /
+/* =========================
+   Weekdays
+   ========================= */
 
 .cinsWeekdays{
   display:grid;
@@ -93,18 +96,24 @@
 
 .cinsW{
   height:24px;
+  padding:0 2px;
   display:flex;
   align-items:center;
   justify-content:center;
+  border:none;
+  background:transparent;
+  border-radius:0;
   font-size:12px;
   font-weight:900;
+  line-height:1;
   color:var(--muted);
   pointer-events:none;
+  text-align:center;
 }
 
-/ =========================
+/* =========================
    Grid giorni
-   ========================= /
+   ========================= */
 
 .cinsGrid{
   flex:1;
@@ -147,9 +156,9 @@
   z-index:2;
 }
 
-/ =========================
-   TODAY — pill identico al view
-   ========================= /
+/* =========================
+   TODAY — stesso pill del calendar-view
+   ========================= */
 
 .cinsDay.isToday{
   aspect-ratio:auto;
@@ -157,13 +166,10 @@
   height:72px;
   justify-self:center;
   align-self:center;
-
   border-radius:18px;
   border:none;
   overflow:hidden;
-
   background:rgba(120,140,255,.22);
-
   box-shadow:
     inset 0 0 0 1px rgba(180,200,255,.25),
     inset 0 1px 0 rgba(255,255,255,.08);
@@ -193,9 +199,9 @@
   z-index:3;
 }
 
-/ =========================
+/* =========================
    Dots
-   ========================= /
+   ========================= */
 
 .cinsDots{
   position:absolute;
@@ -227,7 +233,7 @@
   background:var(--accent1);
 }
 
-/ =========================
+/* =========================
    Picker mese/anno
    ========================= */
 
