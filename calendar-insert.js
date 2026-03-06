@@ -165,6 +165,8 @@
     const offset = (firstDay === 0 ? 6 : firstDay - 1);
     const daysInMonth = new Date(y, m + 1, 0).getDate();
 
+    const { y:ty, m:tm, d:td } = todayParts();
+
     for (let i = 0; i < 42; i++) {
       const dayNum = i - offset + 1;
       const isValid = dayNum >= 1 && dayNum <= daysInMonth;
@@ -175,6 +177,10 @@
 
       if (isValid) {
         const key = dateKey(y, m, dayNum);
+
+        if (y === ty && m === tm && dayNum === td) {
+          btn.classList.add("isToday");
+        }
 
         const num = document.createElement("span");
         num.className = "cinsNum";
