@@ -1,0 +1,29 @@
+.cviewDayBtn {
+  height: var(--touch-target);
+  border-radius: var(--r-btn);
+  background: var(--glass-1);
+  border: 1px solid var(--glass-border);
+  transition: all 0.2s ease;
+}
+
+/* Coerenza "Today" anche nello strip settimanale */
+.cviewDayBtn.isToday {
+  background: var(--today-grad);
+  box-shadow: var(--today-glow);
+  border: none;
+}
+
+.cviewDayCard {
+  background: var(--glass-1);
+  border-radius: var(--r-card);
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--glass-border);
+}
+
+.cviewLineTime {
+  font-family: var(--font-num);
+  font-size: var(--fs-clock, 24px);
+  font-weight: 900;
+  letter-spacing: -1px;
+}
