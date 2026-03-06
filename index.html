@@ -1,87 +1,10 @@
-<!doctype html>
-<html lang="it">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>NettoTrack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 
-  <!-- Core UI -->
-  <link rel="stylesheet" href="ui.css" />
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/calendar-insert.css">
+<link rel="stylesheet" href="css/calendar-view.css">
+<link rel="stylesheet" href="css/day-editor.css">
 
-  <!-- Calendar modules -->
-  <link rel="stylesheet" href="calendar-insert.css" />
-  <link rel="stylesheet" href="calendar-view.css?v=1">
-
-  <!-- Day editor -->
-  <link rel="stylesheet" href="day-editor.css" />
-</head>
-
-<body>
-  <!-- Background FX (stesso naming del tuo ui.css) -->
-  <div class="bgFX" aria-hidden="true">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
-    <div class="blob b3"></div>
-    <div class="grain"></div>
-  </div>
-
-  <div class="appRoot" id="appRoot">
-    <!-- TOP BAR -->
-    <header class="topBar" id="topBar">
-      <button id="menuBtn" class="menuBtn" type="button" aria-label="Menu">≡</button>
-
-      <div class="brand" id="brand">
-        <div class="brandName">NettoTrack</div>
-        <div class="brandSub">Il tuo stipendio, nel tempo.</div>
-      </div>
-
-      <!-- spacer per allineamento (ui.css lo usa) -->
-      <div class="topRightSpacer" aria-hidden="true"></div>
-    </header>
-
-    <!-- MENU OVERLAY + DRAWER + CLOSE BTN (ui.css/ui.js li aspettano così) -->
-    <div id="menuOverlay" class="menuOverlay" aria-hidden="true"></div>
-    <aside id="menuDrawer" class="menuDrawer" aria-hidden="true"></aside>
-    <button id="menuCloseBtn" class="menuCloseBtn" type="button" aria-label="Chiudi menu">×</button>
-
-    <!-- STAGE -->
-    <main class="stage">
-      <section class="cardsViewport" id="cardsViewport" aria-label="Cards">
-        <div class="cardsTrack" id="cardsTrack">
-
-          <!-- HOME slide (sempre presente) -->
-          <article class="card slide" data-slide-id="home" data-title="Home">
-            <div class="cardInner">
-              <div class="cardMount" id="homeMount">
-                <!-- Placeholder home (puoi lasciarlo vuoto) -->
-              </div>
-            </div>
-          </article>
-
-          <!-- Le altre slide vengono aggiunte dinamicamente da ui.js:
-               calInsertMount, calViewMount, dayEditorMount -->
-        </div>
-      </section>
-
-      <!-- DOTS -->
-      <div class="dotsWrap" aria-label="Navigazione card">
-        <div class="dotsPill" id="dotsPill"></div>
-      </div>
-    </main>
-
-    <!-- BOTTOM BAR -->
-    <div class="bottomBar" aria-hidden="true">
-      <div class="bottomBarGlass"></div>
-    </div>
-  </div>
-
-  <!-- Scripts (ordine importante) -->
-  <script src="calendar-core.js"></script>
-  <script src="ui.js"></script>
-  <script src="menu.js"></script>
-
-  <script src="calendar-insert.js"></script>
-  <script src="calendar-view.js"></script>
-  <script src="day-editor.js"></script>
-</body>
-</html>
+<script src="js/calendar-core.js"></script>
+<script src="js/calendar-insert.js"></script>
