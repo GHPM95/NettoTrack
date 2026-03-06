@@ -430,3 +430,12 @@
   margin-top: 10px;
   opacity: .70;
 }
+
+:root{
+  /* dot + gap = indent verso l'inizio dell'orario */
+  --cvTimeIndent: 28px; /* se vuoi più/meno: 24-32px */
+}
+
+.cviewMetaLine.isPauseAlignTime{
+  margin-left: var(--cvTimeIndent);
+}
