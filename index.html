@@ -9,18 +9,31 @@
 <script src="js/calendar-core.js"></script>
 <script src="js/calendar-insert.js"></script>
 
-<nav class="mainNav">
-    <button class="navBtn" data-section="calendar-insert" onclick="switchSection('calendar-insert')">
-        <i class="icon-calendar"></i>
-        <span>Mese</span>
-    </button>
-    <button class="navBtn" data-section="calendar-view" onclick="switchSection('calendar-view')">
-        <i class="icon-agenda"></i>
-        <span>Agenda</span>
-    </button>
-    <button class="navBtn" data-section="stats" onclick="switchSection('stats')">
-        <i class="icon-stats"></i>
-        <span>Stats</span>
-    </button>
-</nav>
-</body>
+    <main>
+        <section id="calendar-insert" class="appSection"> </section>
+        <section id="calendar-view" class="appSection" style="display:none;"> </section>
+        <section id="stats" class="appSection" style="display:none;"> </section>
+    </main>
+
+    <nav class="mainNav">
+        <button class="navBtn isActive" data-section="calendar-insert" onclick="switchSection('calendar-insert')">
+            <i class="icon-calendar"></i>
+            <span>Mese</span>
+        </button>
+        <button class="navBtn" data-section="calendar-view" onclick="switchSection('calendar-view')">
+            <i class="icon-agenda"></i>
+            <span>Agenda</span>
+        </button>
+        <button class="navBtn" data-section="stats" onclick="switchSection('stats')">
+            <i class="icon-stats"></i>
+            <span>Stats</span>
+        </button>
+        <button class="navBtn" data-section="settings" onclick="switchSection('settings')">
+            <i class="icon-settings"></i>
+            <span>Impostazioni</span>
+        </button>
+    </nav>
+
+    <script src="js/calendar-core.js"></script>
+    <script src="js/menu.js"></script>
+    </body>
