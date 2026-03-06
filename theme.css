@@ -44,3 +44,56 @@ body {
   margin: 0;
   overflow: hidden;
 }
+
+/* =====================================================
+   NETTOTRACK - MASTER DESIGN SYSTEM
+   (Variabili + UI Layout + Glassmorphism)
+   ===================================================== */
+
+:root {
+    /* 1. VARIABILI (Il vecchio theme.css) */
+    --bg-oled: #000000;
+    --accent-blue: #007AFF;
+    /* ... le altre tue variabili ... */
+}
+
+/* 2. RESET GLOBALI */
+body {
+    background-color: var(--bg-oled);
+    color: var(--text-hi);
+    margin: 0;
+    font-family: var(--font-main);
+    overflow: hidden; /* Fondamentale per il feeling App */
+}
+
+/* 3. LAYOUT UI (Quello che era in ui.css) */
+#app-content {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    padding-top: var(--p-top);
+}
+
+.appSection {
+    position: absolute;
+    top: var(--p-top);
+    left: 0;
+    right: 0;
+    bottom: calc(var(--touch-target) + var(--p-bottom));
+    display: none;
+    flex-direction: column;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.activeSection {
+    display: flex; /* Mostra la sezione attiva */
+}
+
+/* 4. COMPONENTI GLASSMORPHISM */
+.glass-panel {
+    background: var(--glass-1);
+    backdrop-filter: blur(var(--blur));
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+}
