@@ -439,3 +439,83 @@
 .cviewMetaLine.isPauseAlignTime{
   margin-left: var(--cvTimeIndent);
 }
+
+/* ===== Premium card layout ===== */
+
+/* durata leggermente più discreta */
+.cviewDurPill{
+  font-size: 13px;
+  font-weight: 800;
+  padding: 5px 10px;
+  opacity: .92;
+  white-space: nowrap;
+}
+
+/* pausa integrata sotto l'orario */
+.cviewPauseRow{
+  margin-top: 6px;
+  margin-left: var(--cvTimeIndent, 28px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cviewPauseText{
+  font-size: 15px;
+  font-weight: 900;
+  color: rgba(255,255,255,.88);
+  letter-spacing: .1px;
+  text-transform: lowercase;
+}
+
+.cviewPauseBadge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.78);
+}
+
+/* divider più leggero */
+.cviewMiniDivider{
+  height: 1px;
+  margin: 10px 0 8px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
+}
+
+/* dettagli ordinati in due colonne */
+.cviewDetailGrid{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cviewDetailRow{
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.cviewDetailRow.isNote{
+  margin-top: 4px;
+}
+
+.cviewDetailKey{
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(255,255,255,.48);
+}
+
+.cviewDetailVal{
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.18;
+  color: rgba(255,255,255,.72);
+}
