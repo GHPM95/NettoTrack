@@ -66,15 +66,15 @@
 /* WEEK STRIP */
 .cviewWeekStrip{
   display:grid;
-  grid-template-columns:32px 1fr 32px;
+  grid-template-columns:26px 1fr 26px;
   align-items:center;
-  gap:8px;
-  padding:0 4px;
+  gap:6px;
+  padding:0 2px;
 }
 
 .cviewNavBtn{
-  width:32px;
-  height:54px;
+  width:26px;
+  height:52px;
   border-radius:20px;
   border:none;
   background:rgba(255,255,255,.08);
@@ -100,16 +100,15 @@
   transition:transform .22s ease;
 }
 .cviewPage{
-  .cviewPage{
   flex:0 0 auto;
-  box-sizing:border-box;
-  padding:0 6px;
 }
 
 .cviewDays{
   display:grid;
   grid-template-columns:repeat(7,1fr);
   gap:6px;
+  padding:0 6px;
+  box-sizing:border-box;
 }
 
 .cviewDayBtn{
