@@ -1,0 +1,24 @@
+.deInput {
+  width: 100%;
+  height: var(--touch-target);
+  background: rgba(0,0,0,0.25); /* Effetto scavato */
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-btn);
+  color: var(--text-hi);
+  font-family: var(--font-num);
+  padding: 0 16px;
+  box-shadow: inset 2px 2px 10px rgba(0,0,0,0.4);
+}
+
+.deInput:focus {
+  border-color: var(--accent-blue);
+  outline: none;
+}
+
+.deTextarea {
+  background: var(--glass-1);
+  border-radius: var(--r-card);
+  padding: 16px;
+  font-family: var(--font-main);
+  line-height: 1.5;
+}
