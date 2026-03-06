@@ -1,0 +1,42 @@
+.cinsRoot {
+  padding: var(--p-top) var(--p-side) var(--p-bottom);
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+.cinsGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--gap-s, 8px);
+}
+
+.cinsDay {
+  aspect-ratio: 1/1;
+  border-radius: 999px;
+  background: var(--glass-1);
+  border: 1px solid var(--glass-border);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; transition: transform 0.2s var(--spring);
+}
+
+.cinsDay:active { transform: scale(0.88); }
+
+/* Coerenza "Today" */
+.cinsDay.isToday {
+  background: var(--today-grad);
+  box-shadow: var(--today-glow);
+  border: none;
+}
+
+.cinsNum { 
+  font-family: var(--font-num); 
+  font-weight: 800; 
+  font-size: var(--fs-body, 16px);
+}
+
+.cinsDots {
+  position: absolute; bottom: 6px; display: flex; gap: 3px;
+}
+
+.cinsDot { width: 6px; height: 6px; border-radius: 50%; }
+.cinsDot.premium { background: var(--accent-blue); }
+.cinsDot.premiumExtra { background: var(--accent-purple); }
