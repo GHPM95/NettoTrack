@@ -25,8 +25,10 @@
           <button class="ntBtn" id="cinsClose" type="button" aria-label="Chiudi">×</button>
         </div>
 
-        <div class="cinsWeekdays" id="cinsWeekdays" aria-hidden="true"></div>
-        <div class="cinsGrid" id="cinsGrid" aria-label="Giorni del mese"></div>
+        <div class="cinsBody">
+          <div class="cinsWeekdays" id="cinsWeekdays" aria-hidden="true"></div>
+          <div class="cinsGrid" id="cinsGrid" aria-label="Giorni del mese"></div>
+        </div>
 
         <div class="cinsPickerLayer" id="cinsPickerLayer" aria-hidden="true">
           <div class="cinsPickerCard" id="cinsPickerCard" role="dialog" aria-label="Seleziona mese e anno">
@@ -96,17 +98,14 @@
 
   function stepMonth(delta) {
     m += delta;
-
     if (m < 0) {
       m = 11;
       y -= 1;
     }
-
     if (m > 11) {
       m = 0;
       y += 1;
     }
-
     renderMonth();
   }
 
@@ -117,7 +116,6 @@
     const layer = mount.querySelector("#cinsPickerLayer");
     layer.classList.toggle("isOn", !!on);
     layer.setAttribute("aria-hidden", on ? "false" : "true");
-
     mount.querySelector("#cinsRoot")?.classList.toggle("isPickerOn", !!on);
 
     if (on) renderPicker();
@@ -126,7 +124,6 @@
   function renderPicker() {
     const mount = document.getElementById("calInsertMount");
     if (!mount) return;
-
     mount.querySelector("#cinsYearVal").textContent = String(y);
   }
 
@@ -232,18 +229,15 @@
 
   document.addEventListener("nettotrack:calendarInsertOpened", () => {
     mountIfNeeded();
-
     const t = todayParts();
     y = t.y;
     m = t.m;
-
     renderMonth();
   });
 
   document.addEventListener("nettotrack:dataChanged", () => {
     const mount = document.getElementById("calInsertMount");
     if (!mount || !mount.querySelector("#cinsRoot")) return;
-
     renderMonth();
   });
 })();
