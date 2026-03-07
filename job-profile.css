@@ -1,0 +1,152 @@
+/* =========================
+   NettoTrack - Job Profile
+   ========================= */
+
+.jobProfileCard{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.jobProfileHeader{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.jobProfileTitle{
+  font-size:18px;
+  font-weight:700;
+}
+
+.jobProfileSub{
+  font-size:13px;
+  opacity:.7;
+}
+
+.jobProfileContent{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.jobProfileEmpty{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.jobProfileIntro{
+  font-size:14px;
+  opacity:.85;
+}
+
+.jobProfileView{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.jobProfileAvatarBox{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+}
+
+.jobProfileAvatar{
+  width:72px;
+  height:72px;
+  border-radius:16px;
+  background:rgba(255,255,255,.12);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:34px;
+}
+
+.jobProfileAvatarHint{
+  font-size:12px;
+  opacity:.6;
+}
+
+.jobProfileMainInfo{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.jobProfileWorkInfo{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.jobProfileRow{
+  font-size:14px;
+}
+
+.jobProfileImportBox{
+  margin-top:12px;
+}
+
+.hidden{
+  display:none;
+}
+
+/* =========================
+   Wizard
+   ========================= */
+
+.jobWizardCard{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  height:100%;
+}
+
+.jobWizardHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.jobWizardTitle{
+  font-weight:700;
+}
+
+.jobWizardStep{
+  font-size:12px;
+  opacity:.6;
+}
+
+.jobWizardBody{
+  flex:1;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.jobWizardFooter{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.wizardChoice{
+  padding:12px;
+  border-radius:12px;
+  background:rgba(255,255,255,.08);
+  cursor:pointer;
+}
+
+.wizardChoice:hover{
+  background:rgba(255,255,255,.14);
+}
+
+.reviewSection{
+  padding:10px;
+  border-radius:10px;
+  background:rgba(255,255,255,.08);
+}
