@@ -1,5 +1,3 @@
-Ui.js
-
 (() => {
   const $ = (sel, root=document) => root.querySelector(sel);
 
