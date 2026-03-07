@@ -1,5 +1,3 @@
-Menu.js
-
 document.addEventListener("DOMContentLoaded", () => {
 
 (() => {
