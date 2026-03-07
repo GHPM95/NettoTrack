@@ -1,5 +1,3 @@
-Calendar-view.js
-
 /* =========================
    calendar-view.js (Agenda)
    - SOLO NTCal.loadDay (salvati), MAI draft/autosave
