@@ -1,103 +1,89 @@
-<!DOCTYPE html>
+Index.html
+
+<!doctype html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>NettoTrack</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>NettoTrack</title>
 
-    <link rel="stylesheet" href="theme.css">
-    <link rel="stylesheet" href="calendar-insert.css">
-    <link rel="stylesheet" href="calendar-view.css">
-    <link rel="stylesheet" href="day-editor.css">
-    <link rel="stylesheet" href="menu.css">
+  <!-- Core UI -->
+  <link rel="stylesheet" href="ui.css" />
+
+  <!-- Calendar modules -->
+  <link rel="stylesheet" href="calendar-insert.css" />
+  <link rel="stylesheet" href="calendar-view.css?v=1">
+
+  <!-- Day editor -->
+  <link rel="stylesheet" href="day-editor.css" />
 </head>
+
 <body>
+  <!-- Background FX (stesso naming del tuo ui.css) -->
+  <div class="bgFX" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div class="grain"></div>
+  </div>
 
-    <main id="app-content">
-        
-        <section id="calendar-insert" class="appSection">
-            <header class="cinsHeader">
-                <button class="cinsPrev">‹</button>
-                <h2 class="cinsMonthLabel">Mese Anno</h2>
-                <button class="cinsNext">›</button>
-            </header>
-            <div class="cinsGrid"></div>
-        </section>
+  <div class="appRoot" id="appRoot">
+    <!-- TOP BAR -->
+    <header class="topBar" id="topBar">
+      <button id="menuBtn" class="menuBtn" type="button" aria-label="Menu">≡</button>
 
-        <section id="calendar-view" class="appSection" style="display:none;">
-            <div class="cviewDayStrip"></div>
-            <div class="cviewFinanceHeader">
-                <span>Guadagno Giorno:</span>
-                <span class="cviewTotalNet">0,00€</span>
+      <div class="brand" id="brand">
+        <div class="brandName">NettoTrack</div>
+        <div class="brandSub">Il tuo stipendio, nel tempo.</div>
+      </div>
+
+      <!-- spacer per allineamento (ui.css lo usa) -->
+      <div class="topRightSpacer" aria-hidden="true"></div>
+    </header>
+
+    <!-- MENU OVERLAY + DRAWER + CLOSE BTN (ui.css/ui.js li aspettano così) -->
+    <div id="menuOverlay" class="menuOverlay" aria-hidden="true"></div>
+    <aside id="menuDrawer" class="menuDrawer" aria-hidden="true"></aside>
+    <button id="menuCloseBtn" class="menuCloseBtn" type="button" aria-label="Chiudi menu">×</button>
+
+    <!-- STAGE -->
+    <main class="stage">
+      <section class="cardsViewport" id="cardsViewport" aria-label="Cards">
+        <div class="cardsTrack" id="cardsTrack">
+
+          <!-- HOME slide (sempre presente) -->
+          <article class="card slide" data-slide-id="home" data-title="Home">
+            <div class="cardInner">
+              <div class="cardMount" id="homeMount">
+                <!-- Placeholder home (puoi lasciarlo vuoto) -->
+              </div>
             </div>
-            <div class="cviewShiftList"></div>
-        </section>
+          </article>
 
-        <section id="stats" class="appSection" style="display:none;"></section>
+          <!-- Le altre slide vengono aggiunte dinamicamente da ui.js:
+               calInsertMount, calViewMount, dayEditorMount -->
+        </div>
+      </section>
 
-        <section id="settings" class="appSection" style="display:none;">
-            <div class="settingsContent">
-                <h2>Impostazioni</h2>
-                <p>Configura qui la tua paga oraria e le tasse.</p>
-                </div>
-        </section>
-
+      <!-- DOTS -->
+      <div class="dotsWrap" aria-label="Navigazione card">
+        <div class="dotsPill" id="dotsPill"></div>
+      </div>
     </main>
 
-    <div class="deRoot">
-        <div class="deContainer">
-            <header class="deHeader">
-                <h3>Modifica Turno</h3>
-                <button onclick="closeEditor()" class="deClose">✕</button>
-            </header>
-            <div class="deBody">
-                <div class="deField">
-                    <label>Inizio</label>
-                    <input type="time" id="timeFrom" class="deInput">
-                </div>
-                <div class="deField">
-                    <label>Fine</label>
-                    <input type="time" id="timeTo" class="deInput">
-                </div>
-                <div class="deField">
-                    <label>Pausa (min)</label>
-                    <input type="number" id="pauseMin" class="deInput">
-                </div>
-                <div class="deField">
-                    <label><input type="checkbox" id="isOvertime"> Straordinario</label>
-                </div>
-                <textarea id="dayNotes" placeholder="Note del giorno..." class="deTextarea"></textarea>
-            </div>
-            <footer class="deFooter">
-                <button onclick="saveEntry()" class="deSaveBtn">Salva Turno</button>
-            </footer>
-        </div>
+    <!-- BOTTOM BAR -->
+    <div class="bottomBar" aria-hidden="true">
+      <div class="bottomBarGlass"></div>
     </div>
+  </div>
 
-    <nav class="mainNav">
-        <button class="navBtn" data-section="calendar-insert" onclick="switchSection('calendar-insert')">
-            <span>Mese</span>
-        </button>
-        <button class="navBtn" data-section="calendar-view" onclick="switchSection('calendar-view')">
-            <span>Agenda</span>
-        </button>
-        <button class="navBtn" data-section="stats" onclick="switchSection('stats')">
-            <span>Stats</span>
-        </button>
-        <button class="navBtn" data-section="settings" onclick="switchSection('settings')">
-            <span>Set</span>
-        </button>
-    </nav>
+  <!-- Scripts (ordine importante) -->
+  <script src="calendar-core.js"></script>
+  <script src="ui.js"></script>
+  <script src="menu.js"></script>
 
-    <script src="calendar-core.js"></script>
-    <script src="calendar-insert.js"></script>
-    <script src="calendar-view.js"></script>
-    <script src="day-editor.js"></script>
-    <script src="menu.js"></script>
-    <script src="stats.js"></script>
-
+  <script src="calendar-insert.js"></script>
+  <script src="calendar-view.js"></script>
+  <script src="day-editor.js"></script>
 </body>
 </html>
