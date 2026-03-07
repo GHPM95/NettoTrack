@@ -1,93 +1,322 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Riferimenti agli elementi della UI
-    const grid = document.querySelector('.cinsGrid');
-    const monthLabel = document.querySelector('.cinsMonthLabel');
-    const prevBtn = document.querySelector('.cinsPrev');
-    const nextBtn = document.querySelector('.cinsNext');
+Calendar-insert.js
 
-    // Stato locale del calendario
-    let currentDisplayDate = new Date();
+(() => {
+  const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+  const WDN = ["L","M","M","G","V","S","D"];
 
-    const render = () => {
-        grid.innerHTML = '';
-        const year = currentDisplayDate.getFullYear();
-        const month = currentDisplayDate.getMonth();
+  let mounted = false;
+  let y = null;
+  let m = null;
 
-        // Titolo del mese (es: "Marzo 2026")
-        const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
-                            "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
-        monthLabel.textContent = `${monthNames[month]} ${year}`;
+  function getCal(){
+    return window.NTCal || null;
+  }
 
-        // Calcolo della griglia (42 celle per stabilità visiva)
-        const firstDay = new Date(year, month, 1).getDay();
-        const startingPoint = (firstDay === 0 ? 6 : firstDay - 1); // Lunedì come primo giorno
-        const totalCells = 42;
+  function todayPartsSafe(){
+    const cal = getCal();
+    if (cal && typeof cal.todayParts === "function"){
+      try { return cal.todayParts(); } catch(_) {}
+    }
+    const d = new Date();
+    return { y:d.getFullYear(), m:d.getMonth(), d:d.getDate() };
+  }
 
-        for (let i = 0; i < totalCells; i++) {
-            const dayDate = new Date(year, month, 1 - startingPoint + i);
-            const dayBtn = document.createElement('div');
-            
-            // Assegnazione Classi (Logica Pura)
-            dayBtn.className = 'cinsDay';
-            if (dayDate.getMonth() !== month) dayBtn.classList.add('isOff');
-            
-            // Check "Oggi"
-            const today = new Date();
-            if (dayDate.toDateString() === today.toDateString()) {
-                dayBtn.classList.add('isToday');
-            }
+  function dateKeySafe(yy, mm, dd){
+    const cal = getCal();
+    if (cal && typeof cal.dateKey === "function"){
+      try { return cal.dateKey(yy, mm, dd); } catch(_) {}
+    }
+    return `${yy}-${String(mm + 1).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;
+  }
 
-            // Inserimento Numero Giorno
-            const numSpan = document.createElement('span');
-            numSpan.className = 'cinsNum';
-            numSpan.textContent = dayDate.getDate();
-            dayBtn.appendChild(numSpan);
+  function loadDaySafe(key){
+    const cal = getCal();
+    if (cal && typeof cal.loadDay === "function"){
+      try { return cal.loadDay(key); } catch(_) {}
+    }
+    return null;
+  }
 
-            // LOGICA CONTABILE: Caricamento dati per i puntini (Dots)
-            const dateKey = `${dayDate.getFullYear()}-${String(dayDate.getMonth() + 1).padStart(2, '0')}-${String(dayDate.getDate()).padStart(2, '0')}`;
-            const data = NTCal.loadDay(dateKey);
-            
-            if (data && data.shifts.length > 0) {
-                const dotsContainer = document.createElement('div');
-                dotsContainer.className = 'cinsDots';
-                
-                // Un pallino per ogni tipo di turno trovato
-                const hasExtra = data.shifts.some(s => s.tags?.overtime || s.tags?.holiday);
-                
-                const dotBase = document.createElement('div');
-                dotBase.className = 'cinsDot premium';
-                dotsContainer.appendChild(dotBase);
-                
-                if (hasExtra) {
-                    const dotExtra = document.createElement('div');
-                    dotExtra.className = 'cinsDot premiumExtra';
-                    dotsContainer.appendChild(dotExtra);
-                }
-                
-                dayBtn.appendChild(dotsContainer);
-            }
+  function loadDraftSafe(key){
+    const cal = getCal();
+    if (cal && typeof cal.loadDraft === "function"){
+      try { return cal.loadDraft(key); } catch(_) {}
+    }
+    return null;
+  }
 
-            // Evento Click (Apertura Editor)
-            dayBtn.onclick = () => {
-                // Qui chiameremo la funzione globale per aprire l'editor
-                if (typeof openEditor === 'function') openEditor(dateKey);
-            };
+  function ensureYM(){
+    const t = todayPartsSafe();
+    if (typeof y !== "number") y = t.y;
+    if (typeof m !== "number") m = t.m;
+  }
 
-            grid.appendChild(dayBtn);
+  function hasMeaningfulDayData(model){
+    if (!model || !Array.isArray(model.shifts) || model.shifts.length === 0) return false;
+
+    return model.shifts.some((s) => {
+      const hasTimes = !!(s?.from || s?.to);
+      const hasPause = Number(s?.pauseMin || 0) > 0 || !!s?.pausePaid;
+      const hasFascia = !!(s?.shiftType && s.shiftType !== "none");
+      const hasExtra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
+      const hasAdv = (s?.advA && s?.advA !== "-") || (s?.advB && s?.advB !== "-");
+      const hasNote = !!(s?.note && String(s.note).trim().length);
+
+      return hasTimes || hasPause || hasFascia || hasExtra || hasAdv || hasNote;
+    });
+  }
+
+  function openPicker(on){
+    const mount = document.getElementById("calInsertMount");
+    if (!mount) return;
+
+    const layer = mount.querySelector("#cinsPickerLayer");
+    const root = mount.querySelector("#cinsRoot");
+    if (!layer || !root) return;
+
+    layer.classList.toggle("isOn", !!on);
+    layer.setAttribute("aria-hidden", on ? "false" : "true");
+    root.classList.toggle("isPickerOn", !!on);
+
+    if (on) renderPicker();
+  }
+
+  function renderPicker(){
+    const mount = document.getElementById("calInsertMount");
+    if (!mount) return;
+
+    const yEl = mount.querySelector("#cinsYearVal");
+    if (yEl) yEl.textContent = String(y);
+
+    const monthGrid = mount.querySelector("#cinsMonthGrid");
+    if (!monthGrid) return;
+
+    monthGrid.querySelectorAll(".cinsPickBtn").forEach((btn, idx) => {
+      btn.classList.toggle("isActive", idx === m);
+    });
+  }
+
+  function stepMonth(delta){
+    ensureYM();
+    m += delta;
+
+    if (m < 0){
+      m = 11;
+      y -= 1;
+    }
+    if (m > 11){
+      m = 0;
+      y += 1;
+    }
+
+    renderMonth();
+  }
+
+  function mountIfNeeded(){
+    const mount = document.getElementById("calInsertMount");
+    if (!mount) return;
+    if (mounted && mount.querySelector("#cinsRoot")) return;
+
+    mount.innerHTML = `
+      <div class="cinsRoot" id="cinsRoot">
+        <div class="cinsHeader">
+          <div class="cinsLeft">
+            <button class="ntBtn" id="cinsPrev" type="button" aria-label="Mese precedente">‹</button>
+            <button class="ntBtn" id="cinsNext" type="button" aria-label="Mese successivo">›</button>
+          </div>
+
+          <button class="cinsTitleBtn" id="cinsTitle" type="button" aria-label="Seleziona mese e anno">—</button>
+
+          <button class="ntBtn" id="cinsClose" type="button" aria-label="Chiudi">×</button>
+        </div>
+
+        <div class="cinsBody">
+          <div class="cinsWeekdays" id="cinsWeekdays" aria-hidden="true"></div>
+          <div class="cinsGrid" id="cinsGrid" aria-label="Giorni del mese"></div>
+        </div>
+
+        <div class="cinsPickerLayer" id="cinsPickerLayer" aria-hidden="true">
+          <div class="cinsPickerCard" id="cinsPickerCard" role="dialog" aria-label="Seleziona mese e anno">
+            <div class="cinsPickerTop">
+              <div class="cinsPickerTitle">Seleziona mese e anno</div>
+              <button class="ntBtn" id="cinsPickerClose" type="button" aria-label="Chiudi">×</button>
+            </div>
+
+            <div class="cinsYearRow">
+              <button class="ntBtn" id="cinsYearMinus" type="button" aria-label="Anno precedente">‹</button>
+              <div class="cinsYearVal" id="cinsYearVal">—</div>
+              <button class="ntBtn" id="cinsYearPlus" type="button" aria-label="Anno successivo">›</button>
+            </div>
+
+            <div class="cinsMonthGrid" id="cinsMonthGrid"></div>
+
+            <div class="cinsSwipeHint">Swipe down per chiudere</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const wd = mount.querySelector("#cinsWeekdays");
+    if (wd){
+      wd.innerHTML = WDN.map(x => `<div class="cinsW">${x}</div>`).join("");
+    }
+
+    mount.querySelector("#cinsPrev")?.addEventListener("click", () => stepMonth(-1));
+    mount.querySelector("#cinsNext")?.addEventListener("click", () => stepMonth(+1));
+
+    mount.querySelector("#cinsClose")?.addEventListener("click", () => {
+      document.dispatchEvent(new Event("nettotrack:closeCalendarInsert"));
+    });
+
+    mount.querySelector("#cinsTitle")?.addEventListener("click", () => openPicker(true));
+    mount.querySelector("#cinsPickerClose")?.addEventListener("click", () => openPicker(false));
+
+    mount.querySelector("#cinsYearMinus")?.addEventListener("click", () => {
+      y -= 1;
+      renderPicker();
+    });
+
+    mount.querySelector("#cinsYearPlus")?.addEventListener("click", () => {
+      y += 1;
+      renderPicker();
+    });
+
+    const layer = mount.querySelector("#cinsPickerLayer");
+    layer?.addEventListener("click", (e) => {
+      if (e.target === layer) openPicker(false);
+    });
+
+    const monthGrid = mount.querySelector("#cinsMonthGrid");
+    if (monthGrid){
+      monthGrid.innerHTML = MONTHS.map((name, idx) => (
+        `<button class="cinsPickBtn" type="button" data-m="${idx}" aria-label="${name}">${name.slice(0,3)}</button>`
+      )).join("");
+
+      monthGrid.querySelectorAll(".cinsPickBtn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          m = Number(btn.dataset.m);
+          openPicker(false);
+          renderMonth();
+        });
+      });
+    }
+
+    mounted = true;
+    ensureYM();
+    renderMonth();
+  }
+
+  function renderMonth(){
+    const mount = document.getElementById("calInsertMount");
+    if (!mount) return;
+
+    ensureYM();
+
+    const titleEl = mount.querySelector("#cinsTitle");
+    if (titleEl) titleEl.textContent = `${MONTHS[m]} ${y}`;
+
+    const grid = mount.querySelector("#cinsGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    const first = new Date(y, m, 1);
+    const firstDay = first.getDay(); // 0 dom ... 6 sab
+    const offset = (firstDay === 0 ? 6 : firstDay - 1); // lun=0
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+    const today = todayPartsSafe();
+    const ty = Number(today.y);
+    const tm = Number(today.m);
+    const td = Number(today.d);
+
+    for (let i = 0; i < 42; i++){
+      const dayNum = i - offset + 1;
+      const isValid = dayNum >= 1 && dayNum <= daysInMonth;
+
+      const dayBtn = document.createElement("button");
+      dayBtn.type = "button";
+      dayBtn.className = "cinsDay" + (isValid ? "" : " isOff");
+
+      if (isValid){
+        const key = dateKeySafe(y, m, dayNum);
+
+        if (
+          y === ty &&
+          m === tm &&
+          dayNum === td
+        ){
+          dayBtn.classList.add("isToday");
         }
-    };
 
-    // Navigazione Mesi
-    prevBtn.onclick = () => {
-        currentDisplayDate.setMonth(currentDisplayDate.getMonth() - 1);
-        render();
-    };
+        const num = document.createElement("span");
+        num.className = "cinsNum";
+        num.textContent = String(dayNum);
+        dayBtn.appendChild(num);
 
-    nextBtn.onclick = () => {
-        currentDisplayDate.setMonth(currentDisplayDate.getMonth() + 1);
-        render();
-    };
+        const saved = loadDaySafe(key);
+        const draft = loadDraftSafe(key);
+        const model = saved || draft;
 
-    // Primo avvio
-    render();
-});
+        if (hasMeaningfulDayData(model)){
+          const hasExtra = !!model?.shifts?.some((s) =>
+            !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday))
+          );
+
+          const hasNormal = !!model?.shifts?.some((s) => {
+            const meaningful =
+              !!(s?.from || s?.to) ||
+              Number(s?.pauseMin || 0) > 0 ||
+              !!s?.pausePaid ||
+              !!(s?.shiftType && s.shiftType !== "none") ||
+              ((s?.advA && s?.advA !== "-") || (s?.advB && s?.advB !== "-")) ||
+              !!(s?.note && String(s.note).trim().length);
+
+            const extra = !!(s?.tags && (s.tags.overtime || s.tags.holiday || s.tags.sunday));
+            return meaningful && !extra;
+          });
+
+          const dots = document.createElement("div");
+          dots.className = "cinsDots";
+
+          if (hasNormal){
+            const base = document.createElement("div");
+            base.className = "cinsDot premium";
+            dots.appendChild(base);
+          }
+
+          if (hasExtra){
+            const extra = document.createElement("div");
+            extra.className = "cinsDot premiumExtra";
+            dots.appendChild(extra);
+          }
+
+          dayBtn.appendChild(dots);
+        }
+
+        dayBtn.addEventListener("click", () => {
+          if (window.NettoTrackUI && typeof window.NettoTrackUI.openDayEditor === "function"){
+            window.NettoTrackUI.openDayEditor(key);
+          }
+        });
+      }
+
+      grid.appendChild(dayBtn);
+    }
+
+    renderPicker();
+  }
+
+  document.addEventListener("nettotrack:calendarInsertOpened", () => {
+    mountIfNeeded();
+    const t = todayPartsSafe();
+    y = t.y;
+    m = t.m;
+    renderMonth();
+  });
+
+  document.addEventListener("nettotrack:dataChanged", () => {
+    const mount = document.getElementById("calInsertMount");
+    if (!mount || !mount.querySelector("#cinsRoot")) return;
+    renderMonth();
+  });
+})();
