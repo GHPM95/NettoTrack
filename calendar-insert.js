@@ -1,5 +1,3 @@
-Calendar-insert.js
-
 (() => {
   const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
   const WDN = ["L","M","M","G","V","S","D"];
