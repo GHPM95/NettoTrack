@@ -1,5 +1,3 @@
-Day-editor.js
-
 /* day-editor.js
    Card "Turni" (slide: dayEditor)
    - AUTOSAVE -> DRAFT (non sovrascrive i salvati)
