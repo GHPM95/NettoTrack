@@ -1,24 +1,515 @@
-.deInput {
+Day-editor.css
+
+/* =========================
+   Day Editor (Turni) — CSS pulito (fix layout iOS)
+   - niente overflow/overlap
+   - scrollbar “staccata”
+   - tutto proporzionato come calendario
+   ========================= */
+
+.deRoot{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.deRoot *{ box-sizing: border-box; }
+
+/* Header: titolo centrato, X a destra */
+.deHeader{
+  display:grid;
+  grid-template-columns: 38px 1fr 38px; /* spacer | title | X */
+  align-items:center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.deHeaderSpacer{
+  width:38px;
+  height:38px;
+  opacity:0;
+  pointer-events:none;
+}
+
+/* Titolo come calendario */
+.deTitle{
+  font-weight: 1000;
+  letter-spacing:.2px;
+  font-size: clamp(14px, 3.6vw, 17px);
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  text-align:center;
+}
+
+/* X come ntBtn */
+.deClose{
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  border: none;
+  background: rgba(255,255,255,.10);
+  color: var(--text);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  flex: 0 0 auto;
+}
+.deClose:active{
+  transform: scale(.96);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.14);
+}
+
+/* lista turni */
+.deShifts{
+  flex:1;
+  min-height:0;
+
+  overflow: auto;
+  overflow-x:hidden;
+
+  padding-right: 12px;
+  margin-top: 10px;
+
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Card turno: invisibile */
+.deShiftCard{
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0 0 14px 0;
+  min-width: 0;
+}
+
+/* Top riga turno */
+.deShiftTop{
+  display:grid;
+  grid-template-columns: auto 1fr auto;
+  align-items:center;
+  gap: 10px;
+  padding: 2px 0 6px;
+  min-width: 0;
+}
+
+/* Titolo turno */
+.deShiftTitle{
+  font-weight: 1000;
+  letter-spacing:.2px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Reset turno: identico a X */
+.deResetShift{
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  border-radius: 14px;
+  border: none;
+  background: rgba(255,255,255,.10);
+  color: var(--text);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  justify-self: start;
+}
+.deResetShift:active{
+  transform: scale(.96);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.14);
+}
+.deResetShift:disabled{
+  opacity:.35;
+  pointer-events:none;
+}
+
+/* Divider elegante */
+.deDivider{
+  height:1px;
+  width:100%;
+  margin: 12px 0 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.16),
+    transparent
+  );
+}
+
+/* invece di grid per gli orari: flex “a prova di iOS” */
+.deGrid--time{
+  display: flex;
+  gap: 10px;
   width: 100%;
-  height: var(--touch-target);
-  background: rgba(0,0,0,0.25); /* Effetto scavato */
-  border: 1px solid var(--glass-border);
-  border-radius: var(--r-btn);
-  color: var(--text-hi);
-  font-family: var(--font-num);
+  min-width: 0;
+}
+
+.deGrid--time > .deField{
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* =========================
+   FIX: ripristina la griglia standard (serve per Pausa min / Pausa pagata)
+   ========================= */
+
+.deGrid{
+  display:grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* se vuoi essere ultra-sicuro su iOS */
+.deGrid > .deField{
+  min-width: 0;
+}
+
+/* =========================
+   Centra testo nei time input (Da / A)
+   ========================= */
+
+.deInput[type="time"]{
+  text-align: center;                 /* centro il testo */
+  font-variant-numeric: tabular-nums; /* numeri allineati bene */
+  line-height: 46px;                  /* stesso della height (46) per centratura visiva */
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* alcuni browser webkit preferiscono questa */
+.deInput[type="time"]::-webkit-datetime-edit{
+  text-align: center;
+  width: 100%;
+}
+
+/* centro anche i singoli pezzi (hh, mm) dove supportato */
+.deInput[type="time"]::-webkit-datetime-edit-fields-wrapper{
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+}
+.deInput[type="time"]::-webkit-datetime-edit-hour-field,
+.deInput[type="time"]::-webkit-datetime-edit-minute-field,
+.deInput[type="time"]::-webkit-datetime-edit-ampm-field{
+  text-align: center;
+}
+
+/* campo time: non deve MAI forzare larghezze strane */
+.deInput[type="time"]{
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+
+  /* riduco un filo padding e size SOLO qui per evitare “clipping” interno */
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 15px;
+  letter-spacing: 0;
+
+  /* iOS / WebKit: evita comportamenti di layout aggressivi */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* se qualche browser prova comunque a “spingere”, lo blocco */
+.deField{
+  min-width: 0;
+}
+
+.deField > *{
+  min-width: 0;
+}
+
+/* Field wrapper */
+.deField{
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
+  min-width:0;
+  overflow:hidden;
+}
+
+/* Label */
+.deFieldLbl,
+.deLabel{
+  display:block;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--muted);
+}
+
+/* ✅ asterisco obbligatorio BIANCO */
+.deReq{
+  margin-left:0px;
+  color: rgba(255,255,255,.92);
+  font-weight: 1000;
+}
+
+/* Input/select/textarea */
+.deInput,
+.deSelect,
+.deTextarea{
+  width:100%;
+  min-width:0;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  background:
+    radial-gradient(120% 160% at 30% 0%, rgba(255,255,255,.10), transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
+  color: var(--text);
+  font-weight: 900;
+  outline:none;
+  padding: 0 12px;
+}
+
+.deInput{ height: 46px; }
+.deSelect{ height: 46px; }
+
+/* Fix iOS: testo/placeholder textarea coerente e non “rimpicciolito” */
+.deTextarea{
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 900;
+  padding: 12px 12px; /* un filo più comodo, opzionale */
+}
+
+/* placeholder stesso peso/tono */
+.deTextarea::placeholder{
+  font-size: 15px;
+  font-weight: 900;
+  color: rgba(255,255,255,.45);
+}
+
+/* ✅ iOS: input time NON deve mai allargarsi o “sfondare” */
+.deInput[type="time"]{
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  overflow:hidden;
+}
+
+.deSelect{
+  appearance: none;
+  -webkit-appearance: none;
+
+  width: 100%;
+  height: 46px;
+
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+
+  background:
+    radial-gradient(120% 160% at 30% 0%, rgba(255,255,255,.10), transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
+
+  color: var(--text);
+  font-weight: 900;
+
   padding: 0 16px;
-  box-shadow: inset 2px 2px 10px rgba(0,0,0,0.4);
 }
 
-.deInput:focus {
-  border-color: var(--accent-blue);
-  outline: none;
+/* Disabled */
+.deInput:disabled,
+.deSelect:disabled{
+  opacity: .40;
+  pointer-events:none;
 }
 
-.deTextarea {
-  background: var(--glass-1);
-  border-radius: var(--r-card);
-  padding: 16px;
-  font-family: var(--font-main);
-  line-height: 1.5;
+/* Chips */
+.deChips{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  min-width: 0;
+}
+.deChipsExtra{ margin-bottom: 10px; }
+
+.deChip{
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  font-weight: 1000;
+  letter-spacing:.1px;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+}
+.deChip:active{
+  transform: scale(.97);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.12);
+}
+
+.deChip.isOn{
+  /* stesso linguaggio del “today” del calendario */
+  border: none;
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at 30% 25%,
+      rgba(255,255,255,.22),
+      transparent 55%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(130,170,255,.92),
+      rgba(170,130,255,.92)
+    );
+
+  /* bordo interno discreto (niente bordo fantasma) */
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
+
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.22);
+}
+
+/* patina glass sopra (coerente con la UI) */
+.deChip.isOn::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.18),
+    rgba(255,255,255,.06)
+  );
+  pointer-events:none;
+}
+
+/* testo sopra la patina */
+.deChip.isOn{
+  z-index: 0;
+}
+.deChip.isOn > *{
+  position: relative;
+  z-index: 1;
+}
+
+.deChipMini{
+  height: 34px;
+  padding: 0 12px;
+  font-size: 12px;
+  justify-self: end;
+}
+
+.deChip.isDisabled{
+  opacity: .35;
+  pointer-events:none;
+}
+
+/* Nota */
+.deBlock{ margin-top: 10px; }
+
+/* Actions: 2 bottoni affiancati */
+.deActions{
+  padding-top: 10px;
+  padding-bottom: 2px;
+  display:flex;
+  gap: 10px;
+}
+
+.deAddShift,
+.deSave{
+  flex: 1 1 0;
+  height: 46px;
+  border-radius: 16px;
+  border: none;
+  background: rgba(255,255,255,.10);
+  color: var(--text);
+  font-weight: 1000;
+  letter-spacing:.15px;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+  min-width: 0;
+}
+.deAddShift:active,
+.deSave:active{
+  transform: scale(.97);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.14);
+}
+
+.deAddShift.isDisabled,
+.deSave.isDisabled,
+.deAddShift:disabled,
+.deSave:disabled{
+  opacity:.35;
+  pointer-events:none;
+}
+
+/* Advanced */
+.deAdvToggle{
+  width:100%;
+  height: 46px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  font-weight: 1000;
+  letter-spacing:.1px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 0 14px;
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+}
+.deAdvToggle:active{
+  transform: scale(.97);
+  filter: brightness(1.08);
+  background: rgba(255,255,255,.12);
+}
+
+.deAdvChevron{
+  opacity:.85;
+  transform: translateY(1px);
+  color: rgba(255,255,255,.90);
+}
+
+/* Freccia: su/giù in base allo stato dell'accordion */
+.deAdvChevron{
+  display: inline-block;
+  transition: transform .16s ease, opacity .16s ease;
+  transform: translateY(1px); /* tuo allineamento */
+}
+
+/* Quando è aperto (aria-expanded=true) la freccia va SU */
+.deAdvToggle[aria-expanded="true"] .deAdvChevron{
+  transform: translateY(1px) rotate(180deg);
+}
+.deAdvPanel{ display:none; }
+.deAdvPanel.isOn{ display:block; }
+
+/* Spazio tra blocco Orari (Da/A) e blocco Pausa */
+.deGrid--time + .deGrid{
+  margin-top: 10px; /* prova 10px, se vuoi più aria metti 12/14 */
+}
+
+.deTextareaSmall{
+  min-height: 50px;
 }
