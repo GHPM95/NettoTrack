@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   (() => {
     const $ = (sel, root = document) => root.querySelector(sel);
     const menuDrawer = $("#menuDrawer");
+    const menuBtn = $("#menuBtn");
 
     function injectMenuStyles() {
       if (document.getElementById("menu-inline-style")) return;
@@ -17,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
           font-weight: 1000;
           letter-spacing: .2px;
           margin: 6px 0 10px;
+          color: var(--text);
         }
 
         .menuItemBtn{
@@ -31,7 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
           font-weight: 1000;
           text-align: left;
           padding: 0 12px;
-          transition: transform .12s ease, filter .12s ease;
+          transition: transform .12s ease, filter .12s ease, background .12s ease;
+          cursor: pointer;
         }
 
         .menuItemBtn:active{
@@ -56,6 +59,10 @@ document.addEventListener("DOMContentLoaded", () => {
       document.head.appendChild(s);
     }
 
+    function closeMenu() {
+      menuBtn?.click();
+    }
+
     function renderMenu() {
       if (!menuDrawer) return;
 
@@ -73,20 +80,31 @@ document.addEventListener("DOMContentLoaded", () => {
             Visualizza calendario
           </button>
 
+          <div class="menuDivider"></div>
+
+          <button id="mProfile" class="menuItemBtn" type="button">
+            Profilo utente
+          </button>
+
           <div class="menuHint">
-            (Placeholder) Altre voci le aggiungiamo dopo.
+            Altre voci le aggiungiamo dopo.
           </div>
         </div>
       `;
 
       $("#mCalInsert", menuDrawer)?.addEventListener("click", () => {
         document.dispatchEvent(new Event("nettotrack:openCalendarInsert"));
-        $("#menuBtn")?.click(); // chiudi menu
+        closeMenu();
       });
 
       $("#mCalView", menuDrawer)?.addEventListener("click", () => {
         document.dispatchEvent(new Event("nettotrack:openCalendarView"));
-        $("#menuBtn")?.click();
+        closeMenu();
+      });
+
+      $("#mProfile", menuDrawer)?.addEventListener("click", () => {
+        document.dispatchEvent(new Event("nettotrack:openJobProfile"));
+        closeMenu();
       });
     }
 
