@@ -22,6 +22,7 @@
 .jobProfileSub{
   font-size:13px;
   opacity:.7;
+  line-height:1.35;
 }
 
 .jobProfileContent{
@@ -38,8 +39,8 @@
 
 .jobProfileIntro{
   font-size:14px;
-  opacity:.85;
   line-height:1.45;
+  opacity:.85;
 }
 
 .jobProfileView{
@@ -71,31 +72,21 @@
   opacity:.6;
 }
 
-.jobProfileMainInfo{
+.jobProfileMainInfo,
+.jobProfileWorkInfo,
+.jobProfileExpanded{
   display:flex;
   flex-direction:column;
-  gap:6px;
-}
-
-.jobProfileWorkInfo{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
+  gap:8px;
 }
 
 .jobProfileRow{
   font-size:14px;
-  line-height:1.4;
+  line-height:1.42;
 }
 
 .jobProfileImportBox{
-  margin-top:12px;
-}
-
-.jobProfileExpanded{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
+  margin-top:10px;
 }
 
 .hidden{
@@ -109,7 +100,7 @@
 .jobWizardCard{
   display:flex;
   flex-direction:column;
-  gap:18px;
+  gap:16px;
 }
 
 .jobWizardTop{
@@ -127,18 +118,18 @@
 .jobWizardSub{
   margin-top:4px;
   font-size:13px;
-  opacity:.68;
   line-height:1.35;
+  opacity:.68;
 }
 
 .jobWizardBadge{
   flex:0 0 auto;
   padding:8px 12px;
   border-radius:999px;
-  font-size:12px;
-  font-weight:800;
   background:rgba(255,255,255,.08);
   border:1px solid rgba(255,255,255,.10);
+  font-size:12px;
+  font-weight:800;
 }
 
 .jobWizardBody{
@@ -156,22 +147,44 @@
   opacity:.92;
 }
 
+.jobWizardSmallTitle{
+  margin:0;
+  font-size:14px;
+  font-weight:800;
+}
+
+.jobWizardLegalBox{
+  max-height:220px;
+  overflow:auto;
+  padding:14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.08), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+}
+
 .jobWizardFields{
   display:flex;
   flex-direction:column;
   gap:12px;
 }
 
+.jobWizardExtraGroup{
+  margin-top:6px;
+  padding-top:6px;
+}
+
 .jobWizardInput{
   width:100%;
   min-height:48px;
+  padding:0 14px;
   border-radius:16px;
   border:1px solid rgba(255,255,255,.14);
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.08), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
   color:var(--text);
-  padding:0 14px;
   font:inherit;
   outline:none;
 }
@@ -198,6 +211,11 @@
   gap:12px;
 }
 
+.isSelectedWizardChoice{
+  outline:1px solid rgba(255,255,255,.22);
+  filter:brightness(1.05);
+}
+
 .jobWizardNote{
   font-size:12px;
   line-height:1.45;
@@ -208,7 +226,6 @@
   display:flex;
   justify-content:space-between;
   gap:12px;
-  margin-top:4px;
 }
 
 .jobWizardGhostBtn{
@@ -220,6 +237,48 @@
   color:var(--text);
   font:inherit;
   font-weight:700;
+}
+
+.jobWizardSwitchRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+  font-size:14px;
+  line-height:1.4;
+}
+
+.jobWizardSuggestionWrap{
+  position:relative;
+}
+
+.jobWizardSuggestions{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-top:8px;
+  padding:8px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(18,20,32,.92);
+  backdrop-filter:blur(12px);
+}
+
+.jobWizardSuggestionItem{
+  width:100%;
+  min-height:40px;
+  border:none;
+  border-radius:10px;
+  text-align:left;
+  padding:0 12px;
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font:inherit;
+  font-size:14px;
 }
 
 .reviewSection{
