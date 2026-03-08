@@ -69,7 +69,7 @@ const jobProfileState = {
 
 const jobProfileWizard = {
   step: 1,
-  total: 7
+  total: 6
 };
 
 /* =========================
@@ -97,11 +97,7 @@ function loadJobProfileState() {
 
 function saveJobProfile() {
   jobProfileState.profileMeta.lastUpdatedAt = new Date().toISOString();
-
-  localStorage.setItem(
-    "nt_jobProfile",
-    JSON.stringify(jobProfileState)
-  );
+  localStorage.setItem("nt_jobProfile", JSON.stringify(jobProfileState));
 }
 
 /* =========================
@@ -119,10 +115,6 @@ function esc(value) {
 
 function getMount() {
   return document.getElementById("jobProfileMount");
-}
-
-function getRoot() {
-  return document.getElementById("jobProfileRoot");
 }
 
 function resetWizard() {
@@ -159,8 +151,7 @@ function calcSeniority(hireDate) {
   const years = Math.floor(months / 12);
   const remMonths = months % 12;
 
-  if (remMonths > 0) return `${years} anni, ${remMonths} mesi`;
-  return `${years} anni`;
+  return remMonths > 0 ? `${years} anni, ${remMonths} mesi` : `${years} anni`;
 }
 
 function formatBirthText() {
@@ -191,22 +182,43 @@ function getAvatarSymbol() {
   if (gender === "uomo") return "👨";
   if (gender === "donna") return "👩";
   if (gender === "altro") return "🧑";
-  if (gender === "non specificato") return "🙂";
   return "🙂";
 }
 
 function getContractTypesSafe() {
-  return Array.isArray(window.contractTypes) ? window.contractTypes : [];
+  if (typeof contractTypes !== "undefined" && Array.isArray(contractTypes)) {
+    return contractTypes;
+  }
+
+  if (Array.isArray(window.contractTypes)) {
+    return window.contractTypes;
+  }
+
+  return [];
 }
 
 function getCCNLListSafe() {
-  return Array.isArray(window.ccnlList) ? window.ccnlList : [];
+  if (typeof ccnlList !== "undefined" && Array.isArray(ccnlList)) {
+    return ccnlList;
+  }
+
+  if (Array.isArray(window.ccnlList)) {
+    return window.ccnlList;
+  }
+
+  return [];
 }
 
 function getGeoSafe() {
-  return window.italyGeoData && window.italyGeoData.regions
-    ? window.italyGeoData
-    : { regions: {} };
+  if (typeof italyGeoData !== "undefined" && italyGeoData?.regions) {
+    return italyGeoData;
+  }
+
+  if (window.italyGeoData && window.italyGeoData?.regions) {
+    return window.italyGeoData;
+  }
+
+  return { regions: {} };
 }
 
 function buildOptions(values, selectedValue = "", placeholder = "") {
@@ -372,34 +384,24 @@ function renderProfile() {
   if (jpLocation) jpLocation.textContent = formatLocationText();
 
   if (jpCompany) {
-    jpCompany.textContent = j.companyName
-      ? `Azienda: ${j.companyName}`
-      : "Azienda non configurata";
+    jpCompany.textContent = j.companyName ? `Azienda: ${j.companyName}` : "Azienda non configurata";
   }
 
   if (jpRole) {
-    jpRole.textContent = j.role
-      ? `Mansione: ${j.role}`
-      : "Mansione non configurata";
+    jpRole.textContent = j.role ? `Mansione: ${j.role}` : "Mansione non configurata";
   }
 
   if (jpLevel) {
-    jpLevel.textContent = j.level
-      ? `Livello: ${j.level}`
-      : "Livello non configurato";
+    jpLevel.textContent = j.level ? `Livello: ${j.level}` : "Livello non configurato";
   }
 
   if (jpHireDate) {
-    jpHireDate.textContent = j.hireDate
-      ? `Data assunzione: ${j.hireDate}`
-      : "Data assunzione non configurata";
+    jpHireDate.textContent = j.hireDate ? `Data assunzione: ${j.hireDate}` : "Data assunzione non configurata";
   }
 
   if (jpSeniority) {
     const seniority = calcSeniority(j.hireDate);
-    jpSeniority.textContent = seniority
-      ? `Anzianità: ${seniority}`
-      : "Anzianità non disponibile";
+    jpSeniority.textContent = seniority ? `Anzianità: ${seniority}` : "Anzianità non disponibile";
   }
 }
 
@@ -490,11 +492,7 @@ function buildWizardFrame(innerHTML, title, subtitle = "") {
         </div>
 
         <div class="jobWizardNav">
-          ${
-            jobProfileWizard.step > 1
-              ? `<button id="wizardBackBtn" class="jobWizardGhostBtn" type="button">Indietro</button>`
-              : `<div></div>`
-          }
+          ${jobProfileWizard.step > 1 ? `<button id="wizardBackBtn" class="jobWizardGhostBtn" type="button">Indietro</button>` : `<div></div>`}
           <button id="wizardCancelBtn" class="jobWizardGhostBtn" type="button">Chiudi</button>
         </div>
       </div>
@@ -597,11 +595,7 @@ function renderWizardPersonal() {
         <input id="wizardBirthDate" class="jobWizardInput" type="date" value="${esc(u.birthDate)}">
 
         <select id="wizardGender" class="jobWizardInput">
-          ${buildOptions(
-            ["uomo", "donna", "non specificato", "altro"],
-            u.gender,
-            "Sesso"
-          )}
+          ${buildOptions(["uomo", "donna", "non specificato", "altro"], u.gender, "Sesso")}
         </select>
 
         <select id="wizardCountry" class="jobWizardInput">
@@ -637,7 +631,6 @@ function renderWizardPersonal() {
 function renderWizardJob() {
   const j = jobProfileState.jobProfile;
   const contracts = getContractTypesSafe();
-  const ccnl = getCCNLListSafe();
 
   return buildWizardFrame(
     `
@@ -725,9 +718,7 @@ function renderWizardSalary() {
       </button>
     `,
     "Retribuzione",
-    mode === "advanced"
-      ? "Base economica e maggiorazioni"
-      : "Base economica"
+    mode === "advanced" ? "Base economica e maggiorazioni" : "Base economica"
   );
 }
 
@@ -796,20 +787,13 @@ function renderWizardReview() {
 
 function renderWizardStep() {
   switch (jobProfileWizard.step) {
-    case 1:
-      return renderWizardLegal();
-    case 2:
-      return renderWizardMode();
-    case 3:
-      return renderWizardPersonal();
-    case 4:
-      return renderWizardJob();
-    case 5:
-      return renderWizardSalary();
-    case 6:
-      return renderWizardReview();
-    default:
-      return renderWizardLegal();
+    case 1: return renderWizardLegal();
+    case 2: return renderWizardMode();
+    case 3: return renderWizardPersonal();
+    case 4: return renderWizardJob();
+    case 5: return renderWizardSalary();
+    case 6: return renderWizardReview();
+    default: return renderWizardLegal();
   }
 }
 
@@ -821,14 +805,14 @@ function rerenderWizard() {
   bindWizardEvents();
 }
 
+/* =========================
+   Wizard logic
+   ========================= */
+
 function startJobProfileWizard() {
   resetWizard();
   rerenderWizard();
 }
-
-/* =========================
-   Wizard logic
-   ========================= */
 
 function updateLegalNextState() {
   const nextBtn = document.getElementById("wizardLegalNext");
@@ -1155,24 +1139,12 @@ function bindWizardEvents() {
   });
 
   switch (jobProfileWizard.step) {
-    case 1:
-      setupLegalStep();
-      break;
-    case 2:
-      setupModeStep();
-      break;
-    case 3:
-      setupPersonalStep();
-      break;
-    case 4:
-      setupJobStep();
-      break;
-    case 5:
-      setupSalaryStep();
-      break;
-    case 6:
-      setupReviewStep();
-      break;
+    case 1: setupLegalStep(); break;
+    case 2: setupModeStep(); break;
+    case 3: setupPersonalStep(); break;
+    case 4: setupJobStep(); break;
+    case 5: setupSalaryStep(); break;
+    case 6: setupReviewStep(); break;
   }
 }
 
