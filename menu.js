@@ -1,68 +1,97 @@
-/* =========================
-   NettoTrack Menu
-   ========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  (() => {
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const menuDrawer = $("#menuDrawer");
 
-(function(){
+    function injectMenuStyles() {
+      if (document.getElementById("menu-inline-style")) return;
 
-  const menu = document.getElementById("menu");
-  const menuBtn = document.getElementById("menuBtn");
-  const closeBtn = document.getElementById("menuClose");
+      const s = document.createElement("style");
+      s.id = "menu-inline-style";
+      s.textContent = `
+        .menuPad{
+          padding: 14px 12px;
+        }
 
-  const items = document.querySelectorAll(".menuItem");
+        .menuSectionTitle{
+          font-weight: 1000;
+          letter-spacing: .2px;
+          margin: 6px 0 10px;
+        }
 
-  /* =========================
-     OPEN MENU
-  ========================= */
+        .menuItemBtn{
+          width: 100%;
+          height: 46px;
+          border-radius: 18px;
+          border: 1px solid rgba(255,255,255,.14);
+          background:
+            radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+            linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+          color: var(--text);
+          font-weight: 1000;
+          text-align: left;
+          padding: 0 12px;
+          transition: transform .12s ease, filter .12s ease;
+        }
 
-  function openMenu(){
-    menu.classList.add("open");
-  }
+        .menuItemBtn:active{
+          transform: scale(.98);
+          filter: brightness(1.07);
+        }
 
-  /* =========================
-     CLOSE MENU
-  ========================= */
+        .menuHint{
+          color: var(--muted);
+          font-weight: 850;
+          font-size: 12px;
+          line-height: 1.35;
+          margin-top: 12px;
+        }
 
-  function closeMenu(){
-    menu.classList.remove("open");
-  }
+        .menuDivider{
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
+          margin: 14px 0;
+        }
+      `;
+      document.head.appendChild(s);
+    }
 
-  menuBtn?.addEventListener("click", openMenu);
-  closeBtn?.addEventListener("click", closeMenu);
+    function renderMenu() {
+      if (!menuDrawer) return;
 
-  /* =========================
-     MENU NAVIGATION
-  ========================= */
+      menuDrawer.innerHTML = `
+        <div class="menuPad">
+          <div class="menuSectionTitle">Calendario</div>
 
-  items.forEach(item=>{
+          <button id="mCalInsert" class="menuItemBtn" type="button">
+            Inserisci dati
+          </button>
 
-    item.addEventListener("click", ()=>{
+          <div class="menuDivider"></div>
 
-      const page = item.dataset.page;
+          <button id="mCalView" class="menuItemBtn" type="button">
+            Visualizza calendario
+          </button>
 
-      switch(page){
+          <div class="menuHint">
+            (Placeholder) Altre voci le aggiungiamo dopo.
+          </div>
+        </div>
+      `;
 
-        case "calendarInsert":
-          document.getElementById("calendarInsert")?.scrollIntoView({behavior:"smooth"});
-        break;
+      $("#mCalInsert", menuDrawer)?.addEventListener("click", () => {
+        document.dispatchEvent(new Event("nettotrack:openCalendarInsert"));
+        $("#menuBtn")?.click(); // chiudi menu
+      });
 
-        case "calendarView":
-          document.getElementById("calendarView")?.scrollIntoView({behavior:"smooth"});
-        break;
+      $("#mCalView", menuDrawer)?.addEventListener("click", () => {
+        document.dispatchEvent(new Event("nettotrack:openCalendarView"));
+        $("#menuBtn")?.click();
+      });
+    }
 
-        case "profile":
-          document.getElementById("jobProfileRoot")?.scrollIntoView({behavior:"smooth"});
-        break;
-
-        case "settings":
-          document.getElementById("settingsRoot")?.scrollIntoView({behavior:"smooth"});
-        break;
-
-      }
-
-      closeMenu();
-
-    });
-
-  });
-
-})();
+    injectMenuStyles();
+    renderMenu();
+    document.addEventListener("nettotrack:refreshMenu", renderMenu);
+  })();
+});
