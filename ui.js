@@ -413,6 +413,14 @@
     document.dispatchEvent(new CustomEvent("nettotrack:dayEditorOpened", { detail: { dateKey } }));
   }
 
+function openJobProfile() {
+  ensureSlide({ id: "jobProfile", title: "Profilo utente" });
+  setHomeHidden(true);
+  renderDots();
+  goToSlideId("jobProfile", { fromUser:true });
+  document.dispatchEvent(new Event("nettotrack:jobProfileOpened"));
+}
+
   function closeSlide(id, fallbackId="home") {
     const idx = getSlideIndexById(id);
     const wasActive = idx === activeIndex;
@@ -451,20 +459,24 @@
 
   // events used by menu.js
   document.addEventListener("nettotrack:openCalendarInsert", openCalendarInsert);
-  document.addEventListener("nettotrack:openCalendarView", openCalendarView);
-  document.addEventListener("nettotrack:closeCalendarInsert", () => closeSlide("calInsert"));
-  document.addEventListener("nettotrack:closeCalendarView", () => closeSlide("calView"));
-  document.addEventListener("nettotrack:closeDayEditor", () => closeSlide("dayEditor", "calInsert"));
+document.addEventListener("nettotrack:openCalendarView", openCalendarView);
+document.addEventListener("nettotrack:openJobProfile", openJobProfile);
+
+document.addEventListener("nettotrack:closeCalendarInsert", () => closeSlide("calInsert"));
+document.addEventListener("nettotrack:closeCalendarView", () => closeSlide("calView"));
+document.addEventListener("nettotrack:closeDayEditor", () => closeSlide("dayEditor", "calInsert"));
+document.addEventListener("nettotrack:closeJobProfile", () => closeSlide("jobProfile"));
 
   window.NettoTrackUI = {
-    ensureSlide,
-    goToSlideId,
-    openCalendarInsert,
-    openCalendarView,
-    openDayEditor,
-    closeSlide,
-    getActiveSlideId: currentSlideId
-  };
+  ensureSlide,
+  goToSlideId,
+  openCalendarInsert,
+  openCalendarView,
+  openJobProfile,
+  openDayEditor,
+  closeSlide,
+  getActiveSlideId: currentSlideId
+};
 
   // init
   computeGap();
