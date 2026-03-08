@@ -67,28 +67,28 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!menuDrawer) return;
 
       menuDrawer.innerHTML = `
-  <div class="menuPad">
-    <div class="menuSectionTitle">Calendario</div>
+        <div class="menuPad">
+          <div class="menuSectionTitle">Calendario</div>
 
-    <button id="mCalInsert" class="menuItemBtn" type="button">
-      Inserisci dati
-    </button>
+          <button id="mCalInsert" class="menuItemBtn" type="button">
+            Inserisci dati
+          </button>
 
-    <button id="mCalView" class="menuItemBtn" type="button">
-      Visualizza calendario
-    </button>
+          <button id="mCalView" class="menuItemBtn" type="button">
+            Visualizza calendario
+          </button>
 
-    <div class="menuDivider"></div>
+          <div class="menuDivider"></div>
 
-    <button id="mProfile" class="menuItemBtn" type="button">
-      Profilo utente
-    </button>
+          <button id="mProfile" class="menuItemBtn" type="button">
+            Profilo utente
+          </button>
 
-    <div class="menuHint">
-      Altre voci le aggiungiamo dopo.
-    </div>
-  </div>
-`;
+          <div class="menuHint">
+            Altre voci le aggiungiamo dopo.
+          </div>
+        </div>
+      `;
 
       $("#mCalInsert", menuDrawer)?.addEventListener("click", () => {
         document.dispatchEvent(new Event("nettotrack:openCalendarInsert"));
