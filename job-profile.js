@@ -241,29 +241,60 @@ function buildOptions(values, selectedValue = "", placeholder = "") {
    ========================= */
 
 function buildProfileHTML() {
+  const u = jobProfileState.userProfile;
+  const j = jobProfileState.jobProfile;
+
+  const summaryName = u.firstName || "Nome";
+  const summaryLastName = u.lastName || "Cognome";
+  const summaryGender = u.gender || "Sesso";
+  const summaryBirth = u.birthDate || "Data di nascita";
+  const summaryCountry = jobProfileState.addressProfile.country || "Paese";
+  const summaryRole = j.role || "Occupazione";
+
   return `
     <section id="jobProfileRoot" class="jobProfileCard">
-      <header class="jobProfileHeader">
-        <h2 class="jobProfileTitle">Profilo utente</h2>
-        <p class="jobProfileSub">
-          Dati personali e lavorativi utilizzati da NettoTrack per le stime.
-        </p>
+      <header class="jobProfileTopBar">
+        <div class="jobProfileTopSide"></div>
+
+        <div class="jobProfileTopTitleWrap">
+          <h2 class="jobProfileTopTitle">Profilo utente</h2>
+        </div>
+
+        <button id="jobProfileCloseBtn" class="jobProfileCloseBtn" type="button" aria-label="Chiudi">
+          ✕
+        </button>
       </header>
 
       <div class="jobProfileContent">
         <div id="jobProfileEmpty" class="jobProfileEmpty hidden">
-          <p class="jobProfileIntro">
-            Configura il tuo profilo per permettere a NettoTrack di analizzare il tuo lavoro
-            e preparare le stime future.
-          </p>
+          <div class="jobProfilePreviewCard">
+            <div class="jobProfilePreviewAvatarBox">
+              <div id="jobProfilePreviewAvatar" class="jobProfilePreviewAvatar">🙂</div>
+            </div>
 
-          <button id="jobProfileSetupBtn" class="menuItemBtn" type="button">
-            Configura profilo
-          </button>
+            <div class="jobProfilePreviewInfo">
+              <div class="jobProfilePreviewRow">${esc(summaryName)}</div>
+              <div class="jobProfilePreviewRow">${esc(summaryLastName)}</div>
+              <div class="jobProfilePreviewRow">${esc(summaryGender)}</div>
+              <div class="jobProfilePreviewRow">${esc(summaryBirth)}</div>
+              <div class="jobProfilePreviewRow">${esc(summaryCountry)}</div>
+              <div class="jobProfilePreviewRow">${esc(summaryRole)}</div>
+            </div>
+          </div>
 
-          <button id="jobProfileImportBtn" class="menuItemBtn" type="button">
-            Importa contratto da fotocamera
-          </button>
+          <div class="jobProfileEmptyCaption">
+            configura il tuo profilo personale e lavorativo.
+          </div>
+
+          <div class="jobProfileEmptyActions">
+            <button id="jobProfileCancelBtn" class="jobProfileSecondaryBtn" type="button">
+              Annulla
+            </button>
+
+            <button id="jobProfileSetupBtn" class="jobProfilePrimaryBtn" type="button">
+              Crea profilo
+            </button>
+          </div>
         </div>
 
         <div id="jobProfileView" class="jobProfileView hidden">
@@ -468,6 +499,15 @@ function bindJobProfileButtons() {
 
   document.getElementById("jobProfileExpandBtn")?.addEventListener("click", () => {
     toggleExpandedProfile();
+  });
+
+  document.getElementById("jobProfileCancelBtn")?.addEventListener("click", () => {
+    document.dispatchEvent(new Event("nettotrack:closeJobProfile"));
+  });
+
+  document.getElementById("jobProfileCloseBtn")?.addEventListener("click", () => {
+    saveJobProfile();
+    document.dispatchEvent(new Event("nettotrack:closeJobProfile"));
   });
 }
 
@@ -1151,6 +1191,11 @@ function bindWizardEvents() {
 /* =========================
    Init
    ========================= */
+
+function startJobProfileWizard() {
+  resetWizard();
+  rerenderWizard();
+}
 
 function initJobProfile() {
   loadJobProfileState();
