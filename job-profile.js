@@ -63,18 +63,10 @@ const jobProfileState = {
   }
 };
 
-/* =========================
-   Wizard state
-   ========================= */
-
 const jobProfileWizard = {
   step: 1,
   total: 6
 };
-
-/* =========================
-   Storage
-   ========================= */
 
 function loadJobProfileState() {
   const saved = localStorage.getItem("nt_jobProfile");
@@ -99,10 +91,6 @@ function saveJobProfile() {
   jobProfileState.profileMeta.lastUpdatedAt = new Date().toISOString();
   localStorage.setItem("nt_jobProfile", JSON.stringify(jobProfileState));
 }
-
-/* =========================
-   Helpers
-   ========================= */
 
 function esc(value) {
   return String(value ?? "")
@@ -189,11 +177,9 @@ function getContractTypesSafe() {
   if (typeof contractTypes !== "undefined" && Array.isArray(contractTypes)) {
     return contractTypes;
   }
-
   if (Array.isArray(window.contractTypes)) {
     return window.contractTypes;
   }
-
   return [];
 }
 
@@ -201,11 +187,9 @@ function getCCNLListSafe() {
   if (typeof ccnlList !== "undefined" && Array.isArray(ccnlList)) {
     return ccnlList;
   }
-
   if (Array.isArray(window.ccnlList)) {
     return window.ccnlList;
   }
-
   return [];
 }
 
@@ -213,11 +197,9 @@ function getGeoSafe() {
   if (typeof italyGeoData !== "undefined" && italyGeoData?.regions) {
     return italyGeoData;
   }
-
   if (window.italyGeoData && window.italyGeoData?.regions) {
     return window.italyGeoData;
   }
-
   return { regions: {} };
 }
 
@@ -236,20 +218,18 @@ function buildOptions(values, selectedValue = "", placeholder = "") {
   return html;
 }
 
-/* =========================
-   Main card
-   ========================= */
-
 function buildProfileHTML() {
   const u = jobProfileState.userProfile;
   const j = jobProfileState.jobProfile;
 
-  const summaryName = u.firstName || "Nome";
-  const summaryLastName = u.lastName || "Cognome";
-  const summaryGender = u.gender || "Sesso";
-  const summaryBirth = u.birthDate || "Data di nascita";
-  const summaryCountry = jobProfileState.addressProfile.country || "Paese";
-  const summaryRole = j.role || "Occupazione";
+  const summaryName = u.firstName ? `Nome: ${u.firstName}` : "Nome:";
+  const summaryLastName = u.lastName ? `Cognome: ${u.lastName}` : "Cognome:";
+  const summaryGender = u.gender ? `Sesso: ${u.gender}` : "Sesso:";
+  const summaryBirth = u.birthDate ? `Data di nascita: ${u.birthDate}` : "Data di nascita:";
+  const summaryCountry = jobProfileState.addressProfile.country
+    ? `Paese: ${jobProfileState.addressProfile.country}`
+    : "Paese:";
+  const summaryRole = j.role ? `Occupazione: ${j.role}` : "Occupazione:";
 
   return `
     <section id="jobProfileRoot" class="jobProfileCard">
@@ -282,14 +262,10 @@ function buildProfileHTML() {
             </div>
           </div>
 
-          <div class="jobProfileEmptyCaption">
-            configura il tuo profilo personale e lavorativo.
-          </div>
-
-          <div class="jobProfileEmptyActions">
-            <button id="jobProfileCancelBtn" class="jobProfileSecondaryBtn" type="button">
-              Annulla
-            </button>
+          <div class="jobProfileEmptyBottom">
+            <div class="jobProfileEmptyCaption">
+              Configura il tuo profilo personale e lavorativo.
+            </div>
 
             <button id="jobProfileSetupBtn" class="jobProfilePrimaryBtn" type="button">
               Crea profilo
@@ -499,10 +475,6 @@ function bindJobProfileButtons() {
 
   document.getElementById("jobProfileExpandBtn")?.addEventListener("click", () => {
     toggleExpandedProfile();
-  });
-
-  document.getElementById("jobProfileCancelBtn")?.addEventListener("click", () => {
-    document.dispatchEvent(new Event("nettotrack:closeJobProfile"));
   });
 
   document.getElementById("jobProfileCloseBtn")?.addEventListener("click", () => {
@@ -845,10 +817,6 @@ function rerenderWizard() {
   bindWizardEvents();
 }
 
-/* =========================
-   Wizard logic
-   ========================= */
-
 function startJobProfileWizard() {
   resetWizard();
   rerenderWizard();
@@ -1186,15 +1154,6 @@ function bindWizardEvents() {
     case 5: setupSalaryStep(); break;
     case 6: setupReviewStep(); break;
   }
-}
-
-/* =========================
-   Init
-   ========================= */
-
-function startJobProfileWizard() {
-  resetWizard();
-  rerenderWizard();
 }
 
 function initJobProfile() {
