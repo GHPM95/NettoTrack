@@ -1,126 +1,247 @@
 /* =========================
-   NettoTrack – Job Profile
+   NettoTrack - Job Profile
    ========================= */
 
 .jobProfileCard{
   display:flex;
   flex-direction:column;
-  gap:22px;
+  gap:20px;
 }
 
-/* =========================
-   Header
-   ========================= */
+.jobProfileTopBar{
+  display:grid;
+  grid-template-columns:44px 1fr 44px;
+  align-items:center;
+  gap:10px;
+  min-height:44px;
+}
 
-.jobProfileHeader{
+.jobProfileTopSide{
+  width:44px;
+  height:44px;
+}
+
+.jobProfileTopTitleWrap{
   display:flex;
-  flex-direction:column;
-  gap:6px;
+  justify-content:center;
+  align-items:center;
+  min-width:0;
 }
 
-.jobProfileTitle{
-  font-size:20px;
-  font-weight:800;
+.jobProfileTopTitle{
+  font-size:18px;
+  line-height:1.1;
+  font-weight:900;
   letter-spacing:.2px;
+  color:var(--text);
+  text-align:center;
 }
 
-.jobProfileSub{
-  font-size:13px;
-  opacity:.65;
-  line-height:1.4;
+.jobProfileCloseBtn{
+  width:44px;
+  height:44px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+  color:var(--text);
+  font-size:18px;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform .12s ease, filter .12s ease;
 }
 
-/* =========================
-   Content
-   ========================= */
+.jobProfileCloseBtn:active{
+  transform:scale(.97);
+  filter:brightness(1.08);
+}
 
 .jobProfileContent{
   display:flex;
   flex-direction:column;
-  gap:20px;
+  gap:22px;
 }
-
-/* =========================
-   Empty State
-   ========================= */
 
 .jobProfileEmpty{
   display:flex;
   flex-direction:column;
-  gap:16px;
+  gap:18px;
 }
 
-.jobProfileIntro{
+.jobProfilePreviewCard{
+  display:grid;
+  grid-template-columns:92px 1fr;
+  gap:14px;
+  align-items:center;
+  padding:14px;
+  border-radius:20px;
+  background:
+    radial-gradient(120% 180% at 18% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.035));
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.jobProfilePreviewAvatarBox{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.jobProfilePreviewAvatar{
+  width:82px;
+  height:82px;
+  border-radius:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:36px;
+  color:var(--text);
+  background:
+    radial-gradient(135% 135% at 20% 10%, rgba(255,255,255,.18), rgba(255,255,255,.05) 36%, transparent 62%),
+    linear-gradient(180deg, rgba(120,170,255,.18), rgba(167,120,255,.12));
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 10px 24px rgba(10,14,30,.18);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+
+.jobProfilePreviewInfo{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+}
+
+.jobProfilePreviewRow{
   font-size:14px;
-  opacity:.85;
-  line-height:1.5;
+  line-height:1.42;
+  color:var(--text);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
-/* =========================
-   Profile View
-   ========================= */
+.jobProfileEmptyCaption{
+  font-size:13px;
+  line-height:1.45;
+  color:var(--muted);
+  text-align:center;
+  padding:2px 10px 0;
+}
+
+.jobProfileEmptyActions{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.jobProfilePrimaryBtn,
+.jobProfileSecondaryBtn{
+  min-height:44px;
+  padding:0 16px;
+  border-radius:16px;
+  font:inherit;
+  font-weight:800;
+  transition:transform .12s ease, filter .12s ease;
+}
+
+.jobProfilePrimaryBtn{
+  border:1px solid rgba(255,255,255,.14);
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%),
+    linear-gradient(180deg, rgba(120,170,255,.20), rgba(167,120,255,.14));
+  color:var(--text);
+  margin-left:auto;
+}
+
+.jobProfileSecondaryBtn{
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+  color:var(--text);
+}
+
+.jobProfilePrimaryBtn:active,
+.jobProfileSecondaryBtn:active{
+  transform:scale(.98);
+  filter:brightness(1.06);
+}
 
 .jobProfileView{
   display:flex;
   flex-direction:column;
-  gap:20px;
+  gap:22px;
 }
-
-/* Avatar */
 
 .jobProfileAvatarBox{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:10px;
+  gap:12px;
+  padding:4px 0 2px;
 }
 
 .jobProfileAvatar{
-  width:82px;
-  height:82px;
-
-  border-radius:20px;
-
-  background:
-    radial-gradient(120% 200% at 25% 0%, rgba(255,255,255,.08), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
-
-  border:1px solid rgba(255,255,255,.12);
-
+  width:86px;
+  height:86px;
+  border-radius:24px;
   display:flex;
   align-items:center;
   justify-content:center;
-
-  font-size:36px;
-
+  font-size:38px;
+  color:var(--text);
+  background:
+    radial-gradient(135% 135% at 20% 10%, rgba(255,255,255,.18), rgba(255,255,255,.05) 36%, transparent 62%),
+    linear-gradient(180deg, rgba(120,170,255,.18), rgba(167,120,255,.12));
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 10px 24px rgba(10,14,30,.18);
   backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
 }
 
 .jobProfileAvatarHint{
   font-size:12px;
-  opacity:.6;
+  line-height:1.35;
+  color:var(--muted);
+  text-align:center;
 }
-
-/* Info */
 
 .jobProfileMainInfo,
 .jobProfileWorkInfo{
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:8px;
+  padding:14px;
+  border-radius:18px;
+  background:
+    radial-gradient(120% 180% at 18% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.035));
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
 }
 
 .jobProfileRow{
   font-size:14px;
-  line-height:1.45;
+  line-height:1.48;
+  color:var(--text);
 }
-
-/* Expanded */
 
 .jobProfileExpanded{
   display:flex;
   flex-direction:column;
   gap:14px;
+}
+
+.jobProfileImportBox{
+  margin-top:4px;
+  padding-top:8px;
 }
 
 /* =========================
@@ -130,90 +251,69 @@
 .jobWizardCard{
   display:flex;
   flex-direction:column;
-  gap:20px;
+  gap:16px;
 }
-
-/* Header wizard */
 
 .jobWizardTop{
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
-  gap:14px;
+  gap:12px;
 }
 
 .jobWizardTitle{
-  font-size:19px;
+  font-size:18px;
   font-weight:800;
 }
 
 .jobWizardSub{
   margin-top:4px;
   font-size:13px;
-  opacity:.65;
-  line-height:1.4;
+  line-height:1.35;
+  opacity:.68;
 }
 
 .jobWizardBadge{
-
-  padding:7px 12px;
-
+  flex:0 0 auto;
+  padding:8px 12px;
   border-radius:999px;
-
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.10);
   font-size:12px;
   font-weight:800;
-
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.12);
 }
-
-/* =========================
-   Wizard Body
-   ========================= */
 
 .jobWizardBody{
   display:flex;
   flex-direction:column;
-  gap:16px;
+  gap:14px;
 }
-
-/* Legal Scroll */
-
-.jobWizardLegalBox{
-
-  max-height:220px;
-  overflow:auto;
-
-  padding:16px;
-
-  border-radius:18px;
-
-  border:1px solid rgba(255,255,255,.12);
-
-  background:
-    radial-gradient(140% 200% at 25% 0%, rgba(255,255,255,.08), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-}
-
-/* Text blocks */
 
 .jobWizardTextBlock{
   display:flex;
   flex-direction:column;
   gap:12px;
-
   font-size:14px;
-  line-height:1.55;
+  line-height:1.5;
+  opacity:.92;
 }
 
 .jobWizardSmallTitle{
+  margin:0;
   font-size:14px;
   font-weight:800;
 }
 
-/* =========================
-   Inputs
-   ========================= */
+.jobWizardLegalBox{
+  max-height:220px;
+  overflow:auto;
+  padding:14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.08), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+}
 
 .jobWizardFields{
   display:flex;
@@ -221,27 +321,23 @@
   gap:12px;
 }
 
-.jobWizardInput{
+.jobWizardExtraGroup{
+  margin-top:6px;
+  padding-top:6px;
+}
 
+.jobWizardInput{
   width:100%;
   min-height:48px;
-
   padding:0 14px;
-
   border-radius:16px;
-
   border:1px solid rgba(255,255,255,.14);
-
   background:
-    radial-gradient(140% 200% at 25% 0%, rgba(255,255,255,.08), transparent 55%),
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.08), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-
   color:var(--text);
-
   font:inherit;
-
   outline:none;
-
   transition:.15s;
 }
 
@@ -258,21 +354,13 @@
   opacity:.45;
 }
 
-/* =========================
-   Checkboxes
-   ========================= */
-
 .jobWizardCheck{
   display:flex;
   align-items:center;
   gap:10px;
-
   font-size:14px;
+  line-height:1.4;
 }
-
-/* =========================
-   Mode Buttons
-   ========================= */
 
 .jobWizardActions{
   display:flex;
@@ -281,129 +369,83 @@
 }
 
 .isSelectedWizardChoice{
-  outline:1px solid rgba(255,255,255,.25);
+  outline:1px solid rgba(255,255,255,.22);
+  filter:brightness(1.05);
 }
 
-/* =========================
-   Switch rows
-   ========================= */
+.jobWizardNote{
+  font-size:12px;
+  line-height:1.45;
+  opacity:.72;
+}
+
+.jobWizardNav{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.jobWizardGhostBtn{
+  min-height:42px;
+  padding:0 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+  color:var(--text);
+  font:inherit;
+  font-weight:700;
+}
 
 .jobWizardSwitchRow{
-
   display:flex;
   align-items:center;
   justify-content:space-between;
-
+  gap:12px;
   padding:12px 14px;
-
   border-radius:14px;
-
-  background:rgba(255,255,255,.05);
-
   border:1px solid rgba(255,255,255,.10);
-
+  background:rgba(255,255,255,.05);
   font-size:14px;
+  line-height:1.4;
 }
-
-/* =========================
-   CCNL Suggestions
-   ========================= */
 
 .jobWizardSuggestionWrap{
   position:relative;
 }
 
 .jobWizardSuggestions{
-
   display:flex;
   flex-direction:column;
   gap:6px;
-
   margin-top:8px;
-
   padding:8px;
-
   border-radius:14px;
-
   border:1px solid rgba(255,255,255,.10);
-
   background:rgba(18,20,32,.92);
-
   backdrop-filter:blur(12px);
 }
 
 .jobWizardSuggestionItem{
-
   width:100%;
-
-  min-height:38px;
-
-  padding:0 10px;
-
+  min-height:40px;
   border:none;
-
   border-radius:10px;
-
-  background:rgba(255,255,255,.05);
-
-  color:var(--text);
-
-  font-size:13px;
-
   text-align:left;
+  padding:0 12px;
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font:inherit;
+  font-size:14px;
 }
 
-/* =========================
-   Review Sections
-   ========================= */
-
 .reviewSection{
-
-  padding:14px;
-
-  border-radius:16px;
-
-  background:rgba(255,255,255,.07);
-
+  padding:12px;
+  border-radius:14px;
+  background:rgba(255,255,255,.08);
   border:1px solid rgba(255,255,255,.10);
-
   font-size:14px;
   line-height:1.5;
 }
-
-/* =========================
-   Wizard Navigation
-   ========================= */
-
-.jobWizardNav{
-
-  display:flex;
-  justify-content:space-between;
-
-  gap:12px;
-}
-
-.jobWizardGhostBtn{
-
-  min-height:42px;
-
-  padding:0 14px;
-
-  border-radius:14px;
-
-  border:1px solid rgba(255,255,255,.12);
-
-  background:rgba(255,255,255,.04);
-
-  color:var(--text);
-
-  font:inherit;
-  font-weight:700;
-}
-
-/* =========================
-   Utility
-   ========================= */
 
 .hidden{
   display:none !important;
