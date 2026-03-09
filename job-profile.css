@@ -10,9 +10,7 @@ min-height:100%;
 }
 
 
-/* =========================
-   HEADER
-========================= */
+/* HEADER */
 
 .jobProfileTopBar{
 display:grid;
@@ -27,16 +25,9 @@ width:var(--xSize);
 height:var(--xSize);
 }
 
-.jobProfileTopTitleWrap{
-display:flex;
-justify-content:center;
-align-items:center;
-}
-
 .jobProfileTopTitle{
 font-size:18px;
 font-weight:1000;
-letter-spacing:.2px;
 color:var(--text);
 }
 
@@ -52,18 +43,11 @@ font-weight:900;
 display:flex;
 align-items:center;
 justify-content:center;
-transition:.12s;
-}
-
-.jobProfileCloseBtn:active{
-transform:scale(.96);
 }
 
 
 
-/* =========================
-   CONTENT
-========================= */
+/* CONTENT */
 
 .jobProfileContent{
 flex:1;
@@ -74,50 +58,72 @@ justify-content:space-between;
 
 
 
-/* =========================
-   PREVIEW
-========================= */
+/* PREVIEW */
 
 .jobProfilePreviewCard{
 display:grid;
-grid-template-columns:80px 1fr;
+grid-template-columns:74px 1fr;
 gap:10px;
 align-items:start;
-margin-top:6px;
+margin-top:4px;
 }
+
 
 .jobProfilePreviewAvatarBox{
 display:flex;
-justify-content:center;
 align-items:flex-start;
+justify-content:center;
 }
 
-.jobProfilePreviewAvatar{
-width:74px;
-height:74px;
-border-radius:20px;
+
+.jobProfileAvatar{
+
+width:70px;
+height:70px;
+
+border-radius:18px;
 
 display:flex;
 align-items:center;
 justify-content:center;
 
-font-size:32px;
+border:1px solid rgba(255,255,255,.15);
 
-background:
-radial-gradient(135% 135% at 20% 10%,rgba(255,255,255,.18),rgba(255,255,255,.05) 36%,transparent 62%),
-linear-gradient(180deg,rgba(120,170,255,.18),rgba(167,120,255,.12));
-
-border:1px solid rgba(255,255,255,.16);
 box-shadow:
 inset 0 1px 0 rgba(255,255,255,.12),
 0 10px 24px rgba(10,14,30,.18);
+
 }
 
+.jobProfileAvatar svg{
+width:32px;
+height:32px;
+}
+
+
+
+/* avatar colori */
+
+.avatarMale{
+background:linear-gradient(160deg,#4da3ff,#2c5cff);
+}
+
+.avatarFemale{
+background:linear-gradient(160deg,#ff7ac8,#ff4d94);
+}
+
+.avatarNeutral{
+background:linear-gradient(160deg,#cfd8e6,#8e9bb5);
+}
+
+
+
+/* INFO */
 
 .jobProfilePreviewInfo{
 display:flex;
 flex-direction:column;
-gap:6px;
+gap:4px;
 }
 
 .jobProfilePreviewRow{
@@ -128,9 +134,7 @@ color:var(--text);
 
 
 
-/* =========================
-   EMPTY STATE
-========================= */
+/* EMPTY */
 
 .jobProfileEmptyBottom{
 flex:1;
@@ -146,20 +150,19 @@ gap:14px;
 font-size:12px;
 line-height:1.35;
 color:var(--muted);
-font-weight:700;
+font-weight:600;
 text-align:center;
 max-width:28ch;
 }
 
 
 
-/* =========================
-   BUTTON
-========================= */
+/* BUTTON */
 
 .jobProfilePrimaryBtn{
 
-height:46px;
+height:44px;
+
 padding:0 18px;
 
 border-radius:18px;
@@ -182,4 +185,4 @@ transition:.12s;
 
 .jobProfilePrimaryBtn:active{
 transform:scale(.97);
-}-
+}
