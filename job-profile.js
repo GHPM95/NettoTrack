@@ -21,41 +21,31 @@ const jobProfileState = {
   },
 
   jobProfile:{
-    companyName:"",
-    companyAddress:"",
-    contractType:"",
-    appliedContract:"",
-    level:"",
-    role:"",
-    hireDate:"",
-    workType:"",
-    weeklyHours:"",
-    salaryMonths:"13"
-  },
-
-  profileMeta:{
-    setupCompleted:false
+    role:""
   }
 };
 
 function esc(v){
   return String(v ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;");
+  .replaceAll("&","&amp;")
+  .replaceAll("<","&lt;")
+  .replaceAll(">","&gt;");
 }
 
 function getMount(){
   return document.getElementById("jobProfileMount");
 }
 
-function getAvatarSymbol(){
+function getAvatarClass(){
+
   const g = jobProfileState.userProfile.gender;
 
-  if(g==="uomo") return "👨";
-  if(g==="donna") return "👩";
-  return "🙂";
+  if(g==="uomo") return "avatarMale";
+  if(g==="donna") return "avatarFemale";
+
+  return "avatarNeutral";
 }
+
 
 /* =========================
    CARD HTML
@@ -75,7 +65,8 @@ function buildProfileHTML(){
       : "Paese:";
   const role = j.role ? `Occupazione: ${j.role}` : "Occupazione:";
 
-  return `
+return `
+
 <section class="jobProfileCard">
 
 <header class="jobProfileTopBar">
@@ -87,8 +78,7 @@ function buildProfileHTML(){
 </div>
 
 <button id="jobProfileCloseBtn"
-class="jobProfileCloseBtn"
-type="button">✕</button>
+class="jobProfileCloseBtn">✕</button>
 
 </header>
 
@@ -98,8 +88,23 @@ type="button">✕</button>
 <div class="jobProfilePreviewCard">
 
 <div class="jobProfilePreviewAvatarBox">
-<div class="jobProfilePreviewAvatar">${getAvatarSymbol()}</div>
+
+<div class="jobProfileAvatar ${getAvatarClass()}">
+
+<svg viewBox="0 0 24 24" fill="none">
+
+<circle cx="12" cy="8" r="4" stroke="white" stroke-width="2"/>
+<path d="M4 20c2-4 6-6 8-6s6 2 8 6"
+stroke="white"
+stroke-width="2"
+stroke-linecap="round"/>
+
+</svg>
+
 </div>
+
+</div>
+
 
 <div class="jobProfilePreviewInfo">
 
@@ -131,12 +136,9 @@ Crea profilo
 </div>
 
 </section>
+
 `;
 }
-
-/* =========================
-   INIT
-========================= */
 
 function mountJobProfileCard(){
 
@@ -144,7 +146,6 @@ function mountJobProfileCard(){
   if(!mount) return;
 
   mount.innerHTML = buildProfileHTML();
-
 }
 
 document.addEventListener("nettotrack:jobProfileOpened",()=>{
