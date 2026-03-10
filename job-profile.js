@@ -122,24 +122,44 @@ function prevWizard() {
   renderWizard();
 }
 
-function getAvatarVariant() {
-  const g = (jobProfileState.userProfile.gender || "").toLowerCase();
+function getAvatarVariant(genderValue = jobProfileState.userProfile.gender) {
+  const g = (genderValue || "").toLowerCase();
 
   if (g === "uomo") return "avatarMale";
   if (g === "donna") return "avatarFemale";
-
   return "avatarNeutral";
 }
 
-function buildAvatarMarkup() {
+function buildAvatarMarkup(genderValue = jobProfileState.userProfile.gender, id = "jobProfileAvatarPreview") {
   return `
-    <div id="jobProfileAvatarPreview" class="jobProfileAvatar ${getAvatarVariant()}">
+    <div id="${id}" class="jobProfileAvatar ${getAvatarVariant(genderValue)}">
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="8" r="4" stroke="white" stroke-width="2"/>
-        <path d="M4 20c2-4 6-6 8-6s6 2 8 6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="8" r="4" stroke="white" stroke-width="2"></circle>
+        <path d="M4 20c2-4 6-6 8-6s6 2 8 6" stroke="white" stroke-width="2" stroke-linecap="round"></path>
       </svg>
     </div>
   `;
+}
+
+function formatBirthLabel(value) {
+  if (!value) return "Data di nascita";
+
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = String(d.getFullYear());
+
+  return `${day} / ${month} / ${year}`;
+}
+
+function formatGenderLabel(value) {
+  if (!value) return "Sesso";
+  if (value === "uomo") return "Uomo";
+  if (value === "donna") return "Donna";
+  if (value === "non specificato") return "Non specificato";
+  return value;
 }
 
 /* =========================
@@ -156,8 +176,8 @@ function renderMainCard() {
 
   const name = u.firstName ? `Nome: ${u.firstName}` : "Nome:";
   const lastName = u.lastName ? `Cognome: ${u.lastName}` : "Cognome:";
-  const gender = u.gender ? `Sesso: ${u.gender}` : "Sesso:";
-  const birthDate = u.birthDate ? `Data di nascita: ${u.birthDate}` : "Data di nascita:";
+  const gender = u.gender ? `Sesso: ${formatGenderLabel(u.gender)}` : "Sesso:";
+  const birthDate = u.birthDate ? `Data di nascita: ${formatBirthLabel(u.birthDate)}` : "Data di nascita:";
   const country = a.country ? `Paese: ${a.country}` : "Paese:";
   const role = j.role ? `Occupazione: ${j.role}` : "Occupazione:";
 
@@ -215,7 +235,7 @@ function renderMainCard() {
    Wizard shell
    ========================= */
 
-function wizardFrame(title, inner, bottomBar = "") {
+function wizardFrame(title, inner, footer = "") {
   return `
     <section class="jobProfileCard jobWizardShell">
       <header class="jobProfileTopBar">
@@ -240,7 +260,7 @@ function wizardFrame(title, inner, bottomBar = "") {
         ${inner}
       </div>
 
-      ${bottomBar ? `<div class="jobWizardBottomBar">${bottomBar}</div>` : ""}
+      ${footer ? `<div class="jobWizardFooterOutside">${footer}</div>` : ""}
     </section>
   `;
 }
@@ -313,15 +333,21 @@ function stepLegal() {
       </div>
     `,
     `
-      <button id="wizardNextBtn" class="jobProfilePrimaryBtn wizardMainBtn" type="button" disabled>
-        Continua
-      </button>
+      <div class="jobWizardFooterActions">
+        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">
+          Annulla
+        </button>
+
+        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button" disabled>
+          Avanti
+        </button>
+      </div>
     `
   );
 }
 
 /* =========================
-   Step 2 - Personal data
+   Step 2 - Personal
    ========================= */
 
 function stepPersonal() {
@@ -330,53 +356,68 @@ function stepPersonal() {
   return wizardFrame(
     "Dati personali",
     `
-      <div class="jobWizardFields">
-        <div class="jobWizardRowTwo">
-          <input
-            id="firstName"
-            class="jobWizardInput"
-            type="text"
-            placeholder="Nome"
-            value="${esc(u.firstName)}"
-            autocomplete="given-name"
-          >
+      <div class="jobWizardPersonalCard">
+        <div class="jobWizardPersonalTop">
+          <div class="jobWizardPersonalAvatar">
+            ${buildAvatarMarkup(u.gender)}
+          </div>
 
-          <input
-            id="lastName"
-            class="jobWizardInput"
-            type="text"
-            placeholder="Cognome"
-            value="${esc(u.lastName)}"
-            autocomplete="family-name"
-          >
+          <div class="jobWizardPersonalNames">
+            <input
+              id="firstName"
+              class="jobWizardInput"
+              type="text"
+              placeholder="Nome"
+              value="${esc(u.firstName)}"
+              autocomplete="given-name"
+            >
+
+            <input
+              id="lastName"
+              class="jobWizardInput"
+              type="text"
+              placeholder="Cognome"
+              value="${esc(u.lastName)}"
+              autocomplete="family-name"
+            >
+          </div>
         </div>
 
-        <div class="jobWizardCompactWrap">
-          <input
-            id="birthDate"
-            class="jobWizardInput jobWizardCompactInput"
-            type="date"
-            value="${esc(u.birthDate)}"
-          >
-        </div>
+        <div class="jobWizardFields">
+          <button id="birthDateDisplayBtn" class="jobWizardActionField" type="button">
+            <span id="birthDateDisplayLabel">${esc(formatBirthLabel(u.birthDate))}</span>
+          </button>
 
-        <div class="jobWizardCompactWrap">
-          <select id="gender" class="jobWizardInput jobWizardCompactInput">
-            <option value="">Sesso</option>
-            <option value="uomo" ${u.gender === "uomo" ? "selected" : ""}>Uomo</option>
-            <option value="donna" ${u.gender === "donna" ? "selected" : ""}>Donna</option>
-          </select>
-        </div>
+          <input id="birthDate" class="jobWizardHiddenNativeField" type="date" value="${esc(u.birthDate)}">
+          <button id="birthDateResetBtn" class="jobWizardTinyResetBtn ${u.birthDate ? "" : "hidden"}" type="button">
+            Ripristina
+          </button>
 
-        <div class="jobWizardAvatarLiveBox">
-          ${buildAvatarMarkup()}
+          <button id="genderDisplayBtn" class="jobWizardActionField" type="button">
+            <span id="genderDisplayLabel">${esc(formatGenderLabel(u.gender))}</span>
+            <span class="jobWizardFieldChevron"></span>
+          </button>
+
+          <div id="genderMenu" class="jobWizardSelectMenu hidden">
+            <button class="jobWizardSelectItem" type="button" data-gender-value="uomo">Uomo</button>
+            <button class="jobWizardSelectItem" type="button" data-gender-value="donna">Donna</button>
+            <button class="jobWizardSelectItem" type="button" data-gender-value="non specificato">Non specificato</button>
+          </div>
+
+          <input id="gender" type="hidden" value="${esc(u.gender)}">
         </div>
       </div>
     `,
     `
-      <button id="wizardNextBtn" class="jobProfilePrimaryBtn wizardMainBtn" type="button" disabled>
-        Continua
-      </button>
+      <div class="jobWizardFooterActions">
+        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">
+          Annulla
+        </button>
+
+        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button" disabled>
+          Avanti
+        </button>
+      </div>
     `
   );
 }
@@ -394,9 +435,15 @@ function stepWork() {
       </div>
     `,
     `
-      <button id="wizardNextBtn" class="jobProfilePrimaryBtn wizardMainBtn" type="button">
-        Continua
-      </button>
+      <div class="jobWizardFooterActions">
+        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">
+          Annulla
+        </button>
+
+        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button">
+          Avanti
+        </button>
+      </div>
     `
   );
 }
@@ -410,9 +457,15 @@ function stepPay() {
       </div>
     `,
     `
-      <button id="wizardNextBtn" class="jobProfilePrimaryBtn wizardMainBtn" type="button">
-        Continua
-      </button>
+      <div class="jobWizardFooterActions">
+        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">
+          Annulla
+        </button>
+
+        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button">
+          Avanti
+        </button>
+      </div>
     `
   );
 }
@@ -425,14 +478,20 @@ function stepReview() {
         <strong>Dati personali</strong><br>
         Nome: ${esc(jobProfileState.userProfile.firstName || "-")}<br>
         Cognome: ${esc(jobProfileState.userProfile.lastName || "-")}<br>
-        Data di nascita: ${esc(jobProfileState.userProfile.birthDate || "-")}<br>
-        Sesso: ${esc(jobProfileState.userProfile.gender || "-")}
+        Data di nascita: ${esc(formatBirthLabel(jobProfileState.userProfile.birthDate) || "-")}<br>
+        Sesso: ${esc(formatGenderLabel(jobProfileState.userProfile.gender) || "-")}
       </div>
     `,
     `
-      <button id="wizardSaveBtn" class="jobProfilePrimaryBtn wizardMainBtn" type="button">
-        Salva profilo
-      </button>
+      <div class="jobWizardFooterActions">
+        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">
+          Annulla
+        </button>
+
+        <button id="wizardSaveBtn" class="jobProfilePrimaryBtn" type="button">
+          Salva profilo
+        </button>
+      </div>
     `
   );
 }
@@ -458,6 +517,10 @@ function renderWizard() {
    Wizard events
    ========================= */
 
+function backToSummaryCard() {
+  renderMainCard();
+}
+
 function updateLegalButtonState() {
   const faq = document.getElementById("faqCheck");
   const disc = document.getElementById("discCheck");
@@ -465,7 +528,6 @@ function updateLegalButtonState() {
   const btn = document.getElementById("wizardNextBtn");
 
   if (!faq || !disc || !term || !btn) return;
-
   btn.disabled = !(faq.checked && disc.checked && term.checked);
 }
 
@@ -486,24 +548,28 @@ function updatePersonalButtonState() {
   );
 }
 
-function updateLiveAvatar() {
-  const gender = document.getElementById("gender");
+function updateLiveAvatar(genderValue) {
   const avatar = document.getElementById("jobProfileAvatarPreview");
-  if (!gender || !avatar) return;
+  if (!avatar) return;
 
   avatar.classList.remove("avatarMale", "avatarFemale", "avatarNeutral");
+  avatar.classList.add(getAvatarVariant(genderValue));
+}
 
-  if (gender.value === "uomo") {
-    avatar.classList.add("avatarMale");
-    return;
-  }
+function updateBirthDateLabel(value) {
+  const label = document.getElementById("birthDateDisplayLabel");
+  const resetBtn = document.getElementById("birthDateResetBtn");
+  if (label) label.textContent = formatBirthLabel(value);
+  if (resetBtn) resetBtn.classList.toggle("hidden", !value);
+}
 
-  if (gender.value === "donna") {
-    avatar.classList.add("avatarFemale");
-    return;
-  }
+function updateGenderLabel(value) {
+  const label = document.getElementById("genderDisplayLabel");
+  if (label) label.textContent = formatGenderLabel(value);
+}
 
-  avatar.classList.add("avatarNeutral");
+function closeGenderMenu() {
+  document.getElementById("genderMenu")?.classList.add("hidden");
 }
 
 function bindWizardEvents() {
@@ -514,6 +580,10 @@ function bindWizardEvents() {
 
   document.getElementById("wizardBackBtn")?.addEventListener("click", () => {
     prevWizard();
+  });
+
+  document.getElementById("wizardCancelBtn")?.addEventListener("click", () => {
+    backToSummaryCard();
   });
 
   if (jobProfileWizard.step === 1) {
@@ -543,21 +613,52 @@ function bindWizardEvents() {
     const firstName = document.getElementById("firstName");
     const lastName = document.getElementById("lastName");
     const birthDate = document.getElementById("birthDate");
+    const birthDateDisplayBtn = document.getElementById("birthDateDisplayBtn");
+    const birthDateResetBtn = document.getElementById("birthDateResetBtn");
     const gender = document.getElementById("gender");
+    const genderDisplayBtn = document.getElementById("genderDisplayBtn");
     const btn = document.getElementById("wizardNextBtn");
 
-    [firstName, lastName, birthDate].forEach((el) => {
+    [firstName, lastName].forEach((el) => {
       el?.addEventListener("input", updatePersonalButtonState);
-      el?.addEventListener("change", updatePersonalButtonState);
     });
 
-    gender?.addEventListener("change", () => {
+    birthDateDisplayBtn?.addEventListener("click", () => {
+      birthDate?.showPicker?.();
+      birthDate?.focus();
+      birthDate?.click();
+    });
+
+    birthDate?.addEventListener("change", () => {
+      updateBirthDateLabel(birthDate.value);
       updatePersonalButtonState();
-      updateLiveAvatar();
     });
 
+    birthDateResetBtn?.addEventListener("click", () => {
+      birthDate.value = "";
+      updateBirthDateLabel("");
+      updatePersonalButtonState();
+    });
+
+    genderDisplayBtn?.addEventListener("click", () => {
+      document.getElementById("genderMenu")?.classList.toggle("hidden");
+    });
+
+    document.querySelectorAll("[data-gender-value]").forEach((item) => {
+      item.addEventListener("click", () => {
+        const value = item.dataset.genderValue || "";
+        gender.value = value;
+        updateGenderLabel(value);
+        updateLiveAvatar(value);
+        closeGenderMenu();
+        updatePersonalButtonState();
+      });
+    });
+
+    updateBirthDateLabel(birthDate?.value || "");
+    updateGenderLabel(gender?.value || "");
+    updateLiveAvatar(gender?.value || "");
     updatePersonalButtonState();
-    updateLiveAvatar();
 
     btn?.addEventListener("click", () => {
       jobProfileState.userProfile.firstName = firstName?.value.trim() || "";
