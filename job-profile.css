@@ -5,6 +5,7 @@
 .jobProfileCard{
   height:100%;
   min-height:0;
+  overflow:hidden;
   display:flex;
   flex-direction:column;
   gap:0;
@@ -21,7 +22,6 @@
   align-items:center;
   gap:12px;
   min-height:var(--xSize);
-  padding-bottom:12px;
 }
 
 .jobProfileTopSide{
@@ -74,12 +74,14 @@
    Main summary card
    ========================= */
 
-.jobProfileContent{
+.jobProfileScrollArea{
   flex:1 1 auto;
   min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
   display:flex;
   flex-direction:column;
-  justify-content:space-between;
   gap:16px;
 }
 
@@ -158,6 +160,18 @@
   max-width:28ch;
 }
 
+.jobProfileFooterBar{
+  flex:0 0 auto;
+  padding-top:12px;
+  background:
+    linear-gradient(180deg, rgba(16,18,30,0) 0%, rgba(16,18,30,.22) 24%, rgba(16,18,30,.42) 100%);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
 /* =========================
    Buttons
    ========================= */
@@ -203,27 +217,27 @@
 }
 
 /* =========================
-   Wizard = day-editor pattern
+   Wizard = header fixed / body scroll / footer fixed
    ========================= */
 
 .jobWizardShell{
   height:100%;
   min-height:0;
-  display:flex;
-  flex-direction:column;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
 }
 
-.jobWizardTop{
+.jobWizardHeader{
   flex:0 0 auto;
   display:flex;
   flex-direction:column;
   gap:0;
+  padding-bottom:12px;
 }
 
 .jobWizardStepBar{
-  flex:0 0 auto;
   height:8px;
-  margin-bottom:12px;
   border-radius:999px;
   background:rgba(255,255,255,.08);
   overflow:hidden;
@@ -237,10 +251,11 @@
   transition:width .22s ease;
 }
 
-.jobWizardScroll{
-  flex:1 1 auto;
+.jobWizardScrollArea{
   min-height:0;
-  overflow:auto;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
   padding-right:2px;
 }
 
@@ -248,12 +263,17 @@
   display:flex;
   flex-direction:column;
   gap:14px;
+  min-height:100%;
   padding-bottom:14px;
 }
 
-.jobWizardFooter{
+.jobWizardFooterDock{
   flex:0 0 auto;
   padding-top:12px;
+  background:
+    linear-gradient(180deg, rgba(16,18,30,0) 0%, rgba(16,18,30,.22) 24%, rgba(16,18,30,.42) 100%);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
 }
 
 .jobWizardFooterActions{
