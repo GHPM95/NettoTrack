@@ -192,46 +192,52 @@ function renderMainCard() {
 
   mount.innerHTML = `
     <section class="jobProfileCard">
-      <header class="jobProfileTopBar">
-        <div class="jobProfileTopSide"></div>
+      <div class="jobProfileShell">
 
-        <div class="jobProfileTopTitleWrap">
-          <h2 class="jobProfileTopTitle">Profilo utente</h2>
+        <div class="jobProfileShellTop">
+          <header class="jobProfileTopBar">
+            <div class="jobProfileTopSide"></div>
+
+            <div class="jobProfileTopTitleWrap">
+              <h2 class="jobProfileTopTitle">Profilo utente</h2>
+            </div>
+
+            <button id="jobProfileCloseBtn" class="jobProfileCloseBtn" type="button" aria-label="Chiudi">
+              ✕
+            </button>
+          </header>
         </div>
 
-        <button id="jobProfileCloseBtn" class="jobProfileCloseBtn" type="button" aria-label="Chiudi">
-          ✕
-        </button>
-      </header>
+        <div class="jobProfileShellBody">
+          <div class="jobProfilePreviewCard">
+            <div class="jobProfilePreviewAvatarBox">
+              ${buildAvatarMarkup(u.gender, "jobProfileSummaryAvatar")}
+            </div>
 
-      <div class="jobProfileScrollArea">
-        <div class="jobProfilePreviewCard">
-          <div class="jobProfilePreviewAvatarBox">
-            ${buildAvatarMarkup(u.gender, "jobProfileSummaryAvatar")}
+            <div class="jobProfilePreviewInfo">
+              <div class="jobProfilePreviewRow">${esc(name)}</div>
+              <div class="jobProfilePreviewRow">${esc(lastName)}</div>
+              <div class="jobProfilePreviewRow">${esc(gender)}</div>
+              <div class="jobProfilePreviewRow">${esc(birthDate)}</div>
+              <div class="jobProfilePreviewRow">${esc(country)}</div>
+              <div class="jobProfilePreviewRow">${esc(role)}</div>
+            </div>
           </div>
 
-          <div class="jobProfilePreviewInfo">
-            <div class="jobProfilePreviewRow">${esc(name)}</div>
-            <div class="jobProfilePreviewRow">${esc(lastName)}</div>
-            <div class="jobProfilePreviewRow">${esc(gender)}</div>
-            <div class="jobProfilePreviewRow">${esc(birthDate)}</div>
-            <div class="jobProfilePreviewRow">${esc(country)}</div>
-            <div class="jobProfilePreviewRow">${esc(role)}</div>
-          </div>
-        </div>
-
-        <div class="jobProfileEmptyBottom">
-          <div class="jobProfileEmptyCaption">
-            Configura il tuo profilo personale e lavorativo.
+          <div class="jobProfileEmptyBottom">
+            <div class="jobProfileEmptyCaption">
+              Configura il tuo profilo personale e lavorativo.
+            </div>
           </div>
         </div>
+
+        <div class="jobProfileShellFooter">
+          <button id="jobProfileSetupBtn" class="jobProfilePrimaryBtn" type="button">
+            Crea profilo
+          </button>
+        </div>
+
       </div>
-
-      <footer class="jobProfileFooterBar">
-        <button id="jobProfileSetupBtn" class="jobProfilePrimaryBtn" type="button">
-          Crea profilo
-        </button>
-      </footer>
     </section>
   `;
 
@@ -247,44 +253,44 @@ function renderMainCard() {
 
 function wizardFrame(title, inner, footer = "") {
   return `
-    <section class="jobProfileCard jobWizardShell">
+    <section class="jobProfileCard">
+      <div class="jobProfileShell">
 
-      <div class="jobWizardHeader">
-        <header class="jobProfileTopBar">
-          <button id="wizardBackBtn" class="jobProfileCloseBtn ${jobProfileWizard.step === 1 ? "isHiddenBtn" : ""}" type="button" aria-label="Indietro">
-            ‹
-          </button>
+        <div class="jobProfileShellTop">
+          <header class="jobProfileTopBar">
+            <button id="wizardBackBtn" class="jobProfileCloseBtn ${jobProfileWizard.step === 1 ? "isHiddenBtn" : ""}" type="button" aria-label="Indietro">
+              ‹
+            </button>
 
-          <div class="jobProfileTopTitleWrap">
-            <h2 class="jobProfileTopTitle">${esc(title)}</h2>
+            <div class="jobProfileTopTitleWrap">
+              <h2 class="jobProfileTopTitle">${esc(title)}</h2>
+            </div>
+
+            <button id="wizardCloseBtn" class="jobProfileCloseBtn" type="button" aria-label="Chiudi">
+              ✕
+            </button>
+          </header>
+
+          <div class="jobWizardStepBar">
+            <div class="jobWizardStepFill" style="width:${(jobProfileWizard.step / jobProfileWizard.total) * 100}%"></div>
           </div>
-
-          <button id="wizardCloseBtn" class="jobProfileCloseBtn" type="button" aria-label="Chiudi">
-            ✕
-          </button>
-        </header>
-
-        <div class="jobWizardStepBar">
-          <div class="jobWizardStepFill" style="width:${(jobProfileWizard.step / jobProfileWizard.total) * 100}%"></div>
         </div>
-      </div>
 
-      <div class="jobWizardScrollArea">
-        <div class="jobWizardScrollInner">
+        <div class="jobProfileShellBody">
           ${inner}
         </div>
-      </div>
 
-      <div class="jobWizardFooterDock">
-        ${footer}
-      </div>
+        <div class="jobProfileShellFooter">
+          ${footer}
+        </div>
 
+      </div>
     </section>
   `;
 }
 
 /* =========================
-   Step 1 - Legal
+   Steps
    ========================= */
 
 function stepLegal() {
@@ -318,7 +324,6 @@ function stepLegal() {
             <input id="faqCheck" class="jobWizardHiddenCheck" type="checkbox" ${legal.faq ? "checked" : ""}>
             <span class="jobWizardCheckUi"></span>
           </span>
-
           <span class="jobWizardLegalText">
             <span class="jobWizardLegalTitle">FAQ</span>
             <span class="jobWizardLegalDesc">Ho letto le FAQ.</span>
@@ -330,7 +335,6 @@ function stepLegal() {
             <input id="discCheck" class="jobWizardHiddenCheck" type="checkbox" ${legal.disclaimer ? "checked" : ""}>
             <span class="jobWizardCheckUi"></span>
           </span>
-
           <span class="jobWizardLegalText">
             <span class="jobWizardLegalTitle">Disclaimer</span>
             <span class="jobWizardLegalDesc">Ho letto il disclaimer.</span>
@@ -342,7 +346,6 @@ function stepLegal() {
             <input id="termCheck" class="jobWizardHiddenCheck" type="checkbox" ${legal.terms ? "checked" : ""}>
             <span class="jobWizardCheckUi"></span>
           </span>
-
           <span class="jobWizardLegalText">
             <span class="jobWizardLegalTitle">Termini di utilizzo</span>
             <span class="jobWizardLegalDesc">Accetto i termini di utilizzo.</span>
@@ -352,21 +355,12 @@ function stepLegal() {
     `,
     `
       <div class="jobWizardFooterActions">
-        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">
-          Annulla
-        </button>
-
-        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button" disabled>
-          Avanti
-        </button>
+        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">Annulla</button>
+        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button" disabled>Avanti</button>
       </div>
     `
   );
 }
-
-/* =========================
-   Step 2 - Personal
-   ========================= */
 
 function stepPersonal() {
   const u = currentProfileSource().userProfile;
@@ -425,21 +419,12 @@ function stepPersonal() {
     `,
     `
       <div class="jobWizardFooterActions">
-        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">
-          Annulla
-        </button>
-
-        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button" disabled>
-          Avanti
-        </button>
+        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">Annulla</button>
+        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button" disabled>Avanti</button>
       </div>
     `
   );
 }
-
-/* =========================
-   Step 3-5 placeholders
-   ========================= */
 
 function stepWork() {
   return wizardFrame(
@@ -451,13 +436,8 @@ function stepWork() {
     `,
     `
       <div class="jobWizardFooterActions">
-        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">
-          Annulla
-        </button>
-
-        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button">
-          Avanti
-        </button>
+        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">Annulla</button>
+        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button">Avanti</button>
       </div>
     `
   );
@@ -473,13 +453,8 @@ function stepPay() {
     `,
     `
       <div class="jobWizardFooterActions">
-        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">
-          Annulla
-        </button>
-
-        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button">
-          Avanti
-        </button>
+        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">Annulla</button>
+        <button id="wizardNextBtn" class="jobProfilePrimaryBtn" type="button">Avanti</button>
       </div>
     `
   );
@@ -501,20 +476,15 @@ function stepReview() {
     `,
     `
       <div class="jobWizardFooterActions">
-        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">
-          Annulla
-        </button>
-
-        <button id="wizardSaveBtn" class="jobProfilePrimaryBtn" type="button">
-          Salva profilo
-        </button>
+        <button id="wizardCancelBtn" class="jobProfileSecondaryBtn" type="button">Annulla</button>
+        <button id="wizardSaveBtn" class="jobProfilePrimaryBtn" type="button">Salva profilo</button>
       </div>
     `
   );
 }
 
 /* =========================
-   Render wizard
+   Render
    ========================= */
 
 function renderWizard() {
@@ -531,7 +501,7 @@ function renderWizard() {
 }
 
 /* =========================
-   Wizard events
+   Events
    ========================= */
 
 function cancelWizard() {
@@ -557,7 +527,6 @@ function updateLegalButtonState() {
   const disc = document.getElementById("discCheck");
   const term = document.getElementById("termCheck");
   const btn = document.getElementById("wizardNextBtn");
-
   if (!faq || !disc || !term || !btn) return;
   btn.disabled = !(faq.checked && disc.checked && term.checked);
 }
@@ -568,7 +537,6 @@ function updatePersonalButtonState() {
   const birthDate = document.getElementById("birthDate");
   const gender = document.getElementById("gender");
   const btn = document.getElementById("wizardNextBtn");
-
   if (!firstName || !lastName || !birthDate || !gender || !btn) return;
 
   btn.disabled = !(
@@ -582,7 +550,6 @@ function updatePersonalButtonState() {
 function updateLiveAvatar(genderValue) {
   const avatar = document.getElementById("jobProfileAvatarPreview");
   if (!avatar) return;
-
   avatar.classList.remove("avatarMale", "avatarFemale", "avatarNeutral");
   avatar.classList.add(getAvatarVariant(genderValue));
 }
@@ -603,11 +570,9 @@ function openGenderMenu() {
   if (!menu || !trigger) return;
 
   menu.classList.remove("hidden");
-  requestAnimationFrame(() => {
-    menu.classList.add("isOpen");
-  });
-  menu.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => menu.classList.add("isOpen"));
   trigger.setAttribute("aria-expanded", "true");
+  menu.setAttribute("aria-hidden", "false");
 }
 
 function closeGenderMenu() {
@@ -629,18 +594,11 @@ function closeGenderMenu() {
 function toggleGenderMenu() {
   const menu = document.getElementById("genderMenu");
   if (!menu) return;
-
   if (menu.classList.contains("hidden")) {
     openGenderMenu();
-    return;
-  }
-
-  if (menu.classList.contains("isOpen")) {
+  } else {
     closeGenderMenu();
-    return;
   }
-
-  openGenderMenu();
 }
 
 function bindWizardEvents() {
@@ -728,7 +686,6 @@ function bindWizardEvents() {
       const menu = document.getElementById("genderMenu");
       const trigger = document.getElementById("genderDisplayBtn");
       if (!menu || !trigger) return;
-
       if (!menu.contains(ev.target) && !trigger.contains(ev.target)) {
         closeGenderMenu();
       }
