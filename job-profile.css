@@ -3,18 +3,25 @@
    ========================= */
 
 .jobProfileCard{
+  height:100%;
+  min-height:0;
   display:flex;
   flex-direction:column;
-  gap:16px;
-  min-height:100%;
+  gap:0;
 }
 
+/* =========================
+   Shared top bar
+   ========================= */
+
 .jobProfileTopBar{
+  flex:0 0 auto;
   display:grid;
   grid-template-columns:var(--xSize) 1fr var(--xSize);
   align-items:center;
   gap:12px;
   min-height:var(--xSize);
+  padding-bottom:12px;
 }
 
 .jobProfileTopSide{
@@ -60,18 +67,20 @@
 
 .isHiddenBtn{
   visibility:hidden;
+  pointer-events:none;
 }
 
 /* =========================
-   Main card
+   Main summary card
    ========================= */
 
 .jobProfileContent{
-  flex:1;
+  flex:1 1 auto;
+  min-height:0;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  min-height:0;
+  gap:16px;
 }
 
 .jobProfilePreviewCard{
@@ -168,8 +177,8 @@
 .jobProfilePrimaryBtn{
   border:1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(140% 220% at 25% 0%,rgba(255,255,255,.10),transparent 55%),
-    linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.05));
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
   color:var(--text);
   min-width:170px;
 }
@@ -194,18 +203,27 @@
 }
 
 /* =========================
-   Wizard shell
+   Wizard = day-editor pattern
    ========================= */
 
 .jobWizardShell{
-  display:grid;
-  grid-template-rows:auto auto 1fr auto;
-  min-height:100%;
+  height:100%;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.jobWizardTop{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:0;
 }
 
 .jobWizardStepBar{
+  flex:0 0 auto;
   height:8px;
-  margin-bottom:6px;
+  margin-bottom:12px;
   border-radius:999px;
   background:rgba(255,255,255,.08);
   overflow:hidden;
@@ -219,31 +237,35 @@
   transition:width .22s ease;
 }
 
-.jobWizardBody{
+.jobWizardScroll{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:auto;
+  padding-right:2px;
+}
+
+.jobWizardScrollInner{
   display:flex;
   flex-direction:column;
   gap:14px;
-  min-height:0;
-  overflow:auto;
-  padding-bottom:6px;
+  padding-bottom:14px;
 }
 
-.jobWizardFooterDock{
-  position:sticky;
-  bottom:0;
-  z-index:8;
-  padding-top:10px;
-  background:
-    linear-gradient(180deg, rgba(16,18,30,0) 0%, rgba(16,18,30,.22) 24%, rgba(16,18,30,.42) 100%);
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
+.jobWizardFooter{
+  flex:0 0 auto;
+  padding-top:12px;
 }
 
 .jobWizardFooterActions{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  display:grid;
+  grid-template-columns:1fr 1fr;
   gap:12px;
+}
+
+.jobWizardFooterActions .jobProfilePrimaryBtn,
+.jobWizardFooterActions .jobProfileSecondaryBtn{
+  width:100%;
+  min-width:0;
 }
 
 /* =========================
@@ -414,8 +436,8 @@
   border-radius:16px;
   border:1px solid rgba(255,255,255,.14);
   background:
-    radial-gradient(140% 220% at 25% 0%,rgba(255,255,255,.10),transparent 55%),
-    linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.05));
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
   color:var(--text);
   font-size:15px;
   font-weight:700;
@@ -451,7 +473,7 @@
   border-bottom:2px solid rgba(255,255,255,.88);
   transform:rotate(45deg) translateY(-2px);
   margin-right:4px;
-  transition:transform .16s ease;
+  transition:transform .18s ease;
 }
 
 #genderDisplayBtn[aria-expanded="true"] .jobWizardFieldChevron{
@@ -482,7 +504,7 @@
   -webkit-backdrop-filter:blur(12px);
   opacity:0;
   transform:translateY(-8px) scale(.985);
-  transition:opacity .16s ease, transform .16s ease;
+  transition:opacity .18s ease, transform .18s ease;
 }
 
 .jobWizardSelectMenu.isOpen{
