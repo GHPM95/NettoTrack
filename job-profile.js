@@ -62,6 +62,8 @@ const jobProfileState = {
   }
 };
 
+let jobProfileDraft = null;
+
 const jobProfileWizard = {
   step: 1,
   total: 5
@@ -78,6 +80,10 @@ function esc(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj));
 }
 
 function getMount() {
@@ -122,7 +128,11 @@ function prevWizard() {
   renderWizard();
 }
 
-function getAvatarVariant(genderValue = jobProfileState.userProfile.gender) {
+function currentProfileSource() {
+  return jobProfileDraft || jobProfileState;
+}
+
+function getAvatarVariant(genderValue = currentProfileSource().userProfile.gender) {
   const g = (genderValue || "").toLowerCase();
 
   if (g === "uomo") return "avatarMale";
@@ -130,7 +140,7 @@ function getAvatarVariant(genderValue = jobProfileState.userProfile.gender) {
   return "avatarNeutral";
 }
 
-function buildAvatarMarkup(genderValue = jobProfileState.userProfile.gender, id = "jobProfileAvatarPreview") {
+function buildAvatarMarkup(genderValue = currentProfileSource().userProfile.gender, id = "jobProfileAvatarPreview") {
   return `
     <div id="${id}" class="jobProfileAvatar ${getAvatarVariant(genderValue)}">
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -198,7 +208,7 @@ function renderMainCard() {
       <div class="jobProfileContent">
         <div class="jobProfilePreviewCard">
           <div class="jobProfilePreviewAvatarBox">
-            ${buildAvatarMarkup()}
+            ${buildAvatarMarkup(u.gender, "jobProfileSummaryAvatar")}
           </div>
 
           <div class="jobProfilePreviewInfo">
@@ -226,7 +236,6 @@ function renderMainCard() {
 
   document.getElementById("jobProfileSetupBtn")?.addEventListener("click", startWizard);
   document.getElementById("jobProfileCloseBtn")?.addEventListener("click", () => {
-    saveJobProfile();
     document.dispatchEvent(new Event("nettotrack:closeJobProfile"));
   });
 }
@@ -260,7 +269,7 @@ function wizardFrame(title, inner, footer = "") {
         ${inner}
       </div>
 
-      ${footer ? `<div class="jobWizardFooterOutside">${footer}</div>` : ""}
+      ${footer ? `<div class="jobWizardFooterDock">${footer}</div>` : ""}
     </section>
   `;
 }
@@ -270,7 +279,7 @@ function wizardFrame(title, inner, footer = "") {
    ========================= */
 
 function stepLegal() {
-  const legal = jobProfileState.legalAcceptance;
+  const legal = currentProfileSource().legalAcceptance;
 
   return wizardFrame(
     "Profilo utente",
@@ -351,7 +360,7 @@ function stepLegal() {
    ========================= */
 
 function stepPersonal() {
-  const u = jobProfileState.userProfile;
+  const u = currentProfileSource().userProfile;
 
   return wizardFrame(
     "Dati personali",
@@ -389,16 +398,13 @@ function stepPersonal() {
           </button>
 
           <input id="birthDate" class="jobWizardHiddenNativeField" type="date" value="${esc(u.birthDate)}">
-          <button id="birthDateResetBtn" class="jobWizardTinyResetBtn ${u.birthDate ? "" : "hidden"}" type="button">
-            Ripristina
-          </button>
 
-          <button id="genderDisplayBtn" class="jobWizardActionField" type="button">
+          <button id="genderDisplayBtn" class="jobWizardActionField" type="button" aria-expanded="false">
             <span id="genderDisplayLabel">${esc(formatGenderLabel(u.gender))}</span>
             <span class="jobWizardFieldChevron"></span>
           </button>
 
-          <div id="genderMenu" class="jobWizardSelectMenu hidden">
+          <div id="genderMenu" class="jobWizardSelectMenu hidden" aria-hidden="true">
             <button class="jobWizardSelectItem" type="button" data-gender-value="uomo">Uomo</button>
             <button class="jobWizardSelectItem" type="button" data-gender-value="donna">Donna</button>
             <button class="jobWizardSelectItem" type="button" data-gender-value="non specificato">Non specificato</button>
@@ -471,15 +477,17 @@ function stepPay() {
 }
 
 function stepReview() {
+  const draft = currentProfileSource();
+
   return wizardFrame(
     "Revisione",
     `
       <div class="reviewSection">
         <strong>Dati personali</strong><br>
-        Nome: ${esc(jobProfileState.userProfile.firstName || "-")}<br>
-        Cognome: ${esc(jobProfileState.userProfile.lastName || "-")}<br>
-        Data di nascita: ${esc(formatBirthLabel(jobProfileState.userProfile.birthDate) || "-")}<br>
-        Sesso: ${esc(formatGenderLabel(jobProfileState.userProfile.gender) || "-")}
+        Nome: ${esc(draft.userProfile.firstName || "-")}<br>
+        Cognome: ${esc(draft.userProfile.lastName || "-")}<br>
+        Data di nascita: ${esc(formatBirthLabel(draft.userProfile.birthDate) || "-")}<br>
+        Sesso: ${esc(formatGenderLabel(draft.userProfile.gender) || "-")}
       </div>
     `,
     `
@@ -517,8 +525,22 @@ function renderWizard() {
    Wizard events
    ========================= */
 
-function backToSummaryCard() {
+function cancelWizard() {
+  jobProfileDraft = null;
+  resetWizard();
   renderMainCard();
+}
+
+function commitDraftToState() {
+  if (!jobProfileDraft) return;
+
+  Object.assign(jobProfileState.userProfile, jobProfileDraft.userProfile);
+  Object.assign(jobProfileState.addressProfile, jobProfileDraft.addressProfile);
+  Object.assign(jobProfileState.jobProfile, jobProfileDraft.jobProfile);
+  Object.assign(jobProfileState.payProfile, jobProfileDraft.payProfile);
+  Object.assign(jobProfileState.payRules, jobProfileDraft.payRules);
+  Object.assign(jobProfileState.legalAcceptance, jobProfileDraft.legalAcceptance);
+  Object.assign(jobProfileState.profileMeta, jobProfileDraft.profileMeta);
 }
 
 function updateLegalButtonState() {
@@ -558,9 +580,7 @@ function updateLiveAvatar(genderValue) {
 
 function updateBirthDateLabel(value) {
   const label = document.getElementById("birthDateDisplayLabel");
-  const resetBtn = document.getElementById("birthDateResetBtn");
   if (label) label.textContent = formatBirthLabel(value);
-  if (resetBtn) resetBtn.classList.toggle("hidden", !value);
 }
 
 function updateGenderLabel(value) {
@@ -568,13 +588,55 @@ function updateGenderLabel(value) {
   if (label) label.textContent = formatGenderLabel(value);
 }
 
+function openGenderMenu() {
+  const menu = document.getElementById("genderMenu");
+  const trigger = document.getElementById("genderDisplayBtn");
+  if (!menu || !trigger) return;
+
+  menu.classList.remove("hidden");
+  requestAnimationFrame(() => {
+    menu.classList.add("isOpen");
+  });
+  menu.setAttribute("aria-hidden", "false");
+  trigger.setAttribute("aria-expanded", "true");
+}
+
 function closeGenderMenu() {
-  document.getElementById("genderMenu")?.classList.add("hidden");
+  const menu = document.getElementById("genderMenu");
+  const trigger = document.getElementById("genderDisplayBtn");
+  if (!menu || !trigger) return;
+
+  menu.classList.remove("isOpen");
+  trigger.setAttribute("aria-expanded", "false");
+  menu.setAttribute("aria-hidden", "true");
+
+  setTimeout(() => {
+    if (!menu.classList.contains("isOpen")) {
+      menu.classList.add("hidden");
+    }
+  }, 160);
+}
+
+function toggleGenderMenu() {
+  const menu = document.getElementById("genderMenu");
+  if (!menu) return;
+
+  if (menu.classList.contains("hidden")) {
+    openGenderMenu();
+    return;
+  }
+
+  if (menu.classList.contains("isOpen")) {
+    closeGenderMenu();
+    return;
+  }
+
+  openGenderMenu();
 }
 
 function bindWizardEvents() {
   document.getElementById("wizardCloseBtn")?.addEventListener("click", () => {
-    saveJobProfile();
+    cancelWizard();
     document.dispatchEvent(new Event("nettotrack:closeJobProfile"));
   });
 
@@ -583,7 +645,7 @@ function bindWizardEvents() {
   });
 
   document.getElementById("wizardCancelBtn")?.addEventListener("click", () => {
-    backToSummaryCard();
+    cancelWizard();
   });
 
   if (jobProfileWizard.step === 1) {
@@ -594,9 +656,9 @@ function bindWizardEvents() {
 
     [faq, disc, term].forEach((el) => {
       el?.addEventListener("change", () => {
-        jobProfileState.legalAcceptance.faq = !!faq?.checked;
-        jobProfileState.legalAcceptance.disclaimer = !!disc?.checked;
-        jobProfileState.legalAcceptance.terms = !!term?.checked;
+        jobProfileDraft.legalAcceptance.faq = !!faq?.checked;
+        jobProfileDraft.legalAcceptance.disclaimer = !!disc?.checked;
+        jobProfileDraft.legalAcceptance.terms = !!term?.checked;
         updateLegalButtonState();
       });
     });
@@ -604,7 +666,6 @@ function bindWizardEvents() {
     updateLegalButtonState();
 
     btn?.addEventListener("click", () => {
-      saveJobProfile();
       nextWizard();
     });
   }
@@ -614,13 +675,16 @@ function bindWizardEvents() {
     const lastName = document.getElementById("lastName");
     const birthDate = document.getElementById("birthDate");
     const birthDateDisplayBtn = document.getElementById("birthDateDisplayBtn");
-    const birthDateResetBtn = document.getElementById("birthDateResetBtn");
     const gender = document.getElementById("gender");
     const genderDisplayBtn = document.getElementById("genderDisplayBtn");
     const btn = document.getElementById("wizardNextBtn");
 
     [firstName, lastName].forEach((el) => {
-      el?.addEventListener("input", updatePersonalButtonState);
+      el?.addEventListener("input", () => {
+        jobProfileDraft.userProfile.firstName = firstName?.value.trim() || "";
+        jobProfileDraft.userProfile.lastName = lastName?.value.trim() || "";
+        updatePersonalButtonState();
+      });
     });
 
     birthDateDisplayBtn?.addEventListener("click", () => {
@@ -630,29 +694,35 @@ function bindWizardEvents() {
     });
 
     birthDate?.addEventListener("change", () => {
+      jobProfileDraft.userProfile.birthDate = birthDate.value || "";
       updateBirthDateLabel(birthDate.value);
       updatePersonalButtonState();
     });
 
-    birthDateResetBtn?.addEventListener("click", () => {
-      birthDate.value = "";
-      updateBirthDateLabel("");
-      updatePersonalButtonState();
-    });
-
     genderDisplayBtn?.addEventListener("click", () => {
-      document.getElementById("genderMenu")?.classList.toggle("hidden");
+      toggleGenderMenu();
     });
 
     document.querySelectorAll("[data-gender-value]").forEach((item) => {
       item.addEventListener("click", () => {
         const value = item.dataset.genderValue || "";
         gender.value = value;
+        jobProfileDraft.userProfile.gender = value;
         updateGenderLabel(value);
         updateLiveAvatar(value);
         closeGenderMenu();
         updatePersonalButtonState();
       });
+    });
+
+    document.addEventListener("click", (ev) => {
+      const menu = document.getElementById("genderMenu");
+      const trigger = document.getElementById("genderDisplayBtn");
+      if (!menu || !trigger) return;
+
+      if (!menu.contains(ev.target) && !trigger.contains(ev.target)) {
+        closeGenderMenu();
+      }
     });
 
     updateBirthDateLabel(birthDate?.value || "");
@@ -661,12 +731,6 @@ function bindWizardEvents() {
     updatePersonalButtonState();
 
     btn?.addEventListener("click", () => {
-      jobProfileState.userProfile.firstName = firstName?.value.trim() || "";
-      jobProfileState.userProfile.lastName = lastName?.value.trim() || "";
-      jobProfileState.userProfile.birthDate = birthDate?.value || "";
-      jobProfileState.userProfile.gender = gender?.value || "";
-
-      saveJobProfile();
       nextWizard();
     });
   }
@@ -679,8 +743,11 @@ function bindWizardEvents() {
 
   if (jobProfileWizard.step === 5) {
     document.getElementById("wizardSaveBtn")?.addEventListener("click", () => {
-      jobProfileState.profileMeta.setupCompleted = true;
+      jobProfileDraft.profileMeta.setupCompleted = true;
+      commitDraftToState();
       saveJobProfile();
+      jobProfileDraft = null;
+      resetWizard();
       renderMainCard();
     });
   }
@@ -691,6 +758,13 @@ function bindWizardEvents() {
    ========================= */
 
 function startWizard() {
+  jobProfileDraft = deepClone(jobProfileState);
+  jobProfileDraft.legalAcceptance = {
+    faq: false,
+    disclaimer: false,
+    terms: false,
+    scroll: false
+  };
   resetWizard();
   renderWizard();
 }
