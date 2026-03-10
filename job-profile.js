@@ -3,527 +3,602 @@
    ========================= */
 
 const jobProfileState = {
-
-  userProfile:{
-    firstName:"",
-    lastName:"",
-    birthDate:"",
-    gender:""
+  userProfile: {
+    firstName: "",
+    lastName: "",
+    birthDate: "",
+    gender: ""
   },
 
-  addressProfile:{
-    country:"",
-    region:"",
-    province:"",
-    municipality:"",
-    zipCode:"",
-    street:"",
-    streetNumber:""
+  addressProfile: {
+    country: "",
+    region: "",
+    province: "",
+    municipality: "",
+    zipCode: "",
+    street: "",
+    streetNumber: ""
   },
 
-  jobProfile:{
-    companyName:"",
-    companyAddress:"",
-    contractType:"",
-    appliedContract:"",
-    level:"",
-    role:"",
-    hireDate:"",
-    workType:"",
-    weeklyHours:"",
-    salaryMonths:"13"
+  jobProfile: {
+    companyName: "",
+    companyAddress: "",
+    contractType: "",
+    appliedContract: "",
+    level: "",
+    role: "",
+    hireDate: "",
+    workType: "",
+    weeklyHours: "",
+    salaryMonths: "13"
   },
 
-  payProfile:{
-    netMonthly:"",
-    grossMonthly:"",
-    hourlyRate:"",
-    inputMode:""
+  payProfile: {
+    netMonthly: "",
+    grossMonthly: "",
+    hourlyRate: "",
+    inputMode: ""
   },
 
-  payRules:{
-    holidayEnabled:false,
-    holidayValue:"",
-    sundayEnabled:false,
-    sundayValue:"",
-    nightEnabled:false,
-    nightValue:""
+  payRules: {
+    holidayEnabled: false,
+    holidayValue: "",
+    sundayEnabled: false,
+    sundayValue: "",
+    nightEnabled: false,
+    nightValue: ""
   },
 
-  legalAcceptance:{
-    faq:false,
-    disclaimer:false,
-    terms:false,
-    scroll:false
+  legalAcceptance: {
+    faq: false,
+    disclaimer: false,
+    terms: false,
+    scroll: false
   },
 
-  profileMeta:{
-    setupCompleted:false,
-    lastUpdatedAt:null
+  profileMeta: {
+    setupCompleted: false,
+    lastUpdatedAt: null
   }
-
 };
-
 
 const jobProfileWizard = {
-  step:1,
-  total:5
+  step: 1,
+  total: 5
 };
 
-
 /* =========================
-   utils
-========================= */
+   Utils
+   ========================= */
 
-function esc(v){
-  return String(v ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;");
+function esc(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
-function getMount(){
+function getMount() {
   return document.getElementById("jobProfileMount");
 }
 
-function saveJobProfile(){
-  jobProfileState.profileMeta.lastUpdatedAt=new Date().toISOString();
-  localStorage.setItem("nt_jobProfile",JSON.stringify(jobProfileState));
+function saveJobProfile() {
+  jobProfileState.profileMeta.lastUpdatedAt = new Date().toISOString();
+  localStorage.setItem("nt_jobProfile", JSON.stringify(jobProfileState));
 }
 
-function loadJobProfile(){
+function loadJobProfile() {
+  const raw = localStorage.getItem("nt_jobProfile");
+  if (!raw) return;
 
-  const raw=localStorage.getItem("nt_jobProfile");
-  if(!raw) return;
+  try {
+    const parsed = JSON.parse(raw);
 
-  try{
-
-    const parsed=JSON.parse(raw);
-
-    Object.assign(jobProfileState,parsed);
-
-  }catch(e){
-    console.warn("job profile load error");
+    if (parsed.userProfile) Object.assign(jobProfileState.userProfile, parsed.userProfile);
+    if (parsed.addressProfile) Object.assign(jobProfileState.addressProfile, parsed.addressProfile);
+    if (parsed.jobProfile) Object.assign(jobProfileState.jobProfile, parsed.jobProfile);
+    if (parsed.payProfile) Object.assign(jobProfileState.payProfile, parsed.payProfile);
+    if (parsed.payRules) Object.assign(jobProfileState.payRules, parsed.payRules);
+    if (parsed.legalAcceptance) Object.assign(jobProfileState.legalAcceptance, parsed.legalAcceptance);
+    if (parsed.profileMeta) Object.assign(jobProfileState.profileMeta, parsed.profileMeta);
+  } catch (error) {
+    console.warn("NettoTrack job profile load error:", error);
   }
-
 }
 
-
-function resetWizard(){
-  jobProfileWizard.step=1;
+function resetWizard() {
+  jobProfileWizard.step = 1;
 }
 
-
-function nextWizard(){
-  jobProfileWizard.step++;
+function nextWizard() {
+  jobProfileWizard.step = Math.min(jobProfileWizard.total, jobProfileWizard.step + 1);
   renderWizard();
 }
 
-function prevWizard(){
-  jobProfileWizard.step--;
+function prevWizard() {
+  jobProfileWizard.step = Math.max(1, jobProfileWizard.step - 1);
   renderWizard();
 }
 
+function getAvatarVariant() {
+  const g = (jobProfileState.userProfile.gender || "").toLowerCase();
 
-/* =========================
-   avatar
-========================= */
-
-function avatarClass(){
-
-  const g=jobProfileState.userProfile.gender;
-
-  if(g==="uomo") return "avatarMale";
-  if(g==="donna") return "avatarFemale";
+  if (g === "uomo") return "avatarMale";
+  if (g === "donna") return "avatarFemale";
 
   return "avatarNeutral";
-
 }
 
+function buildAvatarMarkup() {
+  return `
+    <div id="jobProfileAvatarPreview" class="jobProfileAvatar ${getAvatarVariant()}">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="8" r="4" stroke="white" stroke-width="2"/>
+        <path d="M4 20c2-4 6-6 8-6s6 2 8 6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+  `;
+}
 
 /* =========================
-   main card
-========================= */
+   Main card
+   ========================= */
 
-function renderMainCard(){
+function renderMainCard() {
+  const mount = getMount();
+  if (!mount) return;
 
-  const mount=getMount();
-  if(!mount) return;
+  const u = jobProfileState.userProfile;
+  const a = jobProfileState.addressProfile;
+  const j = jobProfileState.jobProfile;
 
-  mount.innerHTML=`
+  const name = u.firstName ? `Nome: ${u.firstName}` : "Nome:";
+  const lastName = u.lastName ? `Cognome: ${u.lastName}` : "Cognome:";
+  const gender = u.gender ? `Sesso: ${u.gender}` : "Sesso:";
+  const birthDate = u.birthDate ? `Data di nascita: ${u.birthDate}` : "Data di nascita:";
+  const country = a.country ? `Paese: ${a.country}` : "Paese:";
+  const role = j.role ? `Occupazione: ${j.role}` : "Occupazione:";
 
-<section class="jobProfileCard">
+  mount.innerHTML = `
+    <section class="jobProfileCard">
+      <header class="jobProfileTopBar">
+        <div class="jobProfileTopSide"></div>
 
-<header class="jobProfileTopBar">
+        <div class="jobProfileTopTitleWrap">
+          <h2 class="jobProfileTopTitle">Profilo utente</h2>
+        </div>
 
-<div class="jobProfileTopSide"></div>
+        <button id="jobProfileCloseBtn" class="jobProfileCloseBtn" type="button" aria-label="Chiudi">
+          ✕
+        </button>
+      </header>
 
-<div class="jobProfileTopTitleWrap">
-<h2 class="jobProfileTopTitle">Profilo utente</h2>
-</div>
+      <div class="jobProfileContent">
+        <div class="jobProfilePreviewCard">
+          <div class="jobProfilePreviewAvatarBox">
+            ${buildAvatarMarkup()}
+          </div>
 
-<button id="jobProfileCloseBtn"
-class="jobProfileCloseBtn">✕</button>
+          <div class="jobProfilePreviewInfo">
+            <div class="jobProfilePreviewRow">${esc(name)}</div>
+            <div class="jobProfilePreviewRow">${esc(lastName)}</div>
+            <div class="jobProfilePreviewRow">${esc(gender)}</div>
+            <div class="jobProfilePreviewRow">${esc(birthDate)}</div>
+            <div class="jobProfilePreviewRow">${esc(country)}</div>
+            <div class="jobProfilePreviewRow">${esc(role)}</div>
+          </div>
+        </div>
 
-</header>
+        <div class="jobProfileEmptyBottom">
+          <div class="jobProfileEmptyCaption">
+            Configura il tuo profilo personale e lavorativo.
+          </div>
 
+          <button id="jobProfileSetupBtn" class="jobProfilePrimaryBtn" type="button">
+            Crea profilo
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
 
-<div class="jobProfileContent">
-
-<div class="jobProfilePreviewCard">
-
-<div class="jobProfilePreviewAvatarBox">
-
-<div class="jobProfileAvatar ${avatarClass()}">
-
-<svg viewBox="0 0 24 24">
-
-<circle cx="12" cy="8" r="4"
-stroke="white"
-stroke-width="2"
-fill="none"/>
-
-<path d="M4 20c2-4 6-6 8-6s6 2 8 6"
-stroke="white"
-stroke-width="2"
-stroke-linecap="round"
-fill="none"/>
-
-</svg>
-
-</div>
-
-</div>
-
-
-<div class="jobProfilePreviewInfo">
-
-<div class="jobProfilePreviewRow">Nome:</div>
-<div class="jobProfilePreviewRow">Cognome:</div>
-<div class="jobProfilePreviewRow">Sesso:</div>
-<div class="jobProfilePreviewRow">Data di nascita:</div>
-<div class="jobProfilePreviewRow">Paese:</div>
-<div class="jobProfilePreviewRow">Occupazione:</div>
-
-</div>
-
-</div>
-
-
-<div class="jobProfileEmptyBottom">
-
-<div class="jobProfileEmptyCaption">
-Configura il tuo profilo personale e lavorativo.
-</div>
-
-<button id="jobProfileSetupBtn"
-class="jobProfilePrimaryBtn">
-
-Crea profilo
-
-</button>
-
-</div>
-
-</div>
-
-</section>
-
-`;
-
-document
-.getElementById("jobProfileSetupBtn")
-.addEventListener("click",startWizard);
-
+  document.getElementById("jobProfileSetupBtn")?.addEventListener("click", startWizard);
+  document.getElementById("jobProfileCloseBtn")?.addEventListener("click", () => {
+    saveJobProfile();
+    document.dispatchEvent(new Event("nettotrack:closeJobProfile"));
+  });
 }
-
 
 /* =========================
-   wizard frame
-========================= */
+   Wizard shell
+   ========================= */
 
-function wizardFrame(inner,title){
+function wizardFrame(title, inner, bottomBar = "") {
+  return `
+    <section class="jobProfileCard jobWizardShell">
+      <header class="jobProfileTopBar">
+        <button id="wizardBackBtn" class="jobProfileCloseBtn ${jobProfileWizard.step === 1 ? "isHiddenBtn" : ""}" type="button" aria-label="Indietro">
+          ‹
+        </button>
 
-return `
+        <div class="jobProfileTopTitleWrap">
+          <h2 class="jobProfileTopTitle">${esc(title)}</h2>
+        </div>
 
-<section class="jobProfileCard">
+        <button id="wizardCloseBtn" class="jobProfileCloseBtn" type="button" aria-label="Chiudi">
+          ✕
+        </button>
+      </header>
 
-<header class="jobProfileTopBar">
+      <div class="jobWizardStepBar">
+        <div class="jobWizardStepFill" style="width:${(jobProfileWizard.step / jobProfileWizard.total) * 100}%"></div>
+      </div>
 
-<button id="wizardBackBtn"
-class="jobProfileCloseBtn
-${jobProfileWizard.step===1?"isHiddenBtn":""}">
-‹
-</button>
+      <div class="jobWizardBody">
+        ${inner}
+      </div>
 
-<div class="jobProfileTopTitleWrap">
-<h2 class="jobProfileTopTitle">${title}</h2>
-</div>
-
-<button id="wizardCloseBtn"
-class="jobProfileCloseBtn">✕</button>
-
-</header>
-
-
-<div class="jobWizardStepBar">
-
-<div class="jobWizardStepFill"
-style="width:${jobProfileWizard.step/jobProfileWizard.total*100}%">
-</div>
-
-</div>
-
-
-<div class="jobWizardBody">
-
-${inner}
-
-</div>
-
-</section>
-
-`;
-
+      ${bottomBar ? `<div class="jobWizardBottomBar">${bottomBar}</div>` : ""}
+    </section>
+  `;
 }
-
 
 /* =========================
-   step 1 legal
-========================= */
+   Step 1 - Legal
+   ========================= */
 
-function stepLegal(){
+function stepLegal() {
+  const legal = jobProfileState.legalAcceptance;
 
-return wizardFrame(`
+  return wizardFrame(
+    "Profilo utente",
+    `
+      <div class="jobWizardIntro">
+        <div class="jobWizardSub">Leggi tutto prima di proseguire</div>
+      </div>
 
-<div id="wizardLegalScroll"
-class="jobWizardLegalBox">
+      <div id="wizardLegalScroll" class="jobWizardLegalBox">
+        <div class="jobWizardTextBlock">
+          <h3 class="jobWizardSmallTitle">FAQ</h3>
+          <p>NettoTrack utilizza i dati inseriti dall’utente per creare stime e simulazioni.</p>
+          <p>I risultati possono essere indicativi e potrebbero non coincidere con la busta paga reale.</p>
 
-<p>NettoTrack fornisce stime e simulazioni informative.</p>
-<p>I risultati possono differire dai dati ufficiali della busta paga.</p>
+          <h3 class="jobWizardSmallTitle">Disclaimer</h3>
+          <p>L'app non sostituisce consulenza fiscale, contabile o del lavoro.</p>
+          <p>L’utente deve sempre verificare i dati inseriti e i risultati ottenuti.</p>
 
-<p>L'app non sostituisce consulenza fiscale o del lavoro.</p>
+          <h3 class="jobWizardSmallTitle">Termini di utilizzo</h3>
+          <p>Proseguendo confermi di aver letto le informazioni legali e di utilizzare NettoTrack come strumento informativo personale.</p>
+        </div>
+      </div>
 
-<p>Verifica sempre i dati inseriti prima di utilizzarli.</p>
+      <div class="jobWizardLegalChecks">
+        <label class="jobWizardLegalRow">
+          <span class="jobWizardCheckWrap">
+            <input id="faqCheck" class="jobWizardHiddenCheck" type="checkbox" ${legal.faq ? "checked" : ""}>
+            <span class="jobWizardCheckUi"></span>
+          </span>
 
-</div>
+          <span class="jobWizardLegalText">
+            <span class="jobWizardLegalTitle">FAQ</span>
+            <span class="jobWizardLegalDesc">Ho letto le FAQ.</span>
+          </span>
+        </label>
 
+        <label class="jobWizardLegalRow">
+          <span class="jobWizardCheckWrap">
+            <input id="discCheck" class="jobWizardHiddenCheck" type="checkbox" ${legal.disclaimer ? "checked" : ""}>
+            <span class="jobWizardCheckUi"></span>
+          </span>
 
-<div class="jobWizardLegalChecks">
+          <span class="jobWizardLegalText">
+            <span class="jobWizardLegalTitle">Disclaimer</span>
+            <span class="jobWizardLegalDesc">Ho letto il disclaimer.</span>
+          </span>
+        </label>
 
-<label class="jobWizardLegalRow">
+        <label class="jobWizardLegalRow">
+          <span class="jobWizardCheckWrap">
+            <input id="termCheck" class="jobWizardHiddenCheck" type="checkbox" ${legal.terms ? "checked" : ""}>
+            <span class="jobWizardCheckUi"></span>
+          </span>
 
-<input id="faqCheck"
-type="checkbox">
-
-<span>Ho letto le FAQ</span>
-
-</label>
-
-<label class="jobWizardLegalRow">
-
-<input id="discCheck"
-type="checkbox">
-
-<span>Ho letto il disclaimer</span>
-
-</label>
-
-<label class="jobWizardLegalRow">
-
-<input id="termCheck"
-type="checkbox">
-
-<span>Accetto i termini</span>
-
-</label>
-
-</div>
-
-
-<button id="wizardNextBtn"
-class="jobProfilePrimaryBtn"
-disabled>
-
-Continua
-
-</button>
-
-`,"Profilo utente");
-
+          <span class="jobWizardLegalText">
+            <span class="jobWizardLegalTitle">Termini di utilizzo</span>
+            <span class="jobWizardLegalDesc">Accetto i termini di utilizzo.</span>
+          </span>
+        </label>
+      </div>
+    `,
+    `
+      <button id="wizardNextBtn" class="jobProfilePrimaryBtn wizardMainBtn" type="button" disabled>
+        Continua
+      </button>
+    `
+  );
 }
-
 
 /* =========================
-   step 2 personal data
-========================= */
+   Step 2 - Personal data
+   ========================= */
 
-function stepPersonal(){
+function stepPersonal() {
+  const u = jobProfileState.userProfile;
 
-return wizardFrame(`
+  return wizardFrame(
+    "Dati personali",
+    `
+      <div class="jobWizardFields">
+        <div class="jobWizardRowTwo">
+          <input
+            id="firstName"
+            class="jobWizardInput"
+            type="text"
+            placeholder="Nome"
+            value="${esc(u.firstName)}"
+            autocomplete="given-name"
+          >
 
-<div class="jobWizardFields">
+          <input
+            id="lastName"
+            class="jobWizardInput"
+            type="text"
+            placeholder="Cognome"
+            value="${esc(u.lastName)}"
+            autocomplete="family-name"
+          >
+        </div>
 
-<input id="firstName"
-class="jobWizardInput"
-placeholder="Nome">
+        <div class="jobWizardCompactWrap">
+          <input
+            id="birthDate"
+            class="jobWizardInput jobWizardCompactInput"
+            type="date"
+            value="${esc(u.birthDate)}"
+          >
+        </div>
 
-<input id="lastName"
-class="jobWizardInput"
-placeholder="Cognome">
+        <div class="jobWizardCompactWrap">
+          <select id="gender" class="jobWizardInput jobWizardCompactInput">
+            <option value="">Sesso</option>
+            <option value="uomo" ${u.gender === "uomo" ? "selected" : ""}>Uomo</option>
+            <option value="donna" ${u.gender === "donna" ? "selected" : ""}>Donna</option>
+          </select>
+        </div>
 
-<input id="birthDate"
-class="jobWizardInput"
-type="date">
-
-<select id="gender"
-class="jobWizardInput">
-
-<option value="">Sesso</option>
-<option value="uomo">Uomo</option>
-<option value="donna">Donna</option>
-
-</select>
-
-</div>
-
-
-<button id="wizardNextBtn"
-class="jobProfilePrimaryBtn"
-disabled>
-
-Continua
-
-</button>
-
-`,"Dati personali");
-
+        <div class="jobWizardAvatarLiveBox">
+          ${buildAvatarMarkup()}
+        </div>
+      </div>
+    `,
+    `
+      <button id="wizardNextBtn" class="jobProfilePrimaryBtn wizardMainBtn" type="button" disabled>
+        Continua
+      </button>
+    `
+  );
 }
-
 
 /* =========================
-   wizard render
-========================= */
+   Step 3-5 placeholders
+   ========================= */
 
-function renderWizard(){
-
-const mount=getMount();
-
-if(!mount) return;
-
-if(jobProfileWizard.step===1)
-mount.innerHTML=stepLegal();
-
-if(jobProfileWizard.step===2)
-mount.innerHTML=stepPersonal();
-
-bindWizardEvents();
-
+function stepWork() {
+  return wizardFrame(
+    "Dati lavoro",
+    `
+      <div class="jobWizardIntro">
+        <div class="jobWizardSub">Prossimo step: struttura dati lavoro.</div>
+      </div>
+    `,
+    `
+      <button id="wizardNextBtn" class="jobProfilePrimaryBtn wizardMainBtn" type="button">
+        Continua
+      </button>
+    `
+  );
 }
 
+function stepPay() {
+  return wizardFrame(
+    "Retribuzione",
+    `
+      <div class="jobWizardIntro">
+        <div class="jobWizardSub">Prossimo step: struttura retribuzione.</div>
+      </div>
+    `,
+    `
+      <button id="wizardNextBtn" class="jobProfilePrimaryBtn wizardMainBtn" type="button">
+        Continua
+      </button>
+    `
+  );
+}
+
+function stepReview() {
+  return wizardFrame(
+    "Revisione",
+    `
+      <div class="reviewSection">
+        <strong>Dati personali</strong><br>
+        Nome: ${esc(jobProfileState.userProfile.firstName || "-")}<br>
+        Cognome: ${esc(jobProfileState.userProfile.lastName || "-")}<br>
+        Data di nascita: ${esc(jobProfileState.userProfile.birthDate || "-")}<br>
+        Sesso: ${esc(jobProfileState.userProfile.gender || "-")}
+      </div>
+    `,
+    `
+      <button id="wizardSaveBtn" class="jobProfilePrimaryBtn wizardMainBtn" type="button">
+        Salva profilo
+      </button>
+    `
+  );
+}
 
 /* =========================
-   events
-========================= */
+   Render wizard
+   ========================= */
 
-function bindWizardEvents(){
+function renderWizard() {
+  const mount = getMount();
+  if (!mount) return;
 
-document
-.getElementById("wizardCloseBtn")
-?.addEventListener("click",renderMainCard);
+  if (jobProfileWizard.step === 1) mount.innerHTML = stepLegal();
+  if (jobProfileWizard.step === 2) mount.innerHTML = stepPersonal();
+  if (jobProfileWizard.step === 3) mount.innerHTML = stepWork();
+  if (jobProfileWizard.step === 4) mount.innerHTML = stepPay();
+  if (jobProfileWizard.step === 5) mount.innerHTML = stepReview();
 
-document
-.getElementById("wizardBackBtn")
-?.addEventListener("click",prevWizard);
-
-if(jobProfileWizard.step===1){
-
-const faq=document.getElementById("faqCheck");
-const dis=document.getElementById("discCheck");
-const ter=document.getElementById("termCheck");
-const btn=document.getElementById("wizardNextBtn");
-
-function check(){
-
-btn.disabled=!(
-faq.checked &&
-dis.checked &&
-ter.checked
-);
-
+  bindWizardEvents();
 }
-
-faq.onchange=check;
-dis.onchange=check;
-ter.onchange=check;
-
-btn.onclick=nextWizard;
-
-}
-
-
-if(jobProfileWizard.step===2){
-
-const name=document.getElementById("firstName");
-const last=document.getElementById("lastName");
-const birth=document.getElementById("birthDate");
-const gender=document.getElementById("gender");
-
-const btn=document.getElementById("wizardNextBtn");
-
-function check(){
-
-btn.disabled=!(
-name.value &&
-last.value &&
-birth.value &&
-gender.value
-);
-
-}
-
-name.oninput=check;
-last.oninput=check;
-birth.oninput=check;
-gender.onchange=check;
-
-btn.onclick=()=>{
-
-jobProfileState.userProfile.firstName=name.value;
-jobProfileState.userProfile.lastName=last.value;
-jobProfileState.userProfile.birthDate=birth.value;
-jobProfileState.userProfile.gender=gender.value;
-
-saveJobProfile();
-
-nextWizard();
-
-};
-
-}
-
-}
-
 
 /* =========================
-   start wizard
-========================= */
+   Wizard events
+   ========================= */
 
-function startWizard(){
+function updateLegalButtonState() {
+  const faq = document.getElementById("faqCheck");
+  const disc = document.getElementById("discCheck");
+  const term = document.getElementById("termCheck");
+  const btn = document.getElementById("wizardNextBtn");
 
-resetWizard();
-renderWizard();
+  if (!faq || !disc || !term || !btn) return;
 
+  btn.disabled = !(faq.checked && disc.checked && term.checked);
 }
 
+function updatePersonalButtonState() {
+  const firstName = document.getElementById("firstName");
+  const lastName = document.getElementById("lastName");
+  const birthDate = document.getElementById("birthDate");
+  const gender = document.getElementById("gender");
+  const btn = document.getElementById("wizardNextBtn");
+
+  if (!firstName || !lastName || !birthDate || !gender || !btn) return;
+
+  btn.disabled = !(
+    firstName.value.trim() &&
+    lastName.value.trim() &&
+    birthDate.value &&
+    gender.value
+  );
+}
+
+function updateLiveAvatar() {
+  const gender = document.getElementById("gender");
+  const avatar = document.getElementById("jobProfileAvatarPreview");
+  if (!gender || !avatar) return;
+
+  avatar.classList.remove("avatarMale", "avatarFemale", "avatarNeutral");
+
+  if (gender.value === "uomo") {
+    avatar.classList.add("avatarMale");
+    return;
+  }
+
+  if (gender.value === "donna") {
+    avatar.classList.add("avatarFemale");
+    return;
+  }
+
+  avatar.classList.add("avatarNeutral");
+}
+
+function bindWizardEvents() {
+  document.getElementById("wizardCloseBtn")?.addEventListener("click", () => {
+    saveJobProfile();
+    document.dispatchEvent(new Event("nettotrack:closeJobProfile"));
+  });
+
+  document.getElementById("wizardBackBtn")?.addEventListener("click", () => {
+    prevWizard();
+  });
+
+  if (jobProfileWizard.step === 1) {
+    const faq = document.getElementById("faqCheck");
+    const disc = document.getElementById("discCheck");
+    const term = document.getElementById("termCheck");
+    const btn = document.getElementById("wizardNextBtn");
+
+    [faq, disc, term].forEach((el) => {
+      el?.addEventListener("change", () => {
+        jobProfileState.legalAcceptance.faq = !!faq?.checked;
+        jobProfileState.legalAcceptance.disclaimer = !!disc?.checked;
+        jobProfileState.legalAcceptance.terms = !!term?.checked;
+        updateLegalButtonState();
+      });
+    });
+
+    updateLegalButtonState();
+
+    btn?.addEventListener("click", () => {
+      saveJobProfile();
+      nextWizard();
+    });
+  }
+
+  if (jobProfileWizard.step === 2) {
+    const firstName = document.getElementById("firstName");
+    const lastName = document.getElementById("lastName");
+    const birthDate = document.getElementById("birthDate");
+    const gender = document.getElementById("gender");
+    const btn = document.getElementById("wizardNextBtn");
+
+    [firstName, lastName, birthDate].forEach((el) => {
+      el?.addEventListener("input", updatePersonalButtonState);
+      el?.addEventListener("change", updatePersonalButtonState);
+    });
+
+    gender?.addEventListener("change", () => {
+      updatePersonalButtonState();
+      updateLiveAvatar();
+    });
+
+    updatePersonalButtonState();
+    updateLiveAvatar();
+
+    btn?.addEventListener("click", () => {
+      jobProfileState.userProfile.firstName = firstName?.value.trim() || "";
+      jobProfileState.userProfile.lastName = lastName?.value.trim() || "";
+      jobProfileState.userProfile.birthDate = birthDate?.value || "";
+      jobProfileState.userProfile.gender = gender?.value || "";
+
+      saveJobProfile();
+      nextWizard();
+    });
+  }
+
+  if (jobProfileWizard.step === 3 || jobProfileWizard.step === 4) {
+    document.getElementById("wizardNextBtn")?.addEventListener("click", () => {
+      nextWizard();
+    });
+  }
+
+  if (jobProfileWizard.step === 5) {
+    document.getElementById("wizardSaveBtn")?.addEventListener("click", () => {
+      jobProfileState.profileMeta.setupCompleted = true;
+      saveJobProfile();
+      renderMainCard();
+    });
+  }
+}
 
 /* =========================
-   init
-========================= */
+   Start / init
+   ========================= */
 
-document.addEventListener("nettotrack:jobProfileOpened",()=>{
+function startWizard() {
+  resetWizard();
+  renderWizard();
+}
 
-loadJobProfile();
-renderMainCard();
+function initJobProfile() {
+  loadJobProfile();
+  renderMainCard();
+}
 
+document.addEventListener("nettotrack:jobProfileOpened", () => {
+  initJobProfile();
 });
