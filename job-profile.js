@@ -134,7 +134,6 @@ function currentProfileSource() {
 
 function getAvatarVariant(genderValue = currentProfileSource().userProfile.gender) {
   const g = (genderValue || "").toLowerCase();
-
   if (g === "uomo") return "avatarMale";
   if (g === "donna") return "avatarFemale";
   return "avatarNeutral";
@@ -205,7 +204,7 @@ function renderMainCard() {
         </button>
       </header>
 
-      <div class="jobProfileContent">
+      <div class="jobProfileScrollArea">
         <div class="jobProfilePreviewCard">
           <div class="jobProfilePreviewAvatarBox">
             ${buildAvatarMarkup(u.gender, "jobProfileSummaryAvatar")}
@@ -225,12 +224,14 @@ function renderMainCard() {
           <div class="jobProfileEmptyCaption">
             Configura il tuo profilo personale e lavorativo.
           </div>
-
-          <button id="jobProfileSetupBtn" class="jobProfilePrimaryBtn" type="button">
-            Crea profilo
-          </button>
         </div>
       </div>
+
+      <footer class="jobProfileFooterBar">
+        <button id="jobProfileSetupBtn" class="jobProfilePrimaryBtn" type="button">
+          Crea profilo
+        </button>
+      </footer>
     </section>
   `;
 
@@ -247,29 +248,37 @@ function renderMainCard() {
 function wizardFrame(title, inner, footer = "") {
   return `
     <section class="jobProfileCard jobWizardShell">
-      <header class="jobProfileTopBar">
-        <button id="wizardBackBtn" class="jobProfileCloseBtn ${jobProfileWizard.step === 1 ? "isHiddenBtn" : ""}" type="button" aria-label="Indietro">
-          ‹
-        </button>
 
-        <div class="jobProfileTopTitleWrap">
-          <h2 class="jobProfileTopTitle">${esc(title)}</h2>
+      <div class="jobWizardHeader">
+        <header class="jobProfileTopBar">
+          <button id="wizardBackBtn" class="jobProfileCloseBtn ${jobProfileWizard.step === 1 ? "isHiddenBtn" : ""}" type="button" aria-label="Indietro">
+            ‹
+          </button>
+
+          <div class="jobProfileTopTitleWrap">
+            <h2 class="jobProfileTopTitle">${esc(title)}</h2>
+          </div>
+
+          <button id="wizardCloseBtn" class="jobProfileCloseBtn" type="button" aria-label="Chiudi">
+            ✕
+          </button>
+        </header>
+
+        <div class="jobWizardStepBar">
+          <div class="jobWizardStepFill" style="width:${(jobProfileWizard.step / jobProfileWizard.total) * 100}%"></div>
         </div>
-
-        <button id="wizardCloseBtn" class="jobProfileCloseBtn" type="button" aria-label="Chiudi">
-          ✕
-        </button>
-      </header>
-
-      <div class="jobWizardStepBar">
-        <div class="jobWizardStepFill" style="width:${(jobProfileWizard.step / jobProfileWizard.total) * 100}%"></div>
       </div>
 
-      <div class="jobWizardBody">
-        ${inner}
+      <div class="jobWizardScrollArea">
+        <div class="jobWizardScrollInner">
+          ${inner}
+        </div>
       </div>
 
-      ${footer ? `<div class="jobWizardFooterDock">${footer}</div>` : ""}
+      <div class="jobWizardFooterDock">
+        ${footer}
+      </div>
+
     </section>
   `;
 }
