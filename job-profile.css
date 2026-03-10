@@ -198,6 +198,8 @@
    ========================= */
 
 .jobWizardShell{
+  display:grid;
+  grid-template-rows:auto auto 1fr auto;
   min-height:100%;
 }
 
@@ -222,11 +224,19 @@
   flex-direction:column;
   gap:14px;
   min-height:0;
+  overflow:auto;
+  padding-bottom:6px;
 }
 
-.jobWizardFooterOutside{
-  margin-top:auto;
+.jobWizardFooterDock{
+  position:sticky;
+  bottom:0;
+  z-index:8;
   padding-top:10px;
+  background:
+    linear-gradient(180deg, rgba(16,18,30,0) 0%, rgba(16,18,30,.22) 24%, rgba(16,18,30,.42) 100%);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
 }
 
 .jobWizardFooterActions{
@@ -441,6 +451,11 @@
   border-bottom:2px solid rgba(255,255,255,.88);
   transform:rotate(45deg) translateY(-2px);
   margin-right:4px;
+  transition:transform .16s ease;
+}
+
+#genderDisplayBtn[aria-expanded="true"] .jobWizardFieldChevron{
+  transform:rotate(225deg) translateY(2px);
 }
 
 .jobWizardHiddenNativeField{
@@ -451,42 +466,48 @@
   height:1px;
 }
 
-.jobWizardTinyResetBtn{
-  align-self:flex-start;
-  min-height:28px;
-  padding:0 10px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.05);
-  color:var(--muted);
-  font:inherit;
-  font-size:12px;
-  font-weight:800;
-}
-
 .jobWizardSelectMenu{
   display:flex;
   flex-direction:column;
-  gap:6px;
-  padding:8px;
-  border-radius:14px;
+  gap:8px;
+  padding:10px;
+  border-radius:18px;
   border:1px solid rgba(255,255,255,.10);
-  background:rgba(18,20,32,.92);
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(20,24,40,.92), rgba(20,24,40,.84) 55%, rgba(20,24,40,.80) 100%);
+  box-shadow:
+    0 18px 34px rgba(6,10,25,.28),
+    inset 0 1px 0 rgba(255,255,255,.05);
   backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  opacity:0;
+  transform:translateY(-8px) scale(.985);
+  transition:opacity .16s ease, transform .16s ease;
+}
+
+.jobWizardSelectMenu.isOpen{
+  opacity:1;
+  transform:translateY(0) scale(1);
 }
 
 .jobWizardSelectItem{
   width:100%;
-  min-height:42px;
+  min-height:52px;
   border:none;
-  border-radius:10px;
+  border-radius:14px;
   text-align:left;
-  padding:0 12px;
+  padding:0 16px;
   background:rgba(255,255,255,.06);
   color:var(--text);
   font:inherit;
   font-size:14px;
-  font-weight:700;
+  font-weight:800;
+  transition:transform .12s ease, filter .12s ease, background .12s ease;
+}
+
+.jobWizardSelectItem:active{
+  transform:scale(.985);
+  filter:brightness(1.05);
 }
 
 /* =========================
