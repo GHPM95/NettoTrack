@@ -1,0 +1,349 @@
+/* =========================
+   NettoTrack UI Core
+   ========================= */
+
+:root{
+
+  --nt-safe-top: env(safe-area-inset-top);
+  --nt-safe-bottom: env(safe-area-inset-bottom);
+
+  --nt-font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "SF Pro Display",
+    system-ui,
+    sans-serif;
+
+  --nt-font-card-title:18px;
+  --nt-font-body:15px;
+  --nt-font-small:13px;
+  --nt-font-button:15px;
+  --nt-font-label:14px;
+
+  --nt-line-tight:1.1;
+  --nt-line-normal:1.4;
+  --nt-line-text:1.5;
+
+  --xSize:38px;
+  --nt-icon-size:38px;
+
+  --nt-button-height:44px;
+  --nt-input-height:46px;
+  --nt-textarea-min-height:112px;
+
+  --nt-radius-small:14px;
+  --nt-radius-medium:16px;
+  --nt-radius-large:18px;
+  --nt-radius-xl:22px;
+
+  --nt-subheader-min-height:54px;
+  --nt-subheader-pad-y:4px;
+  --nt-subheader-pad-x:0;
+  --nt-subheader-gap:8px;
+
+  --nt-cal-day-size:44px;
+  --nt-cal-day-radius:14px;
+  --nt-cal-day-number-size:15px;
+  --nt-cal-day-pad:4px;
+  --nt-cal-day-gap:4px;
+  --nt-cal-day-min-height:52px;
+
+  --nt-day-chip-width:54px;
+  --nt-day-chip-height:54px;
+  --nt-day-chip-radius:18px;
+  --nt-day-chip-gap:8px;
+  --nt-day-chip-pad-x:2px;
+  --nt-day-chip-weekday-size:11px;
+  --nt-day-chip-date-size:17px;
+
+  --nt-dot-size:6px;
+  --nt-dot-gap:4px;
+  --nt-dot-space-y:6px;
+
+  --nt-dot-blue:#32c5ff;
+  --nt-dot-purple:#756bff;
+  --nt-dot-pink:#ff4fd8;
+
+  --nt-check-size:20px;
+  --nt-check-border-size:1px;
+  --nt-check-gap:12px;
+  --nt-check-row-pad-y:12px;
+  --nt-check-row-pad-x:14px;
+  --nt-check-mark-size:10px;
+
+  --nt-radio-size:20px;
+  --nt-radio-dot-size:8px;
+  --nt-radio-gap:12px;
+
+  --nt-avatar-box-size:78px;
+  --nt-avatar-box-radius:20px;
+  --nt-avatar-icon-size:34px;
+  --nt-avatar-gap:12px;
+
+  --nt-space-2:2px;
+  --nt-space-4:4px;
+  --nt-space-6:6px;
+  --nt-space-8:8px;
+  --nt-space-10:10px;
+  --nt-space-12:12px;
+  --nt-space-14:14px;
+  --nt-space-16:16px;
+  --nt-space-18:18px;
+  --nt-space-20:20px;
+  --nt-space-24:24px;
+
+  --nt-gap-xs:var(--nt-space-6);
+  --nt-gap-s:var(--nt-space-10);
+  --nt-gap-m:var(--nt-space-14);
+  --nt-gap-l:var(--nt-space-18);
+
+  --nt-page-pad-x:16px;
+  --nt-page-pad-top:calc(var(--nt-safe-top) + 12px);
+  --nt-page-pad-bottom:calc(var(--nt-safe-bottom) + 12px);
+
+  --nt-card-body-pad-y:12px;
+  --nt-card-body-pad-x:2px;
+  --nt-wizard-body-pad-y:12px;
+  --nt-wizard-body-pad-x:2px;
+
+  --nt-label-gap-bottom:6px;
+  --nt-field-gap:10px;
+  --nt-block-gap:12px;
+  --nt-divider-gap:16px;
+  --nt-section-gap:18px;
+  --nt-footer-gap-top:12px;
+
+  --nt-text:#ffffff;
+  --nt-text-muted:rgba(255,255,255,.65);
+  --nt-text-soft:rgba(255,255,255,.52);
+
+  --nt-border:rgba(255,255,255,.10);
+  --nt-border-strong:rgba(255,255,255,.14);
+  --nt-border-soft:rgba(255,255,255,.08);
+
+  --nt-surface-1:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.08), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
+
+  --nt-surface-2:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+
+  --nt-surface-soft:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.06), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+
+  --nt-overlay-footer:
+    linear-gradient(
+      180deg,
+      rgba(16,18,30,0) 0%,
+      rgba(16,18,30,.20) 24%,
+      rgba(16,18,30,.38) 100%
+    );
+
+  --nt-shadow-soft:
+    inset 0 1px 0 rgba(255,255,255,.08);
+
+  --nt-shadow-card:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 10px 24px rgba(10,14,30,.18);
+
+  --nt-shadow-focus:
+    0 0 0 1px rgba(255,255,255,.05),
+    0 8px 22px rgba(40,60,140,.16);
+
+  --nt-color-male:
+    linear-gradient(160deg,#4da3ff,#2c5cff);
+
+  --nt-color-female:
+    linear-gradient(160deg,#ff7ac8,#ff4d94);
+
+  --nt-color-neutral:
+    linear-gradient(160deg,#cfd8e6,#8e9bb5);
+
+  --nt-color-nothing:
+    linear-gradient(160deg, rgba(255,255,255,.88), rgba(194,210,236,.72));
+
+  --nt-color-accent:
+    linear-gradient(90deg,#32c5ff 0%, #756bff 45%, #ff4fd8 100%);
+
+  --nt-accent-border-gradient:
+    linear-gradient(90deg,#32c5ff 0%, #756bff 45%, #ff4fd8 100%);
+
+  --nt-accent-fill:#0b1326;
+
+  --nt-pressed-fill:#2d2457;
+  --nt-pressed-fill-strong:#362b6d;
+
+  --nt-z-base:1;
+  --nt-z-dots:20;
+  --nt-z-dropdown:50;
+  --nt-z-overlay:100;
+  --nt-z-modal:200;
+  --nt-z-toast:250;
+  --nt-z-tooltip:260;
+
+  --nt-select-option-min-height:48px;
+  --nt-tooltip-max-width:220px;
+  --nt-modal-max-width:420px;
+  --nt-toast-max-width:320px;
+  --nt-skeleton-shimmer: rgba(255,255,255,.16);
+}
+
+*,
+*::before,
+*::after{
+  box-sizing:border-box;
+}
+
+html,
+body{
+  height:100%;
+}
+
+html{
+  -webkit-text-size-adjust:100%;
+}
+
+body{
+  margin:0;
+  font-family:var(--nt-font-family);
+  color:var(--nt-text);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  background:#070b18;
+}
+
+button,
+input,
+select,
+textarea{
+  font:inherit;
+  color:inherit;
+}
+
+button{
+  -webkit-tap-highlight-color:transparent;
+}
+
+img,
+svg{
+  display:block;
+  max-width:100%;
+}
+
+h1,h2,h3,h4,h5,h6,p{
+  margin:0;
+}
+
+.hidden{
+  display:none !important;
+}
+
+.ntTextSmall{
+  font-size:var(--nt-font-small);
+  line-height:var(--nt-line-normal);
+  color:var(--nt-text-muted);
+}
+
+.ntTextMuted{
+  color:var(--nt-text-muted);
+}
+
+.ntSection{
+  display:flex;
+  flex-direction:column;
+  gap:var(--nt-gap-m);
+}
+
+.ntSectionGlass{
+  padding:12px;
+  border-radius:var(--nt-radius-medium);
+  border:1px solid var(--nt-border);
+  background:var(--nt-surface-soft);
+}
+
+.ntSectionTitle{
+  font-size:var(--nt-font-label);
+  font-weight:900;
+  line-height:var(--nt-line-normal);
+  color:var(--nt-text);
+}
+
+.ntSectionText{
+  font-size:14px;
+  line-height:var(--nt-line-text);
+  color:var(--nt-text);
+}
+
+.ntScrollY{
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  scrollbar-width:none;
+}
+
+.ntScrollY::-webkit-scrollbar{
+  display:none;
+}
+
+.ntDisabled,
+[disabled],
+[aria-disabled="true"]{
+  opacity:.42;
+  filter:saturate(.72);
+  pointer-events:none;
+  cursor:default;
+  box-shadow:none !important;
+}
+
+.ntAccentBorder{
+  border:1px solid transparent !important;
+  background:
+    linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
+    var(--nt-accent-border-gradient) border-box !important;
+}
+
+@media (max-width:390px){
+  :root{
+    --nt-cal-day-size:40px;
+    --nt-cal-day-number-size:14px;
+    --nt-cal-day-min-height:48px;
+    --nt-check-size:19px;
+    --nt-radio-size:19px;
+    --nt-day-chip-width:50px;
+    --nt-day-chip-height:52px;
+    --nt-day-chip-date-size:16px;
+  }
+}
+
+@media (min-width:600px){
+  :root{
+    --nt-font-card-title:20px;
+    --nt-font-body:16px;
+    --nt-font-button:16px;
+    --nt-button-height:48px;
+    --nt-input-height:48px;
+    --nt-page-pad-x:20px;
+    --nt-card-body-pad-x:4px;
+    --nt-wizard-body-pad-x:4px;
+    --nt-avatar-box-size:84px;
+    --nt-avatar-icon-size:36px;
+    --nt-subheader-min-height:58px;
+    --nt-dot-size:7px;
+    --nt-dot-gap:5px;
+    --nt-cal-day-size:48px;
+    --nt-cal-day-number-size:16px;
+    --nt-cal-day-min-height:56px;
+    --nt-check-size:21px;
+    --nt-radio-size:21px;
+    --nt-radio-dot-size:9px;
+    --nt-day-chip-width:58px;
+    --nt-day-chip-height:58px;
+    --nt-day-chip-date-size:18px;
+    --nt-day-chip-weekday-size:12px;
+  }
+}
