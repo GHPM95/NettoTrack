@@ -1,0 +1,103 @@
+/* =========================
+   NettoTrack Calendar Days Strip
+   ========================= */
+
+.ntDaysStrip{
+  width:100%;
+  min-width:0;
+  display:flex;
+  align-items:center;
+}
+
+.ntDaysStripScroll{
+  width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  overscroll-behavior-y:none;
+  scrollbar-width:none;
+  padding-inline:var(--nt-day-chip-pad-x);
+}
+
+.ntDaysStripScroll::-webkit-scrollbar{
+  display:none;
+}
+
+.ntDaysStripTrack{
+  display:flex;
+  align-items:center;
+  gap:var(--nt-day-chip-gap);
+  min-width:max-content;
+  width:max-content;
+}
+
+.ntDayChip{
+  flex:0 0 auto;
+  width:var(--nt-day-chip-width);
+  height:var(--nt-day-chip-height);
+  border-radius:var(--nt-day-chip-radius);
+  border:1px solid var(--nt-border-strong);
+  background:var(--nt-surface-2);
+  color:var(--nt-text);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  text-align:center;
+  position:relative;
+}
+
+.ntDayChipWeekday{
+  font-size:var(--nt-day-chip-weekday-size);
+  line-height:1;
+  font-weight:800;
+  color:var(--nt-text-muted);
+  text-transform:uppercase;
+  letter-spacing:.2px;
+}
+
+.ntDayChipDate{
+  font-size:var(--nt-day-chip-date-size);
+  line-height:1;
+  font-weight:1000;
+  color:var(--nt-text);
+}
+
+.ntDayChip.isToday .ntDayChipWeekday,
+.ntDayChip.isSelected .ntDayChipWeekday{
+  color:var(--nt-text);
+}
+
+.ntDayChip.isSelected{
+  border:1px solid transparent;
+  background:
+    linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
+    var(--nt-accent-border-gradient) border-box;
+}
+
+.ntDayChip.isToday:not(.isSelected){
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.05),
+    0 6px 18px rgba(40,60,140,.10);
+}
+
+.ntDayChip.hasData::after{
+  content:"";
+  position:absolute;
+  bottom:7px;
+  left:50%;
+  transform:translateX(-50%);
+  width:6px;
+  height:6px;
+  border-radius:999px;
+  background:var(--nt-color-accent);
+}
+
+.ntDayChip.isDisabled{
+  opacity:.42;
+  filter:saturate(.72);
+  pointer-events:none;
+}
