@@ -1,0 +1,82 @@
+/* =========================
+   NettoTrack Feedback Animations
+   ========================= */
+
+.ntSelectMenu{
+  opacity:0;
+  transform:translateY(-8px) scale(.985);
+  transition:
+    opacity var(--nt-anim-normal),
+    transform var(--nt-anim-normal);
+}
+
+.ntSelectMenu.isOpen{
+  opacity:1;
+  transform:translateY(0) scale(1);
+}
+
+.ntTooltipBubble{
+  opacity:0;
+  transform:translateX(-50%) translateY(4px) scale(.98);
+  transition:
+    opacity var(--nt-anim-fast),
+    transform var(--nt-anim-fast);
+}
+
+.ntTooltipBubble.isOpen{
+  opacity:1;
+  transform:translateX(-50%) translateY(0) scale(1);
+}
+
+@keyframes ntModalEnter{
+  from{
+    opacity:0;
+    transform:translateY(18px) scale(.985);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}
+
+.ntModalCard{
+  animation:ntModalEnter .22s ease;
+}
+
+@keyframes ntToastEnter{
+  from{
+    opacity:0;
+    transform:translateY(10px) scale(.985);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}
+
+.ntToast{
+  animation:ntToastEnter .18s ease;
+}
+
+@keyframes ntSkeletonShimmer{
+  0%{
+    transform:translateX(-120%);
+  }
+  100%{
+    transform:translateX(120%);
+  }
+}
+
+.ntSkeleton::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,0) 0%,
+      var(--nt-skeleton-shimmer) 50%,
+      rgba(255,255,255,0) 100%
+    );
+  animation:ntSkeletonShimmer 1.25s linear infinite;
+}
