@@ -1,31 +1,190 @@
-<link rel="stylesheet" href="ui.css" />
-<link rel="stylesheet" href="ui-layout.css" />
-<link rel="stylesheet" href="ui-components.css" />
-<link rel="stylesheet" href="ui-forms.css" />
-<link rel="stylesheet" href="ui-animations.css" />
-<link rel="stylesheet" href="ui-feedback.css" />
-<link rel="stylesheet" href="ui-feedback-animations.css" />
+<!doctype html>
+<html lang="it">
 
-<link rel="stylesheet" href="calendar-day.css" />
-<link rel="stylesheet" href="calendar-day-animations.css" />
-<link rel="stylesheet" href="calendar-days-strip.css" />
-<link rel="stylesheet" href="calendar-days-strip-animations.css" />
+<head>
 
-<script src="ui-cards.js"></script>
-<script src="ui-card-manager.js"></script>
-<script src="ui-card-actions.js"></script>
-<script src="ui-card-wizard.js"></script>
-<script src="ui-card-dots.js"></script>
-<script src="ui-card-gestures.js"></script>
+<meta charset="utf-8">
 
-<script src="ui-select.js"></script>
-<script src="ui-tooltip.js"></script>
-<script src="ui-modal.js"></script>
-<script src="ui-toast.js"></script>
-<script src="ui-empty-state.js"></script>
+<meta name="viewport"
+content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<script src="calendar-day.js"></script>
-<script src="calendar-days-strip.js"></script>
+<title>NettoTrack</title>
+
+<!-- =========================
+CORE DESIGN
+========================= -->
+
+<link rel="stylesheet" href="ui.css">
+
+<link rel="stylesheet" href="ui-cards.css">
+
+<link rel="stylesheet" href="ui-components.css">
+
+<link rel="stylesheet" href="ui-forms.css">
+
+<link rel="stylesheet" href="ui-feedback.css">
+
+<link rel="stylesheet" href="ui-tools-design.css">
+
+<link rel="stylesheet" href="ui-animations.css">
+
+</head>
+
+
+<body>
+
+<!-- =========================
+BACKGROUND FX
+========================= -->
+
+<div class="bgFX" aria-hidden="true">
+
+<div class="blob b1"></div>
+
+<div class="blob b2"></div>
+
+<div class="blob b3"></div>
+
+</div>
+
+
+<!-- =========================
+APP ROOT
+========================= -->
+
+<div class="ntApp">
+
+<!-- =========================
+TOP BAR
+========================= -->
+
+<header class="ntTopBar">
+
+<div class="ntTopBarInner">
+
+<div class="ntTopBarTitle">
+NettoTrack
+</div>
+
+</div>
+
+</header>
+
+
+
+<!-- =========================
+CARD TRACK
+========================= -->
+
+<main class="ntMain">
+
+<div class="ntCardTrack">
+
+<!-- le card vengono inserite qui -->
+
+</div>
+
+</main>
+
+
+
+<!-- =========================
+SMART DOTS
+========================= -->
+
+<div class="ntSmartDots">
+
+<span class="ntSmartDot isActive"></span>
+
+<span class="ntSmartDot"></span>
+
+<span class="ntSmartDot"></span>
+
+</div>
+
+
+
+<!-- =========================
+BOTTOM BAR
+========================= -->
+
+<footer class="ntBottomBar">
+
+<button class="ntBottomBtn">
+
+<div class="ntBottomIcon">＋</div>
+
+<div class="ntBottomLabel">
+Inserisci
+</div>
+
+</button>
+
+
+
+<button class="ntBottomBtn">
+
+<div class="ntBottomIcon">📅</div>
+
+<div class="ntBottomLabel">
+Calendario
+</div>
+
+</button>
+
+
+
+<button class="ntBottomBtn">
+
+<div class="ntBottomIcon">👤</div>
+
+<div class="ntBottomLabel">
+Profilo
+</div>
+
+</button>
+
+
+
+<button class="ntBottomBtn">
+
+<div class="ntBottomIcon">☰</div>
+
+<div class="ntBottomLabel">
+Menu
+</div>
+
+</button>
+
+</footer>
+
+</div>
+
+
+<!-- =========================
+SCRIPTS
+========================= -->
+
+<!-- component registry -->
+
+<script src="component-registry.js"></script>
+
+<!-- card template -->
 
 <script src="card-template.js"></script>
-<script src="component-registry.js"></script>
+
+<!-- card manager -->
+
+<script src="ui-card-manager.js"></script>
+
+<!-- card logic -->
+
+<script src="ui-cards.js"></script>
+
+<!-- app logic -->
+
+<script src="ui.js"></script>
+
+</body>
+
+</html>
