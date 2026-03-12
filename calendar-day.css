@@ -1,0 +1,58 @@
+/* =========================
+   NettoTrack Calendar Day
+   ========================= */
+
+.ntCalendarDay{
+  position:relative;
+  min-height:var(--nt-cal-day-min-height);
+  padding:var(--nt-cal-day-pad);
+  border-radius:var(--nt-radius-medium);
+  border:1px solid var(--nt-border-strong);
+  background:var(--nt-surface-2);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:var(--nt-cal-day-gap);
+  text-align:center;
+  color:var(--nt-text);
+  overflow:hidden;
+}
+
+.ntCalendarDayNumber{
+  font-size:var(--nt-cal-day-number-size);
+  line-height:1;
+  font-weight:1000;
+  color:var(--nt-text);
+  margin-top:2px;
+}
+
+.ntCalendarDayDots{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:calc(var(--nt-dot-size) + var(--nt-dot-space-y) * 2);
+}
+
+.ntCalendarDay.isSelected,
+.ntCalendarDay.isToday{
+  border:1px solid transparent;
+  background:
+    linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
+    var(--nt-accent-border-gradient) border-box;
+}
+
+.ntCalendarDay.isMuted .ntCalendarDayNumber{
+  color:var(--nt-text-muted);
+}
+
+.ntCalendarDay.isDisabled{
+  opacity:.42;
+  filter:saturate(.72);
+  pointer-events:none;
+}
+
+.ntCalendarDay.isHoliday .ntCalendarDayNumber{
+  color:#ffd8ff;
+}
