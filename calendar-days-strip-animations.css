@@ -1,0 +1,44 @@
+/* =========================
+   NettoTrack Calendar Days Strip Animations
+   ========================= */
+
+.ntDayChip{
+  transition:
+    transform var(--nt-anim-fast),
+    filter var(--nt-anim-fast),
+    box-shadow var(--nt-anim-normal),
+    background var(--nt-anim-normal),
+    border-color var(--nt-anim-normal),
+    opacity var(--nt-anim-normal);
+}
+
+.ntDayChip:active{
+  transform:scale(.96);
+  filter:brightness(1.05);
+}
+
+@keyframes ntDayChipSelectPop{
+  0%{
+    transform:scale(.94);
+    opacity:.85;
+  }
+  100%{
+    transform:scale(1);
+    opacity:1;
+  }
+}
+
+.ntDayChip.isSelected{
+  animation:ntDayChipSelectPop .18s ease;
+}
+
+@keyframes ntDaysStripFocus{
+  0%{ transform:translateX(0); }
+  35%{ transform:translateX(-4px); }
+  70%{ transform:translateX(2px); }
+  100%{ transform:translateX(0); }
+}
+
+.ntDaysStripTrack.isRefocus{
+  animation:ntDaysStripFocus .24s ease;
+}
