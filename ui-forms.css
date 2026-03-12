@@ -1,0 +1,299 @@
+/* =========================
+   NettoTrack UI Forms
+   ========================= */
+
+.ntLabel{
+  display:block;
+  margin:0 2px 6px;
+  font-size:14px;
+  font-weight:800;
+  line-height:1.4;
+  color:var(--nt-text);
+}
+
+.ntField{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.ntFieldInput,
+.ntFieldAction,
+.ntFieldSelect{
+  width:100%;
+  min-height:var(--nt-input-height);
+  padding:0 14px;
+  border-radius:var(--nt-radius-medium);
+  border:1px solid var(--nt-border-strong);
+  background:var(--nt-surface-2);
+  color:var(--nt-text);
+  font-family:var(--nt-font-family);
+  font-size:var(--nt-font-body);
+  font-weight:700;
+  outline:none;
+}
+
+.ntFieldInput::placeholder{
+  color:rgba(255,255,255,.55);
+  font-weight:600;
+}
+
+.ntFieldInput:focus,
+.ntFieldAction:focus-visible,
+.ntFieldSelect:focus-visible{
+  border:1px solid transparent;
+  background:
+    linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
+    var(--nt-accent-border-gradient) border-box;
+  box-shadow:var(--nt-shadow-focus);
+}
+
+.ntFieldAction,
+.ntFieldSelect{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  text-align:left;
+}
+
+.ntFieldChevron{
+  width:12px;
+  height:12px;
+  flex:0 0 auto;
+  border-right:2px solid rgba(255,255,255,.88);
+  border-bottom:2px solid rgba(255,255,255,.88);
+  transform:rotate(45deg) translateY(-2px);
+  margin-right:4px;
+}
+
+.ntFieldAction[aria-expanded="true"] .ntFieldChevron,
+.ntFieldSelect[aria-expanded="true"] .ntFieldChevron{
+  transform:rotate(225deg) translateY(2px);
+}
+
+.ntFieldAction.isDisabled,
+.ntFieldSelect.isDisabled,
+.ntFieldInput:disabled{
+  opacity:.42;
+  filter:saturate(.72);
+  pointer-events:none;
+  cursor:default;
+  box-shadow:none !important;
+}
+
+.ntHiddenNative{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+  width:1px;
+  height:1px;
+}
+
+.ntTextarea{
+  width:100%;
+  min-height:var(--nt-textarea-min-height);
+  padding:12px 14px;
+  resize:none;
+  border-radius:var(--nt-radius-medium);
+  border:1px solid var(--nt-border-strong);
+  background:var(--nt-surface-2);
+  color:var(--nt-text);
+  font-family:var(--nt-font-family);
+  font-size:var(--nt-font-body);
+  line-height:var(--nt-line-text);
+  font-weight:600;
+  outline:none;
+}
+
+.ntTextarea::placeholder{
+  color:rgba(255,255,255,.55);
+  font-weight:600;
+}
+
+.ntTextarea:focus{
+  border:1px solid transparent;
+  background:
+    linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
+    var(--nt-accent-border-gradient) border-box;
+  box-shadow:var(--nt-shadow-focus);
+}
+
+.ntCheckRow{
+  display:grid;
+  grid-template-columns:var(--nt-check-size) 1fr;
+  gap:var(--nt-check-gap);
+  align-items:start;
+  padding:var(--nt-check-row-pad-y) var(--nt-check-row-pad-x);
+  border-radius:var(--nt-radius-medium);
+  border:1px solid var(--nt-border);
+  background:var(--nt-surface-soft);
+}
+
+.ntCheckWrap{
+  position:relative;
+  width:var(--nt-check-size);
+  height:var(--nt-check-size);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:1px;
+}
+
+.ntCheckInput{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  margin:0;
+}
+
+.ntCheckUi{
+  position:relative;
+  width:var(--nt-check-size);
+  height:var(--nt-check-size);
+  border-radius:999px;
+  border:var(--nt-check-border-size) solid rgba(255,255,255,.18);
+  background:var(--nt-surface-2);
+  box-shadow:var(--nt-shadow-soft);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.ntCheckUi::after{
+  content:"";
+  width:var(--nt-check-mark-size);
+  height:calc(var(--nt-check-mark-size) * .62);
+  border-right:2px solid #ffffff;
+  border-bottom:2px solid #ffffff;
+  transform:rotate(45deg) scale(.75);
+  opacity:0;
+  transition:opacity var(--nt-anim-fast), transform var(--nt-anim-fast);
+  margin-top:-1px;
+}
+
+.ntCheckInput:checked + .ntCheckUi{
+  border:1px solid transparent;
+  background:
+    linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
+    var(--nt-accent-border-gradient) border-box;
+}
+
+.ntCheckInput:checked + .ntCheckUi::after{
+  opacity:1;
+  transform:rotate(45deg) scale(1);
+}
+
+.ntCheckInput:focus-visible + .ntCheckUi{
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.05),
+    0 8px 22px rgba(40,60,140,.16);
+}
+
+.ntCheckLabel{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0;
+}
+
+.ntCheckTitle{
+  font-size:14px;
+  font-weight:900;
+  color:var(--nt-text);
+  line-height:var(--nt-line-normal);
+}
+
+.ntCheckDesc{
+  font-size:13px;
+  line-height:var(--nt-line-normal);
+  color:var(--nt-text-muted);
+}
+
+.ntCheckRow.isDisabled,
+.ntCheckInput:disabled + .ntCheckUi{
+  opacity:.42;
+  filter:saturate(.72);
+  pointer-events:none;
+}
+
+.ntRadioRow{
+  display:grid;
+  grid-template-columns:var(--nt-radio-size) 1fr;
+  gap:var(--nt-radio-gap);
+  align-items:center;
+  padding:12px 14px;
+  border-radius:var(--nt-radius-medium);
+  border:1px solid var(--nt-border);
+  background:var(--nt-surface-soft);
+}
+
+.ntRadioWrap{
+  position:relative;
+  width:var(--nt-radio-size);
+  height:var(--nt-radio-size);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.ntRadioInput{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  margin:0;
+}
+
+.ntRadioUi{
+  width:var(--nt-radio-size);
+  height:var(--nt-radio-size);
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background:var(--nt-surface-2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:var(--nt-shadow-soft);
+}
+
+.ntRadioUi::after{
+  content:"";
+  width:var(--nt-radio-dot-size);
+  height:var(--nt-radio-dot-size);
+  border-radius:999px;
+  background:#ffffff;
+  opacity:0;
+  transform:scale(.7);
+  transition:
+    opacity var(--nt-anim-fast),
+    transform var(--nt-anim-fast);
+}
+
+.ntRadioInput:checked + .ntRadioUi{
+  border:1px solid transparent;
+  background:
+    linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
+    var(--nt-accent-border-gradient) border-box;
+}
+
+.ntRadioInput:checked + .ntRadioUi::after{
+  opacity:1;
+  transform:scale(1);
+}
+
+.ntRadioLabel{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.ntRadioTitle{
+  font-size:14px;
+  font-weight:900;
+  color:var(--nt-text);
+}
+
+.ntRadioDesc{
+  font-size:13px;
+  color:var(--nt-text-muted);
+}
