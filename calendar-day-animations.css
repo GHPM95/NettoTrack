@@ -1,0 +1,33 @@
+/* =========================
+   NettoTrack Calendar Day Animations
+   ========================= */
+
+.ntCalendarDay{
+  transition:
+    transform var(--nt-anim-fast),
+    filter var(--nt-anim-fast),
+    box-shadow var(--nt-anim-normal),
+    background var(--nt-anim-normal),
+    border-color var(--nt-anim-normal),
+    opacity var(--nt-anim-normal);
+}
+
+.ntCalendarDay:active{
+  transform:scale(.97);
+  filter:brightness(1.05);
+}
+
+@keyframes ntCalendarDaySelectPop{
+  0%{
+    transform:scale(.94);
+    opacity:.85;
+  }
+  100%{
+    transform:scale(1);
+    opacity:1;
+  }
+}
+
+.ntCalendarDay.isSelected{
+  animation:ntCalendarDaySelectPop .18s ease;
+}
