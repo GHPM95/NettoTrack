@@ -1,94 +1,31 @@
-<!doctype html>
-<html lang="it">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>NettoTrack</title>
-  
-   <!-- Job Profile -->
-<link rel="stylesheet" href="job-profile.css">
-  
-  <!-- Core UI -->
-  <link rel="stylesheet" href="ui.css" />
+<link rel="stylesheet" href="ui.css" />
+<link rel="stylesheet" href="ui-layout.css" />
+<link rel="stylesheet" href="ui-components.css" />
+<link rel="stylesheet" href="ui-forms.css" />
+<link rel="stylesheet" href="ui-animations.css" />
+<link rel="stylesheet" href="ui-feedback.css" />
+<link rel="stylesheet" href="ui-feedback-animations.css" />
 
-  <!-- Calendar modules -->
-  <link rel="stylesheet" href="calendar-insert.css" />
-  <link rel="stylesheet" href="calendar-view.css?v=1">
+<link rel="stylesheet" href="calendar-day.css" />
+<link rel="stylesheet" href="calendar-day-animations.css" />
+<link rel="stylesheet" href="calendar-days-strip.css" />
+<link rel="stylesheet" href="calendar-days-strip-animations.css" />
 
-  <!-- Day editor -->
-  <link rel="stylesheet" href="day-editor.css" />
-</head>
+<script src="ui-cards.js"></script>
+<script src="ui-card-manager.js"></script>
+<script src="ui-card-actions.js"></script>
+<script src="ui-card-wizard.js"></script>
+<script src="ui-card-dots.js"></script>
+<script src="ui-card-gestures.js"></script>
 
-<body>
-  <!-- Background FX (stesso naming del tuo ui.css) -->
-  <div class="bgFX" aria-hidden="true">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
-    <div class="blob b3"></div>
-    <div class="grain"></div>
-  </div>
+<script src="ui-select.js"></script>
+<script src="ui-tooltip.js"></script>
+<script src="ui-modal.js"></script>
+<script src="ui-toast.js"></script>
+<script src="ui-empty-state.js"></script>
 
-  <div class="appRoot" id="appRoot">
-    <!-- TOP BAR -->
-    <header class="topBar" id="topBar">
-      <button id="menuBtn" class="menuBtn" type="button" aria-label="Menu">≡</button>
+<script src="calendar-day.js"></script>
+<script src="calendar-days-strip.js"></script>
 
-      <div class="brand" id="brand">
-        <div class="brandName">NettoTrack</div>
-        <div class="brandSub">Il tuo stipendio, nel tempo.</div>
-      </div>
-
-      <!-- spacer per allineamento (ui.css lo usa) -->
-      <div class="topRightSpacer" aria-hidden="true"></div>
-    </header>
-
-    <!-- MENU OVERLAY + DRAWER + CLOSE BTN (ui.css/ui.js li aspettano così) -->
-    <div id="menuOverlay" class="menuOverlay" aria-hidden="true"></div>
-    <aside id="menuDrawer" class="menuDrawer" aria-hidden="true"></aside>
-    <button id="menuCloseBtn" class="menuCloseBtn" type="button" aria-label="Chiudi menu">×</button>
-
-    <!-- STAGE -->
-    <main class="stage">
-      <section class="cardsViewport" id="cardsViewport" aria-label="Cards">
-        <div class="cardsTrack" id="cardsTrack">
-
-          <!-- HOME slide (sempre presente) -->
-          <article class="card slide" data-slide-id="home" data-title="Home">
-            <div class="cardInner">
-              <div class="cardMount" id="homeMount">
-                <!-- Placeholder home (puoi lasciarlo vuoto) -->
-              </div>
-            </div>
-          </article>
-
-          <!-- Le altre slide vengono aggiunte dinamicamente da ui.js:
-               calInsertMount, calViewMount, dayEditorMount -->
-        </div>
-      </section>
-
-      <!-- DOTS -->
-      <div class="dotsWrap" aria-label="Navigazione card">
-        <div class="dotsPill" id="dotsPill"></div>
-      </div>
-    </main>
-
-    <!-- BOTTOM BAR -->
-    <div class="bottomBar" aria-hidden="true">
-      <div class="bottomBarGlass"></div>
-    </div>
-  </div>
-
-  <!-- Scripts (ordine importante) -->
-  <script src="calendar-core.js"></script>
-  <script src="ui.js"></script>
-  <script src="menu.js"></script>
-
-  <script src="calendar-insert.js"></script>
-  <script src="calendar-view.js"></script>
-  <script src="day-editor.js"></script>
-  <script src="italy-geo-data.js"></script>
-<script src="contracts.js"></script>
-<script src="ccnl-list.js"></script>
-<script src="job-profile.js"></script>
-</body>
-</html>
+<script src="card-template.js"></script>
+<script src="component-registry.js"></script>
