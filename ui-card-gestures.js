@@ -13,7 +13,8 @@ window.NTCardGestures = (() => {
     deltaX: 0,
     deltaY: 0,
     tracking: false,
-    lock: null
+    lock: null,
+    baseTranslatePct: 0
   };
 
   function setViewport(el) {
@@ -42,6 +43,13 @@ window.NTCardGestures = (() => {
     gesture.deltaY = 0;
     gesture.tracking = true;
     gesture.lock = null;
+
+    const activeIndex = window.NTCards?.state?.activeIndex ?? 0;
+    gesture.baseTranslatePct = -(activeIndex * 100);
+
+    if (window.NTCards?.state?.trackEl) {
+      window.NTCards.state.trackEl.style.transition = "none";
+    }
   }
 
   function onMove(e) {
@@ -53,18 +61,20 @@ window.NTCardGestures = (() => {
     gesture.deltaY = t.clientY - gesture.startY;
 
     if (!gesture.lock) {
-      if (Math.abs(gesture.deltaX) > 12 || Math.abs(gesture.deltaY) > 12) {
+      if (Math.abs(gesture.deltaX) > 10 || Math.abs(gesture.deltaY) > 10) {
         gesture.lock = Math.abs(gesture.deltaX) > Math.abs(gesture.deltaY) ? "x" : "y";
       }
     }
 
     if (gesture.lock === "x") {
       e.preventDefault();
+      dragTrackWithFinger();
     }
 
     if (armedCardId && gesture.lock === "y" && gesture.deltaY > 0) {
-      const activeId = NTCards.getActiveCardId();
+      const activeId = window.NTCards?.getActiveCardId?.();
       if (activeId !== armedCardId) return;
+
       const activeSlide = viewportEl.querySelector(`[data-card-id="${activeId}"]`);
       if (activeSlide) {
         activeSlide.style.transform = `translateY(${gesture.deltaY}px)`;
@@ -76,16 +86,25 @@ window.NTCardGestures = (() => {
   function onEnd() {
     if (!gesture.tracking) return;
 
+    restoreTrackTransition();
+
     if (!armedCardId && gesture.lock === "x") {
-      if (gesture.deltaX < -60) {
-        NTCards.goNextCard();
-      } else if (gesture.deltaX > 60) {
-        NTCards.goPrevCard();
+      const width = viewportEl?.clientWidth || 1;
+      const threshold = Math.min(90, width * 0.18);
+
+      if (gesture.deltaX < -threshold) {
+        if (!window.NTCards?.goNextCard?.()) snapBackTrack();
+      } else if (gesture.deltaX > threshold) {
+        if (!window.NTCards?.goPrevCard?.()) snapBackTrack();
+      } else {
+        snapBackTrack();
       }
+    } else {
+      snapBackTrack();
     }
 
     if (armedCardId) {
-      const activeId = NTCards.getActiveCardId();
+      const activeId = window.NTCards?.getActiveCardId?.();
       const activeSlide = viewportEl?.querySelector(`[data-card-id="${activeId}"]`);
       if (activeSlide) {
         if (gesture.deltaY > 100) {
@@ -94,7 +113,7 @@ window.NTCardGestures = (() => {
           if (window.NTCardManager?.closeActive) {
             NTCardManager.closeActive();
           } else {
-            NTCards.closeActiveCard();
+            window.NTCards?.closeActiveCard?.();
           }
         } else {
           activeSlide.style.transform = "";
@@ -104,11 +123,43 @@ window.NTCardGestures = (() => {
 
     gesture.tracking = false;
     gesture.lock = null;
+    gesture.deltaX = 0;
+    gesture.deltaY = 0;
   }
 
   function onCancel() {
+    restoreTrackTransition();
+    snapBackTrack();
+
     gesture.tracking = false;
     gesture.lock = null;
+    gesture.deltaX = 0;
+    gesture.deltaY = 0;
+  }
+
+  function dragTrackWithFinger() {
+    const trackEl = window.NTCards?.state?.trackEl;
+    if (!trackEl || !viewportEl) return;
+
+    const width = viewportEl.clientWidth || 1;
+    const movePct = (gesture.deltaX / width) * 100;
+    const nextTranslate = gesture.baseTranslatePct + movePct;
+
+    trackEl.style.transform = `translate3d(${nextTranslate}%,0,0)`;
+  }
+
+  function snapBackTrack() {
+    const trackEl = window.NTCards?.state?.trackEl;
+    const activeIndex = window.NTCards?.state?.activeIndex ?? 0;
+    if (!trackEl) return;
+
+    trackEl.style.transform = `translate3d(${-activeIndex * 100}%,0,0)`;
+  }
+
+  function restoreTrackTransition() {
+    const trackEl = window.NTCards?.state?.trackEl;
+    if (!trackEl) return;
+    trackEl.style.transition = "transform .22s ease";
   }
 
   function onPointerDown(e) {
