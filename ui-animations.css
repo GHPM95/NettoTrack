@@ -122,3 +122,11 @@
 .ntDot{
   animation:ntDotPop .18s ease;
 }
+
+/* =========================
+CARD SLIDE ANIMATION
+========================= */
+
+.ntCardsTrack{
+  transition: transform .22s ease;
+}
