@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="ui-forms.css" />
   <link rel="stylesheet" href="ui-feedback.css" />
   <link rel="stylesheet" href="ui-feedback-animations.css" />
-  <link rel="stylesheet" href="ui.animations.css" />
+  <link rel="stylesheet" href="ui-animations.css" />
 
   <!-- Calendar modules -->
   <link rel="stylesheet" href="calendar-day.css" />
@@ -21,12 +21,6 @@
   <link rel="stylesheet" href="calendar-days-strip-animations.css" />
 
   <style>
-    /* =========================
-       NettoTrack App Shell
-       temporanea ma completa,
-       allineata ai file attuali del repo
-       ========================= */
-
     html, body {
       min-height: 100%;
     }
@@ -223,16 +217,16 @@
 
   <!-- Core cards -->
   <script src="ui-cards.js"></script>
-  <script src="ui-cards-manager.js"></script>
-  <script src="ui-cards-actions.js"></script>
-  <script src="ui-cards-wizard.js"></script>
-  <script src="ui-cards-dots.js"></script>
+  <script src="ui-card-manager.js"></script>
+  <script src="ui-card-actions.js"></script>
+  <script src="ui-card-wizard.js"></script>
+  <script src="ui-card-dots.js"></script>
   <script src="ui-card-gestures.js"></script>
 
   <!-- Feedback -->
   <script src="ui-select.js"></script>
   <script src="ui-tooltip.js"></script>
-  <script src="ui.modal.js"></script>
+  <script src="ui-modal.js"></script>
   <script src="ui-toast.js"></script>
   <script src="ui-empty-state.js"></script>
 
@@ -245,9 +239,6 @@
   <script src="component-registry.js"></script>
 
   <script>
-    /* =========================
-       Init system
-       ========================= */
     const viewportEl = document.getElementById("ntCardsViewport");
     const trackEl = document.getElementById("ntCardsTrack");
     const dotsMount = document.getElementById("ntCardDotsMount");
@@ -270,9 +261,6 @@
       NTCardGestures.setViewport(viewportEl);
     }
 
-    /* =========================
-       Demo cards
-       ========================= */
     function registerDemoCards() {
       if (!window.NTCards || !window.NTCardTemplate || !window.NTComponents) return;
 
@@ -442,9 +430,6 @@
 
     registerDemoCards();
 
-    /* =========================
-       Bottom bar actions
-       ========================= */
     document.getElementById("btnInsert")?.addEventListener("click", () => {
       window.NTCardManager?.open("calendarInsert");
     });
@@ -461,7 +446,6 @@
       window.NTCardManager?.open("menu");
     });
 
-    /* apertura iniziale */
     window.NTCardManager?.open("calendarView");
   </script>
 </body>
