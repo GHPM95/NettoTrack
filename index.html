@@ -19,200 +19,56 @@
   <link rel="stylesheet" href="calendar-day-animations.css" />
   <link rel="stylesheet" href="calendar-days-strip.css" />
   <link rel="stylesheet" href="calendar-days-strip-animations.css" />
-
-  <style>
-    html, body {
-      min-height: 100%;
-    }
-
-    body {
-      background:
-        radial-gradient(circle at 20% 10%, rgba(81,140,255,.20), transparent 28%),
-        radial-gradient(circle at 82% 18%, rgba(255,92,204,.14), transparent 26%),
-        radial-gradient(circle at 55% 80%, rgba(98,209,255,.10), transparent 24%),
-        linear-gradient(180deg, #091120 0%, #0c1326 42%, #0a0f1f 100%);
-      overflow: hidden;
-    }
-
-    .ntApp {
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      padding:
-        calc(env(safe-area-inset-top) + 12px)
-        16px
-        calc(env(safe-area-inset-bottom) + 12px);
-      gap: 14px;
-    }
-
-    .ntTopBar {
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
-      min-height: 54px;
-    }
-
-    .ntTopBarTitle {
-      font-size: 20px;
-      font-weight: 1000;
-      line-height: 1.1;
-      color: var(--nt-text);
-      letter-spacing: .2px;
-    }
-
-    .ntTopBarSub {
-      margin-top: 4px;
-      font-size: 13px;
-      line-height: 1.35;
-      color: var(--nt-text-muted);
-      font-weight: 700;
-    }
-
-    .ntMain {
-      flex: 1 1 auto;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .ntCardStage {
-      flex: 1 1 auto;
-      min-height: 0;
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,.12);
-      background:
-        radial-gradient(120% 180% at 0% 0%, rgba(255,255,255,.08), transparent 42%),
-        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.10),
-        0 20px 40px rgba(0,0,0,.22);
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      padding: 14px;
-    }
-
-    .ntBottomBar {
-      flex: 0 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-
-    .ntBottomBtn {
-      min-height: 58px;
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius: 20px;
-      background:
-        radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.08), transparent 55%),
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
-      color: var(--nt-text);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      font-family: var(--nt-font-family);
-      padding: 8px 6px;
-    }
-
-    .ntBottomBtn:active {
-      background: var(--nt-pressed-fill);
-    }
-
-    .ntBottomIcon {
-      font-size: 18px;
-      line-height: 1;
-      font-weight: 900;
-    }
-
-    .ntBottomLabel {
-      font-size: 12px;
-      line-height: 1.1;
-      font-weight: 800;
-      color: var(--nt-text-muted);
-    }
-
-    .ntDotsRail {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      min-height: 18px;
-    }
-
-    .ntDotsRail .ntDotNav {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      border: none;
-      background: rgba(255,255,255,.22);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
-    }
-
-    .ntDotsRail .ntDotNav.isActive {
-      width: 18px;
-      background: linear-gradient(90deg,#32c5ff 0%, #756bff 45%, #ff4fd8 100%);
-    }
-
-    @media (min-width: 600px) {
-      .ntApp {
-        padding-left: 20px;
-        padding-right: 20px;
-      }
-
-      .ntTopBarTitle {
-        font-size: 22px;
-      }
-
-      .ntBottomBtn {
-        min-height: 62px;
-      }
-    }
-  </style>
 </head>
 
-<body>
-  <div class="ntApp">
-    <header class="ntTopBar">
-      <div>
-        <div class="ntTopBarTitle">NettoTrack</div>
-        <div class="ntTopBarSub">Il tuo stipendio, nel tempo.</div>
-      </div>
-    </header>
+<body class="theme-light">
+  <div class="ntAppShell">
+    <div class="ntAppBg" aria-hidden="true">
+      <div class="ntBlob ntBlob1"></div>
+      <div class="ntBlob ntBlob2"></div>
+      <div class="ntBlob ntBlob3"></div>
+    </div>
 
-    <main class="ntMain">
-      <section class="ntCardStage">
-        <div class="ntCardsViewport" id="ntCardsViewport">
-          <div class="ntCardsTrack" id="ntCardsTrack"></div>
+    <div class="ntApp">
+      <header class="ntTopBar">
+        <div>
+          <div class="ntTopBarTitle">NettoTrack</div>
+          <div class="ntTopBarSub">Il tuo stipendio, nel tempo.</div>
         </div>
-      </section>
+      </header>
 
-      <div class="ntDotsRail hidden" id="ntCardDotsMount"></div>
-    </main>
+      <main class="ntMain">
+        <section class="ntCardStage">
+          <div class="ntCardsViewport" id="ntCardsViewport">
+            <div class="ntCardsTrack" id="ntCardsTrack"></div>
+          </div>
+        </section>
 
-    <footer class="ntBottomBar">
-      <button class="ntBottomBtn ntPress" type="button" id="btnInsert">
-        <div class="ntBottomIcon">＋</div>
-        <div class="ntBottomLabel">Inserisci</div>
-      </button>
+        <div class="ntDotsRail hidden" id="ntCardDotsMount"></div>
+      </main>
 
-      <button class="ntBottomBtn ntPress" type="button" id="btnCalendar">
-        <div class="ntBottomIcon">📅</div>
-        <div class="ntBottomLabel">Calendario</div>
-      </button>
+      <footer class="ntBottomBar">
+        <button class="ntBottomBtn ntPress" type="button" id="btnInsert">
+          <div class="ntBottomIcon">＋</div>
+          <div class="ntBottomLabel">Inserisci</div>
+        </button>
 
-      <button class="ntBottomBtn ntPress" type="button" id="btnProfile">
-        <div class="ntBottomIcon">👤</div>
-        <div class="ntBottomLabel">Profilo</div>
-      </button>
+        <button class="ntBottomBtn ntPress" type="button" id="btnCalendar">
+          <div class="ntBottomIcon">📅</div>
+          <div class="ntBottomLabel">Calendario</div>
+        </button>
 
-      <button class="ntBottomBtn ntPress" type="button" id="btnMenu">
-        <div class="ntBottomIcon">☰</div>
-        <div class="ntBottomLabel">Menu</div>
-      </button>
-    </footer>
+        <button class="ntBottomBtn ntPress" type="button" id="btnProfile">
+          <div class="ntBottomIcon">👤</div>
+          <div class="ntBottomLabel">Profilo</div>
+        </button>
+
+        <button class="ntBottomBtn ntPress" type="button" id="btnMenu">
+          <div class="ntBottomIcon">☰</div>
+          <div class="ntBottomLabel">Menu</div>
+        </button>
+      </footer>
+    </div>
   </div>
 
   <!-- Core cards -->
@@ -299,9 +155,7 @@
           const today = NTCalendarDaysStrip.formatDateISO(new Date());
           const days = NTCalendarDaysStrip.build7DaysFromDate(new Date(), {
             selectedDate: today,
-            hasDataMap: {
-              [today]: true
-            }
+            hasDataMap: { [today]: true }
           });
 
           NTCalendarDaysStrip.createStore({
