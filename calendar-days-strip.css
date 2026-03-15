@@ -1,6 +1,5 @@
 /* =========================
    NettoTrack Calendar Days Strip
-   ripristino stile circolare / glass
    ========================= */
 
 .ntDaysStrip{
@@ -34,7 +33,6 @@
   width:max-content;
 }
 
-/* giorno = chip rotondo / glass */
 .ntDayChip{
   position:relative;
   flex:0 0 auto;
@@ -90,7 +88,6 @@
   color:var(--nt-text);
 }
 
-/* selezionato */
 .ntDayChip.isSelected{
   border:1px solid transparent;
   background:
@@ -107,7 +104,6 @@
   color:var(--nt-text);
 }
 
-/* today */
 .ntDayChip.isToday:not(.isSelected){
   border-color:rgba(255,255,255,.22);
   box-shadow:
@@ -115,7 +111,6 @@
     0 10px 24px rgba(0,0,0,.18);
 }
 
-/* dot dati */
 .ntDayChip.hasData::after{
   content:"";
   position:absolute;
@@ -129,7 +124,6 @@
   box-shadow:0 0 10px rgba(117,107,255,.28);
 }
 
-/* disabilitato */
 .ntDayChip.isDisabled,
 .ntDayChip:disabled{
   opacity:.42;
@@ -137,7 +131,6 @@
   pointer-events:none;
 }
 
-/* iPhone piccoli */
 @media (max-width:390px){
   .ntDaysStripTrack{
     gap:8px;
@@ -158,7 +151,6 @@
   }
 }
 
-/* schermi grandi */
 @media (min-width:600px){
   .ntDaysStripTrack{
     gap:12px;
