@@ -1,5 +1,6 @@
 /* =========================
    NettoTrack Calendar Days Strip
+   ripristino stile circolare / glass
    ========================= */
 
 .ntDaysStrip{
@@ -18,7 +19,7 @@
   overscroll-behavior-x:contain;
   overscroll-behavior-y:none;
   scrollbar-width:none;
-  padding-inline:var(--nt-day-chip-pad-x);
+  padding:2px 0 4px;
 }
 
 .ntDaysStripScroll::-webkit-scrollbar{
@@ -28,76 +29,152 @@
 .ntDaysStripTrack{
   display:flex;
   align-items:center;
-  gap:var(--nt-day-chip-gap);
+  gap:10px;
   min-width:max-content;
   width:max-content;
 }
 
+/* giorno = chip rotondo / glass */
 .ntDayChip{
+  position:relative;
   flex:0 0 auto;
-  width:var(--nt-day-chip-width);
-  height:var(--nt-day-chip-height);
-  border-radius:var(--nt-day-chip-radius);
-  border:1px solid var(--nt-border-strong);
-  background:var(--nt-surface-2);
-  color:var(--nt-text);
+  width:58px;
+  min-width:58px;
+  height:58px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 10px 24px rgba(0,0,0,.18);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
   gap:2px;
+  padding:6px 4px;
+  color:var(--nt-text);
   text-align:center;
-  position:relative;
+  transition:
+    transform .14s ease,
+    filter .14s ease,
+    background .14s ease,
+    border-color .14s ease,
+    box-shadow .14s ease;
+}
+
+.ntDayChip:active{
+  transform:scale(.97);
+  filter:brightness(1.03);
 }
 
 .ntDayChipWeekday{
-  font-size:var(--nt-day-chip-weekday-size);
+  display:block;
+  font-size:10px;
   line-height:1;
-  font-weight:800;
-  color:var(--nt-text-muted);
+  font-weight:900;
+  letter-spacing:.25px;
   text-transform:uppercase;
-  letter-spacing:.2px;
+  color:var(--nt-text-muted);
 }
 
 .ntDayChipDate{
-  font-size:var(--nt-day-chip-date-size);
+  display:block;
+  font-size:16px;
   line-height:1;
   font-weight:1000;
   color:var(--nt-text);
 }
 
-.ntDayChip.isToday .ntDayChipWeekday,
-.ntDayChip.isSelected .ntDayChipWeekday{
-  color:var(--nt-text);
-}
-
+/* selezionato */
 .ntDayChip.isSelected{
   border:1px solid transparent;
   background:
     linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
-    var(--nt-accent-border-gradient) border-box;
-}
-
-.ntDayChip.isToday:not(.isSelected){
+    var(--nt-accent-border-gradient) border-box,
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%) border-box;
   box-shadow:
-    0 0 0 1px rgba(255,255,255,.05),
-    0 6px 18px rgba(40,60,140,.10);
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 12px 28px rgba(0,0,0,.22);
 }
 
+.ntDayChip.isSelected .ntDayChipWeekday,
+.ntDayChip.isSelected .ntDayChipDate{
+  color:var(--nt-text);
+}
+
+/* today */
+.ntDayChip.isToday:not(.isSelected){
+  border-color:rgba(255,255,255,.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 10px 24px rgba(0,0,0,.18);
+}
+
+/* dot dati */
 .ntDayChip.hasData::after{
   content:"";
   position:absolute;
-  bottom:7px;
   left:50%;
+  bottom:6px;
   transform:translateX(-50%);
   width:6px;
   height:6px;
   border-radius:999px;
-  background:var(--nt-color-accent);
+  background:linear-gradient(90deg,#32c5ff 0%, #756bff 45%, #ff4fd8 100%);
+  box-shadow:0 0 10px rgba(117,107,255,.28);
 }
 
-.ntDayChip.isDisabled{
+/* disabilitato */
+.ntDayChip.isDisabled,
+.ntDayChip:disabled{
   opacity:.42;
-  filter:saturate(.72);
+  filter:saturate(.75);
   pointer-events:none;
+}
+
+/* iPhone piccoli */
+@media (max-width:390px){
+  .ntDaysStripTrack{
+    gap:8px;
+  }
+
+  .ntDayChip{
+    width:54px;
+    min-width:54px;
+    height:54px;
+  }
+
+  .ntDayChipWeekday{
+    font-size:9px;
+  }
+
+  .ntDayChipDate{
+    font-size:15px;
+  }
+}
+
+/* schermi grandi */
+@media (min-width:600px){
+  .ntDaysStripTrack{
+    gap:12px;
+  }
+
+  .ntDayChip{
+    width:62px;
+    min-width:62px;
+    height:62px;
+  }
+
+  .ntDayChipWeekday{
+    font-size:11px;
+  }
+
+  .ntDayChipDate{
+    font-size:17px;
+  }
 }
