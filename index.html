@@ -102,7 +102,9 @@
         viewportEl,
         trackEl,
         dotsHook: (data) => {
-          if (window.NTCardDots) NTCardDots.render(data);
+          if (window.NTCardDots) {
+            NTCardDots.render(data);
+          }
         }
       });
     }
@@ -198,6 +200,14 @@
             showBack: true,
             showNext: true
           });
+        },
+        onSave() {
+          if (window.NTToast) {
+            NTToast.show({
+              title: "Dati salvati",
+              text: "Le modifiche della card sono state registrate."
+            });
+          }
         }
       });
 
@@ -231,6 +241,14 @@
             showBack: true,
             showNext: true
           });
+        },
+        onSave() {
+          if (window.NTToast) {
+            NTToast.show({
+              title: "Profilo salvato",
+              text: "Le informazioni del profilo sono state aggiornate."
+            });
+          }
         }
       });
 
