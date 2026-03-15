@@ -14,7 +14,7 @@ window.NTCardGestures = (() => {
     deltaY: 0,
     tracking: false,
     lock: null,
-    baseTranslatePct: 0,
+    baseTranslateX: 0,
     allowInnerXScroll: false
   };
 
@@ -46,7 +46,7 @@ window.NTCardGestures = (() => {
     gesture.lock = null;
 
     const activeIndex = window.NTCards?.state?.activeIndex ?? 0;
-    gesture.baseTranslatePct = -(activeIndex * 100);
+    gesture.baseTranslateX = window.NTCards?.getTranslateXForIndex?.(activeIndex) ?? 0;
 
     const target = e.target;
     gesture.allowInnerXScroll = !!target?.closest?.('[data-nt-allow-x-scroll="true"]');
@@ -149,13 +149,10 @@ window.NTCardGestures = (() => {
 
   function dragTrackWithFinger() {
     const trackEl = window.NTCards?.state?.trackEl;
-    if (!trackEl || !viewportEl) return;
+    if (!trackEl) return;
 
-    const width = viewportEl.clientWidth || 1;
-    const movePct = (gesture.deltaX / width) * 100;
-    const nextTranslate = gesture.baseTranslatePct + movePct;
-
-    trackEl.style.transform = `translate3d(${nextTranslate}%,0,0)`;
+    const nextTranslateX = gesture.baseTranslateX + gesture.deltaX;
+    trackEl.style.transform = `translate3d(${nextTranslateX}px,0,0)`;
   }
 
   function snapBackTrack() {
@@ -163,7 +160,8 @@ window.NTCardGestures = (() => {
     const activeIndex = window.NTCards?.state?.activeIndex ?? 0;
     if (!trackEl) return;
 
-    trackEl.style.transform = `translate3d(${-activeIndex * 100}%,0,0)`;
+    const x = window.NTCards?.getTranslateXForIndex?.(activeIndex) ?? 0;
+    trackEl.style.transform = `translate3d(${x}px,0,0)`;
   }
 
   function restoreTrackTransition() {
