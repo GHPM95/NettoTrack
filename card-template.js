@@ -15,12 +15,14 @@ window.NTCardTemplate = (() => {
     const safeId = escapeHtml(id || "");
     const safeTitle = escapeHtml(title || "");
 
+    const hasSubHeader = !!String(subHeader || "").trim();
+
     return `
       <section class="ntCard" data-nt-card="${safeId}">
         <div class="ntCardShell">
           <div class="ntCardTop">
-            <header class="ntCardHeader">
-              <div class="ntCardNav">
+            <header class="ntCardHeader ${title || showBack || showNext ? "" : "isHidden"}">
+              <div class="ntCardNav ${showBack || showNext ? "" : "isHidden"}">
                 ${showBack ? `
                   <button
                     type="button"
@@ -38,63 +40,59 @@ window.NTCardTemplate = (() => {
                 ` : `<div class="ntCardHeaderSide"></div>`}
               </div>
 
-              <div class="ntCardTitleWrap">
+              <div class="ntCardTitleWrap ${safeTitle ? "" : "isHidden"}">
                 <h2 class="ntCardTitle">${safeTitle}</h2>
               </div>
 
-              <button
-                type="button"
-                class="ntIconBtn ntPress jsNtCardClose"
-                aria-label="Chiudi card"
-              >×</button>
+              <div class="${title ? "" : "ntCardHeaderSide"}">
+                <button
+                  type="button"
+                  class="ntIconBtn ntPress jsNtCardClose ${title ? "" : "isGhost"}"
+                  aria-label="Chiudi card"
+                >×</button>
+              </div>
             </header>
 
-            ${subHeader ? `
-              <div class="ntCardSubHeader">
-                ${subHeader}
+            <div class="ntCardSubHeader ${hasSubHeader ? "" : "isPlaceholder"}">
+              <div class="ntCardSubHeaderContent">
+                ${hasSubHeader ? subHeader : ""}
               </div>
-            ` : ""}
+            </div>
           </div>
 
           <div class="ntCardBody ntScrollY">
             ${body}
           </div>
 
-          ${
-            footer
-              ? `
-                <footer class="ntCardFooter">
-                  <div class="ntCardFooterRow">
-                    <button
-                      type="button"
-                      class="ntBtn ntBtnSecondary ntPress jsNtCardCancel"
-                    >annulla</button>
+          <footer class="ntCardFooter ${footer ? "" : "isPlaceholder"}">
+            <div class="ntCardFooterRow">
+              ${footer ? `
+                <button
+                  type="button"
+                  class="ntBtn ntBtnSecondary ntPress jsNtCardCancel"
+                >annulla</button>
 
-                    <button
-                      type="button"
-                      class="ntBtn ntBtnPrimary ntPress jsNtCardSave"
-                    >salva</button>
-                  </div>
-                </footer>
-              `
-              : `
-                <footer class="ntCardFooter isPlaceholder" aria-hidden="true">
-                  <div class="ntCardFooterRow">
-                    <button
-                      type="button"
-                      class="ntBtn ntBtnSecondary"
-                      tabindex="-1"
-                    >annulla</button>
+                <button
+                  type="button"
+                  class="ntBtn ntBtnPrimary ntPress jsNtCardSave"
+                >salva</button>
+              ` : `
+                <button
+                  type="button"
+                  class="ntBtn ntBtnSecondary"
+                  tabindex="-1"
+                  aria-hidden="true"
+                >annulla</button>
 
-                    <button
-                      type="button"
-                      class="ntBtn ntBtnPrimary"
-                      tabindex="-1"
-                    >salva</button>
-                  </div>
-                </footer>
-              `
-          }
+                <button
+                  type="button"
+                  class="ntBtn ntBtnPrimary"
+                  tabindex="-1"
+                  aria-hidden="true"
+                >salva</button>
+              `}
+            </div>
+          </footer>
         </div>
       </section>
     `;
