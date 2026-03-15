@@ -77,6 +77,7 @@ window.NTCardGestures = (() => {
     if (gesture.lock === "x") {
       e.preventDefault();
       dragTrackWithFinger();
+      applyPeekClasses();
       return;
     }
 
@@ -130,12 +131,14 @@ window.NTCardGestures = (() => {
       }
     }
 
+    clearPeekClasses();
     resetGesture();
   }
 
   function onCancel() {
     restoreTrackTransition();
     snapBackTrack();
+    clearPeekClasses();
     resetGesture();
   }
 
@@ -168,6 +171,31 @@ window.NTCardGestures = (() => {
     const trackEl = window.NTCards?.state?.trackEl;
     if (!trackEl) return;
     trackEl.style.transition = "transform .22s ease";
+  }
+
+  function clearPeekClasses() {
+    viewportEl?.querySelectorAll(".ntCardSlide").forEach((slide) => {
+      slide.classList.remove("isPeekCurrent", "isPeekNext", "isPeekPrev");
+    });
+  }
+
+  function applyPeekClasses() {
+    clearPeekClasses();
+
+    const activeIndex = window.NTCards?.state?.activeIndex ?? 0;
+    const slides = viewportEl?.querySelectorAll(".ntCardSlide");
+    if (!slides?.length) return;
+
+    const current = slides[activeIndex];
+    if (current) current.classList.add("isPeekCurrent");
+
+    if (gesture.deltaX < 0) {
+      const next = slides[activeIndex + 1];
+      if (next) next.classList.add("isPeekNext");
+    } else if (gesture.deltaX > 0) {
+      const prev = slides[activeIndex - 1];
+      if (prev) prev.classList.add("isPeekPrev");
+    }
   }
 
   function onPointerDown(e) {
