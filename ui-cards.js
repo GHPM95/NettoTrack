@@ -287,7 +287,6 @@ window.NTCards = (() => {
 
     const x = getTranslateXForIndex(Math.max(0, state.activeIndex));
     state.trackEl.style.transform = `translate3d(${x}px,0,0)`;
-
     updateDots();
   }
 
