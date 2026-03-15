@@ -2,198 +2,201 @@
    NettoTrack Calendar Days Strip
    ========================= */
 
-window.NTCalendarDaysStrip = (() => {
-  const DAY_NAMES_IT = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
+.ntDaysStrip{
+  width:100%;
+  min-width:0;
+  display:flex;
+  align-items:center;
+}
 
-  function createStore({
-    mount,
-    onSelect = null,
-    days = [],
-    selectedDate = null
-  } = {}) {
-    if (!mount) {
-      throw new Error("NTCalendarDaysStrip: mount richiesto");
-    }
+.ntDaysStripScroll{
+  width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  touch-action:pan-x pan-y;
+}
 
-    const state = {
-      mount,
-      onSelect,
-      days: Array.isArray(days) ? [...days] : [],
-      selectedDate: selectedDate || null
-    };
+.ntDaysStripScroll::-webkit-scrollbar{
+  display:none;
+}
 
-    function setDays(newDays = []) {
-      state.days = Array.isArray(newDays) ? [...newDays] : [];
-      render();
-    }
+.ntDaysStripTrack{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:max-content;
+  padding:2px 2px 4px;
+}
 
-    function setSelectedDate(value) {
-      state.selectedDate = value || null;
-      render();
-      centerSelected();
-    }
+/* =========================
+   Day chip
+   ========================= */
 
-    function selectDate(value) {
-      state.selectedDate = value;
-      render();
-      centerSelected();
+.ntDayChip{
+  position:relative;
+  flex:0 0 auto;
+  width:64px;
+  min-width:64px;
+  height:96px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.14);
+  background:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 10px 24px rgba(0,0,0,.18);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:10px 6px;
+  color:var(--nt-text);
+  text-align:center;
+  transition:
+    transform .14s ease,
+    filter .14s ease,
+    background .14s ease,
+    border-color .14s ease,
+    box-shadow .14s ease;
+}
 
-      if (typeof state.onSelect === "function") {
-        state.onSelect(value, getDayByDate(value));
-      }
-    }
+.ntDayChip:active{
+  transform:scale(.97);
+  filter:brightness(1.03);
+}
 
-    function getDayByDate(value) {
-      return state.days.find((d) => d.date === value) || null;
-    }
+.ntDayChipWeekday{
+  display:block;
+  font-size:11px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:.35px;
+  text-transform:uppercase;
+  color:var(--nt-text-muted);
+}
 
-    function render() {
-      const html = `
-        <div class="ntDaysStrip">
-          <div class="ntDaysStripScroll" data-nt-allow-x-scroll="true">
-            <div class="ntDaysStripTrack">
-              ${state.days.map(renderDayChip).join("")}
-            </div>
-          </div>
-        </div>
-      `;
+.ntDayChipDate{
+  display:block;
+  font-size:17px;
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:.1px;
+  color:var(--nt-text);
+}
 
-      state.mount.innerHTML = html;
-      bind();
-    }
+/* =========================
+   Selected
+   ========================= */
 
-    function bind() {
-      state.mount.querySelectorAll("[data-nt-day-date]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const value = btn.dataset.ntDayDate;
-          if (!value) return;
-          selectDate(value);
-        });
-      });
-    }
+.ntDayChip.isSelected{
+  border:1px solid transparent;
+  background:
+    linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
+    var(--nt-accent-border-gradient) border-box,
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.12), transparent 55%) border-box;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 12px 28px rgba(0,0,0,.22);
+}
 
-    function centerSelected() {
-      const scroll = state.mount.querySelector(".ntDaysStripScroll");
-      const selected = state.mount.querySelector(".ntDayChip.isSelected");
-      const track = state.mount.querySelector(".ntDaysStripTrack");
+.ntDayChip.isSelected .ntDayChipWeekday,
+.ntDayChip.isSelected .ntDayChipDate{
+  color:var(--nt-text);
+}
 
-      if (!scroll || !selected) return;
+/* =========================
+   Today
+   ========================= */
 
-      const target =
-        selected.offsetLeft -
-        (scroll.clientWidth / 2) +
-        (selected.clientWidth / 2);
+.ntDayChip.isToday:not(.isSelected){
+  border-color:rgba(255,255,255,.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 10px 24px rgba(0,0,0,.18);
+}
 
-      scroll.scrollTo({
-        left: Math.max(0, target),
-        behavior: "smooth"
-      });
+/* =========================
+   Has data
+   ========================= */
 
-      if (track) {
-        track.classList.remove("isRefocus");
-        void track.offsetWidth;
-        track.classList.add("isRefocus");
-      }
-    }
+.ntDayChip.hasData::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:8px;
+  transform:translateX(-50%);
+  width:7px;
+  height:7px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#32c5ff 0%, #756bff 45%, #ff4fd8 100%);
+  box-shadow:0 0 10px rgba(117,107,255,.28);
+}
 
-    function renderDayChip(day) {
-      const date = normalizeDate(day.date);
-      const d = new Date(`${date}T12:00:00`);
-      const weekday = day.weekdayLabel || DAY_NAMES_IT[d.getDay()];
-      const number = day.dayNumber || String(d.getDate());
-      const isSelected = state.selectedDate === date;
-      const isToday = !!day.isToday;
-      const hasData = !!day.hasData;
-      const isDisabled = !!day.isDisabled;
+/* =========================
+   Disabled
+   ========================= */
 
-      return `
-        <button
-          type="button"
-          class="ntDayChip
-            ${isSelected ? "isSelected" : ""}
-            ${isToday ? "isToday" : ""}
-            ${hasData ? "hasData" : ""}
-            ${isDisabled ? "isDisabled" : ""}"
-          data-nt-day-date="${date}"
-          aria-pressed="${isSelected ? "true" : "false"}"
-          ${isDisabled ? "disabled" : ""}
-        >
-          <span class="ntDayChipWeekday">${escapeHtml(weekday)}</span>
-          <span class="ntDayChipDate">${escapeHtml(number)}</span>
-        </button>
-      `;
-    }
+.ntDayChip.isDisabled,
+.ntDayChip:disabled{
+  opacity:.42;
+  filter:saturate(.75);
+  pointer-events:none;
+}
 
-    render();
-    queueMicrotask(centerSelected);
+/* =========================
+   Compact screens
+   ========================= */
 
-    return {
-      setDays,
-      setSelectedDate,
-      selectDate,
-      getState: () => ({ ...state })
-    };
+@media (max-width:390px){
+  .ntDaysStripTrack{
+    gap:8px;
   }
 
-  function build7DaysFromDate(baseDate = new Date(), options = {}) {
-    const {
-      selectedDate = null,
-      hasDataMap = {},
-      disabledDates = []
-    } = options;
-
-    const base = new Date(baseDate);
-    const out = [];
-
-    for (let i = 0; i < 7; i += 1) {
-      const d = new Date(base);
-      d.setDate(base.getDate() + i);
-
-      const iso = formatDateISO(d);
-      const today = formatDateISO(new Date());
-
-      out.push({
-        date: iso,
-        weekdayLabel: DAY_NAMES_IT[d.getDay()],
-        dayNumber: String(d.getDate()),
-        isToday: iso === today,
-        hasData: !!hasDataMap[iso],
-        isDisabled: disabledDates.includes(iso),
-        isSelected: selectedDate === iso
-      });
-    }
-
-    return out;
+  .ntDayChip{
+    width:58px;
+    min-width:58px;
+    height:90px;
+    border-radius:20px;
+    padding:9px 5px;
   }
 
-  function formatDateISO(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
+  .ntDayChipWeekday{
+    font-size:10px;
   }
 
-  function normalizeDate(value) {
-    if (!value) return "";
-    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  .ntDayChipDate{
+    font-size:16px;
+  }
+}
 
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return String(value);
-    return formatDateISO(d);
+/* =========================
+   Larger screens
+   ========================= */
+
+@media (min-width:600px){
+  .ntDaysStripTrack{
+    gap:12px;
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+  .ntDayChip{
+    width:68px;
+    min-width:68px;
+    height:100px;
+    border-radius:24px;
   }
 
-  return {
-    createStore,
-    build7DaysFromDate,
-    formatDateISO
-  };
-})();
+  .ntDayChipWeekday{
+    font-size:12px;
+  }
+
+  .ntDayChipDate{
+    font-size:18px;
+  }
+}
