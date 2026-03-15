@@ -1,4 +1,4 @@
-/* =========================
+l/* =========================
    NettoTrack UI Animations
    ========================= */
 
@@ -31,6 +31,10 @@
 .ntMenuAnim.isOpen{
   opacity:1;
   transform:translateY(0) scale(1);
+}
+
+.ntCardsTrack{
+  transition:transform .22s ease;
 }
 
 @keyframes ntCardEnter{
@@ -121,12 +125,4 @@
 
 .ntDot{
   animation:ntDotPop .18s ease;
-}
-
-/* =========================
-CARD SLIDE ANIMATION
-========================= */
-
-.ntCardsTrack{
-  transition: transform .22s ease;
 }
