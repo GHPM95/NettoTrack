@@ -50,7 +50,7 @@ window.NTCalendarDaysStrip = (() => {
     function render() {
       const html = `
         <div class="ntDaysStrip">
-          <div class="ntDaysStripScroll">
+          <div class="ntDaysStripScroll" data-nt-allow-x-scroll="true">
             <div class="ntDaysStripTrack">
               ${state.days.map(renderDayChip).join("")}
             </div>
