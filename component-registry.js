@@ -3,191 +3,143 @@
    ========================= */
 
 window.NTComponents = (() => {
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  function attrs(obj = {}) {
-    return Object.entries(obj)
-      .filter(([, v]) => v !== null && v !== undefined && v !== false && v !== "")
-      .map(([k, v]) => {
-        if (v === true) return `${k}`;
-        return `${k}="${escapeHtml(v)}"`;
-      })
-      .join(" ");
-  }
-
-  function dataAttrs(data = {}) {
-    return Object.fromEntries(
-      Object.entries(data).map(([k, v]) => [`data-${k}`, v])
-    );
-  }
-
-  function capitalize(value = "") {
-    const v = String(value);
-    return v.charAt(0).toUpperCase() + v.slice(1);
-  }
-
-  function defaultAvatarIcon() {
+  function section({ title = "", body = "", glass = false } = {}) {
     return `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="8" r="4"></circle>
-        <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
-      </svg>
+      <section class="ntSection ${glass ? "ntSectionGlass" : ""}">
+        ${title ? `<h3 class="ntSectionTitle">${escapeHtml(title)}</h3>` : ""}
+        ${body ? `<div class="ntSectionText">${body}</div>` : ""}
+      </section>
     `;
   }
 
   function input({
-    type = "text",
-    value = "",
+    label = "",
     placeholder = "",
+    value = "",
+    type = "text",
     name = "",
-    id = "",
-    disabled = false,
-    extraClass = "",
-    data = {}
+    disabled = false
   } = {}) {
     return `
-      <input
-        class="ntFieldInput ${escapeHtml(extraClass)}"
-        type="${escapeHtml(type)}"
-        value="${escapeHtml(value)}"
-        placeholder="${escapeHtml(placeholder)}"
-        ${attrs({
-          name,
-          id,
-          disabled,
-          ...dataAttrs(data)
-        })}
-      >
+      <div class="ntField">
+        ${label ? `<label class="ntLabel">${escapeHtml(label)}</label>` : ""}
+        <div class="ntInputWrap">
+          <input
+            class="ntInput"
+            type="${escapeAttr(type)}"
+            ${name ? `name="${escapeAttr(name)}"` : ""}
+            ${placeholder ? `placeholder="${escapeAttr(placeholder)}"` : ""}
+            value="${escapeAttr(value)}"
+            ${disabled ? "disabled" : ""}
+          />
+        </div>
+      </div>
     `;
   }
 
   function textarea({
-    value = "",
+    label = "",
     placeholder = "",
+    value = "",
     name = "",
-    id = "",
-    disabled = false,
-    extraClass = "",
-    rows = 4,
-    data = {}
+    disabled = false
   } = {}) {
     return `
-      <textarea
-        class="ntTextarea ${escapeHtml(extraClass)}"
-        placeholder="${escapeHtml(placeholder)}"
-        rows="${escapeHtml(rows)}"
-        ${attrs({
-          name,
-          id,
-          disabled,
-          ...dataAttrs(data)
-        })}
-      >${escapeHtml(value)}</textarea>
+      <div class="ntField">
+        ${label ? `<label class="ntLabel">${escapeHtml(label)}</label>` : ""}
+        <div class="ntTextareaWrap">
+          <textarea
+            class="ntTextarea"
+            ${name ? `name="${escapeAttr(name)}"` : ""}
+            ${placeholder ? `placeholder="${escapeAttr(placeholder)}"` : ""}
+            ${disabled ? "disabled" : ""}
+          >${escapeHtml(value)}</textarea>
+        </div>
+      </div>
+    `;
+  }
+
+  function select({
+    label = "",
+    name = "",
+    value = "",
+    options = [],
+    disabled = false
+  } = {}) {
+    const safeOptions = Array.isArray(options) ? options : [];
+
+    return `
+      <div class="ntField">
+        ${label ? `<label class="ntLabel">${escapeHtml(label)}</label>` : ""}
+        <div class="ntSelectWrap">
+          <select
+            class="ntSelect"
+            ${name ? `name="${escapeAttr(name)}"` : ""}
+            ${disabled ? "disabled" : ""}
+          >
+            ${safeOptions.map((opt) => {
+              const item = normalizeOption(opt);
+              return `
+                <option
+                  value="${escapeAttr(item.value)}"
+                  ${String(item.value) === String(value) ? "selected" : ""}
+                >
+                  ${escapeHtml(item.label)}
+                </option>
+              `;
+            }).join("")}
+          </select>
+        </div>
+      </div>
     `;
   }
 
   function button({
-    label = "",
-    kind = "primary",
-    pressed = null,
-    disabled = false,
-    extraClass = "",
-    type = "button",
-    data = {}
+    label = "Button",
+    kind = "secondary",
+    pressed = false,
+    full = true,
+    disabled = false
   } = {}) {
-    const classMap = {
-      primary: "ntBtnPrimary",
-      secondary: "ntBtnSecondary",
-      ghost: "ntBtnGhost",
-      toggle: "ntToggleBtn"
-    };
+    const classes = [
+      kind === "primary" ? "ntBtn ntBtnPrimary" : "ntBtn ntBtnSecondary",
+      "ntPress"
+    ];
 
-    const baseClass = classMap[kind] || "ntBtnPrimary";
-    const toggleState =
-      kind === "toggle"
-        ? (pressed ? " isOn" : " isOff")
-        : "";
-
-    const ariaPressed =
-      kind === "toggle" && pressed !== null
-        ? { "aria-pressed": pressed ? "true" : "false" }
-        : {};
+    if (pressed) classes.push("isSelected");
+    if (!full) classes.push("isAuto");
 
     return `
       <button
-        type="${escapeHtml(type)}"
-        class="${baseClass}${toggleState} ntPress ${escapeHtml(extraClass)}"
-        ${attrs({
-          disabled,
-          ...ariaPressed,
-          ...dataAttrs(data)
-        })}
-      >${escapeHtml(label)}</button>
+        type="button"
+        class="${classes.join(" ")}"
+        ${pressed ? 'aria-pressed="true"' : 'aria-pressed="false"'}
+        ${disabled ? "disabled" : ""}
+      >
+        ${escapeHtml(label)}
+      </button>
     `;
-  }
-
-  function iconButton({
-    label = "",
-    disabled = false,
-    hidden = false,
-    extraClass = "",
-    type = "button",
-    data = {}
-  } = {}) {
-    return `
-      <button
-        type="${escapeHtml(type)}"
-        class="ntIconBtn ntPress ${hidden ? "isHidden" : ""} ${escapeHtml(extraClass)}"
-        ${attrs({
-          disabled,
-          ...dataAttrs(data)
-        })}
-      >${escapeHtml(label)}</button>
-    `;
-  }
-
-  function divider({ extraClass = "" } = {}) {
-    return `<div class="ntDivider ${escapeHtml(extraClass)}"></div>`;
   }
 
   function checkbox({
     title = "",
     desc = "",
     checked = false,
-    disabled = false,
-    name = "",
-    value = "",
-    id = "",
-    extraClass = "",
-    data = {}
+    disabled = false
   } = {}) {
     return `
-      <label class="ntCheckRow ${escapeHtml(extraClass)}">
-        <span class="ntCheckWrap">
-          <input
-            type="checkbox"
-            class="ntCheckInput"
-            ${attrs({
-              checked,
-              disabled,
-              name,
-              value,
-              id,
-              ...dataAttrs(data)
-            })}
-          >
-          <span class="ntCheckUi"></span>
-        </span>
+      <label class="ntCheckRow">
+        <input
+          class="ntCheckInput"
+          type="checkbox"
+          ${checked ? "checked" : ""}
+          ${disabled ? "disabled" : ""}
+          hidden
+        />
+        <span class="ntCheckUi" aria-hidden="true"></span>
 
-        <span class="ntCheckLabel">
-          <span class="ntCheckTitle">${escapeHtml(title)}</span>
+        <span class="ntCheckContent">
+          ${title ? `<span class="ntCheckTitle">${escapeHtml(title)}</span>` : ""}
           ${desc ? `<span class="ntCheckDesc">${escapeHtml(desc)}</span>` : ""}
         </span>
       </label>
@@ -199,106 +151,48 @@ window.NTComponents = (() => {
     desc = "",
     checked = false,
     disabled = false,
-    name = "",
-    value = "",
-    id = "",
-    extraClass = "",
-    data = {}
+    name = "ntRadio"
   } = {}) {
     return `
-      <label class="ntRadioRow ${escapeHtml(extraClass)}">
-        <span class="ntRadioWrap">
-          <input
-            type="radio"
-            class="ntRadioInput"
-            ${attrs({
-              checked,
-              disabled,
-              name,
-              value,
-              id,
-              ...dataAttrs(data)
-            })}
-          >
-          <span class="ntRadioUi"></span>
-        </span>
+      <label class="ntRadioRow">
+        <input
+          class="ntRadioInput"
+          type="radio"
+          name="${escapeAttr(name)}"
+          ${checked ? "checked" : ""}
+          ${disabled ? "disabled" : ""}
+          hidden
+        />
+        <span class="ntRadioUi" aria-hidden="true"></span>
 
-        <span class="ntRadioLabel">
-          <span class="ntRadioTitle">${escapeHtml(title)}</span>
+        <span class="ntRadioContent">
+          ${title ? `<span class="ntRadioTitle">${escapeHtml(title)}</span>` : ""}
           ${desc ? `<span class="ntRadioDesc">${escapeHtml(desc)}</span>` : ""}
         </span>
       </label>
     `;
   }
 
-  function avatar({
-    variant = "nothing",
-    title = "",
-    hint = "",
-    extraClass = "",
-    icon = defaultAvatarIcon()
-  } = {}) {
-    const variantClass = {
-      male: "ntAvatarMale",
-      female: "ntAvatarFemale",
-      neutral: "ntAvatarNeutral",
-      nothing: "ntAvatarNothing"
-    }[variant] || "ntAvatarNothing";
-
+  function grid2({ left = "", right = "" } = {}) {
     return `
-      <div class="ntAvatarField ${escapeHtml(extraClass)}">
-        <div class="ntAvatarBox">
-          <div class="ntAvatar ${variantClass}">
-            ${icon}
-          </div>
-        </div>
-
-        ${(title || hint) ? `
-          <div class="ntAvatarMeta">
-            ${title ? `<div class="ntAvatarTitle">${escapeHtml(title)}</div>` : ""}
-            ${hint ? `<div class="ntAvatarHint">${escapeHtml(hint)}</div>` : ""}
-          </div>
-        ` : ""}
-      </div>
-    `;
-  }
-
-  function dots({
-    items = [],
-    extraClass = ""
-  } = {}) {
-    const map = {
-      base: "ntDotBase",
-      holiday: "ntDotHoliday",
-      overtime: "ntDotOvertime"
-    };
-
-    return `
-      <div class="ntDots ${escapeHtml(extraClass)}">
-        ${items.map((item) => `<span class="ntDot ${map[item] || "ntDotBase"}"></span>`).join("")}
+      <div class="ntGrid-2 ntFormRow">
+        <div class="ntFormCol">${left}</div>
+        <div class="ntFormCol">${right}</div>
       </div>
     `;
   }
 
   function fieldAction({
     label = "",
-    expanded = false,
-    disabled = false,
-    extraClass = "",
-    data = {}
+    value = "",
+    icon = "›"
   } = {}) {
     return `
-      <button
-        type="button"
-        class="ntFieldAction ${escapeHtml(extraClass)}"
-        ${attrs({
-          "aria-expanded": expanded ? "true" : "false",
-          disabled,
-          ...dataAttrs(data)
-        })}
-      >
-        <span>${escapeHtml(label)}</span>
-        <span class="ntFieldChevron"></span>
+      <button type="button" class="ntFieldAction ntPress">
+        <span class="ntFieldActionLabel">${escapeHtml(label)}</span>
+        <span class="ntFieldActionValue">
+          ${value ? escapeHtml(value) : escapeHtml(icon)}
+        </span>
       </button>
     `;
   }
@@ -306,70 +200,109 @@ window.NTComponents = (() => {
   function emptyState({
     icon = "○",
     title = "",
-    text = "",
-    extraClass = ""
+    text = ""
   } = {}) {
     return `
-      <div class="ntEmptyState ${escapeHtml(extraClass)}">
-        <div class="ntEmptyStateIcon" aria-hidden="true">${escapeHtml(icon)}</div>
-        <div class="ntEmptyStateTitle">${escapeHtml(title)}</div>
-        <div class="ntEmptyStateText">${escapeHtml(text)}</div>
+      <div class="ntEmptyState">
+        <div class="ntEmptyStateIcon">${escapeHtml(icon)}</div>
+        ${title ? `<div class="ntEmptyStateTitle">${escapeHtml(title)}</div>` : ""}
+        ${text ? `<div class="ntEmptyStateText">${escapeHtml(text)}</div>` : ""}
       </div>
     `;
   }
 
-  function skeletonLines({
-    lines = ["long", "medium", "short"],
-    extraClass = ""
-  } = {}) {
-    return `
-      <div class="${escapeHtml(extraClass)}">
-        ${lines.map((size) => `<div class="ntSkeleton ntSkeletonLine is${capitalize(size)}"></div>`).join("")}
-      </div>
-    `;
-  }
-
-  function section({
+  function avatar({
+    variant = "nothing",
     title = "",
-    body = "",
-    glass = false,
-    extraClass = ""
+    hint = ""
   } = {}) {
+    const icon = variant === "user" ? "👤" : "◌";
+
     return `
-      <section class="ntSection ${glass ? "ntSectionGlass" : ""} ${escapeHtml(extraClass)}">
-        ${title ? `<div class="ntSectionTitle">${escapeHtml(title)}</div>` : ""}
-        ${body}
-      </section>
+      <div class="ntAvatarBox">
+        <div class="ntAvatarMedia" aria-hidden="true">${icon}</div>
+        <div class="ntAvatarContent">
+          ${title ? `<div class="ntAvatarTitle">${escapeHtml(title)}</div>` : ""}
+          ${hint ? `<div class="ntAvatarHint">${escapeHtml(hint)}</div>` : ""}
+        </div>
+      </div>
     `;
   }
 
-  function grid2({
-    left = "",
-    right = "",
-    extraClass = ""
-  } = {}) {
+  function divider() {
+    return `<hr class="ntDivider" />`;
+  }
+
+  function stack(items = [], gap = 12) {
+    const cls = gap === 10
+      ? "ntStack-10"
+      : gap === 16
+        ? "ntStack-16"
+        : gap === 18
+          ? "ntStack-18"
+          : "ntStack-12";
+
+    return `<div class="${cls}">${items.join("")}</div>`;
+  }
+
+  function cluster(items = [], gap = 10) {
+    const cls = gap === 8
+      ? "ntCluster-8"
+      : gap === 12
+        ? "ntCluster-12"
+        : "ntCluster-10";
+
+    return `<div class="${cls}">${items.join("")}</div>`;
+  }
+
+  function formActions({ left = "", right = "" } = {}) {
     return `
-      <div class="ntGrid-2 ${escapeHtml(extraClass)}">
-        <div>${left}</div>
-        <div>${right}</div>
+      <div class="ntFormActions">
+        <div class="ntFormCol">${left}</div>
+        <div class="ntFormCol">${right}</div>
       </div>
     `;
+  }
+
+  function normalizeOption(opt) {
+    if (typeof opt === "string" || typeof opt === "number") {
+      return { value: String(opt), label: String(opt) };
+    }
+
+    return {
+      value: String(opt?.value ?? ""),
+      label: String(opt?.label ?? opt?.value ?? "")
+    };
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttr(value) {
+    return escapeHtml(value);
   }
 
   return {
+    section,
     input,
     textarea,
+    select,
     button,
-    iconButton,
-    divider,
     checkbox,
     radio,
-    avatar,
-    dots,
+    grid2,
     fieldAction,
     emptyState,
-    skeletonLines,
-    section,
-    grid2
+    avatar,
+    divider,
+    stack,
+    cluster,
+    formActions
   };
 })();
