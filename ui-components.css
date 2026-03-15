@@ -2,291 +2,237 @@
    NettoTrack UI Components
    ========================= */
 
-.ntIconBtn{
-  width:var(--nt-icon-size, 38px);
-  height:var(--nt-icon-size, 38px);
-  border-radius:var(--nt-radius-medium);
-  border:none;
-  background:rgba(255,255,255,.10);
-  color:var(--nt-text);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:24px;
-  font-weight:900;
-}
-
-.ntIconBtn.isHidden{
-  visibility:hidden;
-  pointer-events:none;
-}
-
-.ntBtnPrimary,
-.ntBtnSecondary,
-.ntBtnGhost,
-.ntToggleBtn{
+.ntSection{
+  width:100%;
   min-width:0;
-  height:var(--nt-button-height);
-  padding:0 18px;
-  border-radius:var(--nt-radius-large);
-  font-family:var(--nt-font-family);
-  font-size:var(--nt-font-button);
-  font-weight:1000;
   display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
+  flex-direction:column;
+  gap:14px;
 }
 
-.ntBtnPrimary{
-  border:1px solid var(--nt-border-strong);
-  background:var(--nt-surface-2);
-  color:var(--nt-text);
-}
-
-.ntBtnSecondary{
-  border:1px solid var(--nt-border);
-  background:rgba(255,255,255,.05);
-  color:var(--nt-text);
-}
-
-.ntBtnGhost{
-  border:1px solid transparent;
-  background:transparent;
-  color:var(--nt-text-muted);
-}
-
-.ntToggleBtn{
-  border:1px solid var(--nt-border-strong);
-  background:var(--nt-surface-2);
-  color:var(--nt-text);
-}
-
-.ntToggleBtn.isOn,
-.ntToggleBtn[aria-pressed="true"]{
-  border:1px solid transparent;
-  background:
-    linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
-    var(--nt-accent-border-gradient) border-box;
-}
-
-.ntToggleBtn.isOff,
-.ntToggleBtn[aria-pressed="false"]{
-  border:1px solid var(--nt-border-strong);
-  background:var(--nt-surface-2);
-}
-
-.ntGlassCard{
+.ntSectionGlass{
+  width:100%;
+  min-width:0;
   padding:12px;
-  border-radius:var(--nt-radius-medium);
+  border-radius:16px;
   border:1px solid var(--nt-border);
   background:var(--nt-surface-soft);
 }
 
-.ntAvatarField{
-  display:flex;
-  align-items:flex-start;
-  justify-content:flex-start;
-  gap:var(--nt-avatar-gap);
+.ntSectionTitle{
+  width:100%;
   min-width:0;
+  font-size:var(--nt-font-label);
+  font-weight:900;
+  line-height:1.35;
+  color:var(--nt-text);
+}
+
+.ntSectionText{
+  width:100%;
+  min-width:0;
+  font-size:14px;
+  line-height:1.5;
+  color:var(--nt-text);
+}
+
+.ntGrid-2{
+  width:100%;
+  min-width:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:12px;
+}
+
+.ntCluster-8,
+.ntCluster-10,
+.ntCluster-12{
+  width:100%;
+  min-width:0;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:stretch;
+}
+
+.ntCluster-8{ gap:8px; }
+.ntCluster-10{ gap:10px; }
+.ntCluster-12{ gap:12px; }
+
+.ntStack-10,
+.ntStack-12,
+.ntStack-16,
+.ntStack-18{
+  width:100%;
+  min-width:0;
+}
+
+.ntStack-10 > * + *{ margin-top:10px; }
+.ntStack-12 > * + *{ margin-top:12px; }
+.ntStack-16 > * + *{ margin-top:16px; }
+.ntStack-18 > * + *{ margin-top:18px; }
+
+.ntDivider{
+  width:100%;
+  max-width:100%;
+  flex:0 0 auto;
+}
+
+.ntAvatarBox,
+.ntEmptyState,
+.ntFieldAction,
+.ntInfoRow,
+.ntRow,
+.ntCol{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+}
+
+.ntRow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.ntCol{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.ntFieldAction{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:46px;
+  padding:12px 14px;
+  border-radius:16px;
+  border:1px solid var(--nt-border);
+  background:var(--nt-surface-soft);
+}
+
+.ntFieldActionLabel{
+  min-width:0;
+  flex:1 1 auto;
+  font-size:14px;
+  font-weight:800;
+  color:var(--nt-text);
+}
+
+.ntFieldActionValue{
+  min-width:0;
+  max-width:45%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:13px;
+  color:var(--nt-text-muted);
+}
+
+.ntEmptyState{
+  min-height:180px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:10px;
+  padding:18px 14px;
+  border-radius:18px;
+  border:1px solid var(--nt-border);
+  background:var(--nt-surface-soft);
+}
+
+.ntEmptyStateIcon{
+  font-size:26px;
+  line-height:1;
+}
+
+.ntEmptyStateTitle{
+  font-size:15px;
+  font-weight:900;
+  color:var(--nt-text);
+}
+
+.ntEmptyStateText{
+  max-width:260px;
+  font-size:13px;
+  line-height:1.45;
+  color:var(--nt-text-muted);
 }
 
 .ntAvatarBox{
-  position:relative;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border-radius:18px;
+  border:1px solid var(--nt-border);
+  background:var(--nt-surface-soft);
+}
+
+.ntAvatarMedia{
   flex:0 0 auto;
-  width:var(--nt-avatar-box-size);
-  height:var(--nt-avatar-box-size);
-  border-radius:var(--nt-avatar-box-radius);
-  border:1px solid rgba(255,255,255,.14);
+  width:78px;
+  height:78px;
+  border-radius:20px;
+  border:1px solid var(--nt-border);
   background:var(--nt-surface-2);
-  box-shadow:var(--nt-shadow-card);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
-
-.ntAvatarBox::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(120% 140% at 20% 0%, rgba(255,255,255,.14), transparent 48%),
-    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
-  pointer-events:none;
-}
-
-.ntAvatar{
-  position:relative;
-  z-index:1;
-  width:100%;
-  height:100%;
   display:flex;
   align-items:center;
   justify-content:center;
 }
 
-.ntAvatar svg{
-  width:var(--nt-avatar-icon-size);
-  height:var(--nt-avatar-icon-size);
-}
-
-.ntAvatar svg *{
-  fill:#ffffff;
-  stroke:#ffffff;
-}
-
-.ntAvatarMale{
-  background:var(--nt-color-male);
-}
-
-.ntAvatarFemale{
-  background:var(--nt-color-female);
-}
-
-.ntAvatarNeutral{
-  background:var(--nt-color-neutral);
-}
-
-.ntAvatarNothing{
-  background:var(--nt-color-nothing);
-}
-
-.ntAvatarNothing svg *{
-  fill:#f8fbff;
-  stroke:#f8fbff;
-}
-
-.ntAvatarMeta{
+.ntAvatarContent{
   min-width:0;
+  flex:1 1 auto;
   display:flex;
   flex-direction:column;
   gap:6px;
 }
 
 .ntAvatarTitle{
-  font-size:14px;
+  font-size:15px;
   font-weight:900;
-  line-height:1.35;
   color:var(--nt-text);
 }
 
 .ntAvatarHint{
   font-size:13px;
-  line-height:1.4;
+  line-height:1.45;
   color:var(--nt-text-muted);
 }
 
-.ntDots{
-  width:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:var(--nt-dot-gap);
-  margin-top:var(--nt-dot-space-y);
-  margin-bottom:var(--nt-dot-space-y);
-  pointer-events:none;
+/* oggetti interni non devono mai forzare la card */
+.ntSection *,
+.ntSectionGlass *,
+.ntGrid-2 > *,
+.ntCluster-8 > *,
+.ntCluster-10 > *,
+.ntCluster-12 > *,
+.ntRow > *,
+.ntCol > *{
+  min-width:0;
+  max-width:100%;
 }
 
-.ntDot{
-  width:var(--nt-dot-size);
-  height:var(--nt-dot-size);
-  border-radius:999px;
-  flex:0 0 auto;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,.08),
-    0 2px 6px rgba(0,0,0,.35);
-}
+@media (max-width:390px){
+  .ntGrid-2{
+    grid-template-columns:minmax(0,1fr);
+  }
 
-.ntDotBase{
-  background:var(--nt-dot-blue);
-}
+  .ntFieldAction{
+    padding:11px 12px;
+  }
 
-.ntDotHoliday{
-  background:var(--nt-dot-purple);
-}
+  .ntAvatarBox{
+    flex-direction:column;
+    align-items:flex-start;
+  }
 
-.ntDotOvertime{
-  background:var(--nt-dot-pink);
-}
-
-.ntMenu{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  padding:10px;
-  border-radius:18px;
-  border:1px solid var(--nt-border);
-  background:
-    radial-gradient(140% 220% at 25% 0%, rgba(20,24,40,.92), rgba(20,24,40,.84) 55%, rgba(20,24,40,.80) 100%);
-  box-shadow:
-    0 18px 34px rgba(6,10,25,.28),
-    inset 0 1px 0 rgba(255,255,255,.05);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  z-index:var(--nt-z-dropdown);
-}
-
-.ntMenuItem{
-  width:100%;
-  min-height:52px;
-  border:none;
-  border-radius:14px;
-  text-align:left;
-  padding:0 16px;
-  background:rgba(255,255,255,.06);
-  color:var(--nt-text);
-  font:inherit;
-  font-size:14px;
-  font-weight:800;
-}
-
-.ntCard.isCloseArmed .ntCardShell{
-  outline:1px solid transparent;
-  border-radius:22px;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,.06),
-    0 0 0 2px rgba(255,255,255,.02),
-    0 0 24px rgba(70,120,255,.18);
-}
-
-.ntCard.isCloseArmed .ntCardShell::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:22px;
-  padding:1px;
-  background:var(--nt-accent-border-gradient);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor;
-  mask-composite:exclude;
-  pointer-events:none;
-}
-
-.ntBtnPrimary:active,
-.ntBtnSecondary:active,
-.ntBtnGhost:active,
-.ntIconBtn:active,
-.ntMenuItem:active{
-  background:var(--nt-pressed-fill);
-}
-
-.ntBtnPrimary:active{
-  background:var(--nt-pressed-fill-strong);
-}
-
-.ntBtnPrimary:disabled,
-.ntBtnSecondary:disabled,
-.ntBtnGhost:disabled,
-.ntToggleBtn:disabled,
-.ntIconBtn:disabled,
-.ntMenuItem.isDisabled{
-  opacity:.42;
-  filter:saturate(.72);
-  pointer-events:none;
-  cursor:default;
-  transform:none !important;
-  box-shadow:none !important;
+  .ntAvatarMedia{
+    width:72px;
+    height:72px;
+  }
 }
