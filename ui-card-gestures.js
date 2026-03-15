@@ -14,7 +14,8 @@ window.NTCardGestures = (() => {
     deltaY: 0,
     tracking: false,
     lock: null,
-    baseTranslatePct: 0
+    baseTranslatePct: 0,
+    allowInnerXScroll: false
   };
 
   function setViewport(el) {
@@ -47,6 +48,9 @@ window.NTCardGestures = (() => {
     const activeIndex = window.NTCards?.state?.activeIndex ?? 0;
     gesture.baseTranslatePct = -(activeIndex * 100);
 
+    const target = e.target;
+    gesture.allowInnerXScroll = !!target?.closest?.('[data-nt-allow-x-scroll="true"]');
+
     if (window.NTCards?.state?.trackEl) {
       window.NTCards.state.trackEl.style.transition = "none";
     }
@@ -66,9 +70,14 @@ window.NTCardGestures = (() => {
       }
     }
 
+    if (gesture.allowInnerXScroll && gesture.lock === "x") {
+      return;
+    }
+
     if (gesture.lock === "x") {
       e.preventDefault();
       dragTrackWithFinger();
+      return;
     }
 
     if (armedCardId && gesture.lock === "y" && gesture.deltaY > 0) {
@@ -88,7 +97,7 @@ window.NTCardGestures = (() => {
 
     restoreTrackTransition();
 
-    if (!armedCardId && gesture.lock === "x") {
+    if (!gesture.allowInnerXScroll && !armedCardId && gesture.lock === "x") {
       const width = viewportEl?.clientWidth || 1;
       const threshold = Math.min(90, width * 0.18);
 
@@ -121,20 +130,21 @@ window.NTCardGestures = (() => {
       }
     }
 
-    gesture.tracking = false;
-    gesture.lock = null;
-    gesture.deltaX = 0;
-    gesture.deltaY = 0;
+    resetGesture();
   }
 
   function onCancel() {
     restoreTrackTransition();
     snapBackTrack();
+    resetGesture();
+  }
 
+  function resetGesture() {
     gesture.tracking = false;
     gesture.lock = null;
     gesture.deltaX = 0;
     gesture.deltaY = 0;
+    gesture.allowInnerXScroll = false;
   }
 
   function dragTrackWithFinger() {
