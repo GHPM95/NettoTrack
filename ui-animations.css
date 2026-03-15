@@ -1,4 +1,4 @@
-l/* =========================
+/* =========================
    NettoTrack UI Animations
    ========================= */
 
@@ -125,22 +125,4 @@ l/* =========================
 
 .ntDot{
   animation:ntDotPop .18s ease;
-}
-
-.ntCardsTrack{
-  transition:transform .22s ease;
-}
-
-.ntCardShell{
-  transition:
-    transform .18s ease,
-    box-shadow .18s ease,
-    opacity .18s ease;
-  transform-origin:center center;
-}
-
-.ntCardSlide.isPeekCurrent .ntCardShell,
-.ntCardSlide.isPeekNext .ntCardShell,
-.ntCardSlide.isPeekPrev .ntCardShell{
-  transform:scale(.972);
 }
