@@ -2,191 +2,203 @@
    NettoTrack UI Components
    ========================= */
 
+:root{
+  /* base reference: iPhone 14 Pro */
+  --nt-comp-gap-xs:6px;
+  --nt-comp-gap-s:8px;
+  --nt-comp-gap-m:12px;
+  --nt-comp-gap-l:16px;
+
+  --nt-comp-radius:16px;
+  --nt-comp-radius-lg:18px;
+
+  --nt-avatar-size:78px;
+}
+
+/* =========================
+   Section
+   ========================= */
+
 .ntSection{
   width:100%;
   min-width:0;
   display:flex;
   flex-direction:column;
-  gap:14px;
+  gap:var(--nt-comp-gap-m);
 }
 
 .ntSectionGlass{
-  width:100%;
-  min-width:0;
   padding:12px;
-  border-radius:16px;
+  border-radius:var(--nt-comp-radius-lg);
   border:1px solid var(--nt-border);
   background:var(--nt-surface-soft);
 }
 
 .ntSectionTitle{
-  width:100%;
-  min-width:0;
   font-size:var(--nt-font-label);
   font-weight:900;
-  line-height:1.35;
   color:var(--nt-text);
 }
 
 .ntSectionText{
-  width:100%;
-  min-width:0;
   font-size:14px;
   line-height:1.5;
   color:var(--nt-text);
 }
 
+/* =========================
+   Grid layouts
+   ========================= */
+
 .ntGrid-2{
   width:100%;
   min-width:0;
+
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   gap:12px;
 }
 
-.ntCluster-8,
-.ntCluster-10,
-.ntCluster-12{
+.ntFormRow{
   width:100%;
   min-width:0;
-  display:flex;
-  flex-wrap:wrap;
-  align-items:stretch;
-}
 
-.ntCluster-8{ gap:8px; }
-.ntCluster-10{ gap:10px; }
-.ntCluster-12{ gap:12px; }
-
-.ntStack-10,
-.ntStack-12,
-.ntStack-16,
-.ntStack-18{
-  width:100%;
-  min-width:0;
-}
-
-.ntStack-10 > * + *{ margin-top:10px; }
-.ntStack-12 > * + *{ margin-top:12px; }
-.ntStack-16 > * + *{ margin-top:16px; }
-.ntStack-18 > * + *{ margin-top:18px; }
-
-.ntDivider{
-  width:100%;
-  max-width:100%;
-  flex:0 0 auto;
-}
-
-.ntAvatarBox,
-.ntEmptyState,
-.ntFieldAction,
-.ntInfoRow,
-.ntRow,
-.ntCol{
-  width:100%;
-  min-width:0;
-  max-width:100%;
-}
-
-.ntRow{
-  display:flex;
-  align-items:center;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   gap:12px;
 }
 
-.ntCol{
+.ntFormCol{
+  min-width:0;
+  max-width:100%;
+}
+
+/* =========================
+   Stack layouts
+   ========================= */
+
+.ntStack-10 > * + *{
+  margin-top:10px;
+}
+
+.ntStack-12 > * + *{
+  margin-top:12px;
+}
+
+.ntStack-16 > * + *{
+  margin-top:16px;
+}
+
+.ntStack-18 > * + *{
+  margin-top:18px;
+}
+
+/* =========================
+   Cluster layouts
+   ========================= */
+
+.ntCluster-8{
   display:flex;
-  flex-direction:column;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.ntCluster-10{
+  display:flex;
+  flex-wrap:wrap;
   gap:10px;
 }
 
+.ntCluster-12{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+}
+
+/* =========================
+   Field action (selector row)
+   ========================= */
+
 .ntFieldAction{
+  width:100%;
+  min-width:0;
+
   display:flex;
   align-items:center;
   justify-content:space-between;
+
   gap:12px;
+
   min-height:46px;
   padding:12px 14px;
-  border-radius:16px;
+
+  border-radius:var(--nt-comp-radius);
   border:1px solid var(--nt-border);
+
   background:var(--nt-surface-soft);
 }
 
 .ntFieldActionLabel{
-  min-width:0;
   flex:1 1 auto;
+  min-width:0;
+
   font-size:14px;
   font-weight:800;
+
   color:var(--nt-text);
 }
 
 .ntFieldActionValue{
-  min-width:0;
   max-width:45%;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
+
   font-size:13px;
   color:var(--nt-text-muted);
 }
 
-.ntEmptyState{
-  min-height:180px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  gap:10px;
-  padding:18px 14px;
-  border-radius:18px;
-  border:1px solid var(--nt-border);
-  background:var(--nt-surface-soft);
-}
-
-.ntEmptyStateIcon{
-  font-size:26px;
-  line-height:1;
-}
-
-.ntEmptyStateTitle{
-  font-size:15px;
-  font-weight:900;
-  color:var(--nt-text);
-}
-
-.ntEmptyStateText{
-  max-width:260px;
-  font-size:13px;
-  line-height:1.45;
-  color:var(--nt-text-muted);
-}
+/* =========================
+   Avatar
+   ========================= */
 
 .ntAvatarBox{
+  width:100%;
+  min-width:0;
+
   display:flex;
   align-items:center;
   gap:12px;
+
   padding:12px;
+
   border-radius:18px;
   border:1px solid var(--nt-border);
+
   background:var(--nt-surface-soft);
 }
 
 .ntAvatarMedia{
   flex:0 0 auto;
-  width:78px;
-  height:78px;
+
+  width:var(--nt-avatar-size);
+  height:var(--nt-avatar-size);
+
   border-radius:20px;
+
   border:1px solid var(--nt-border);
+
   background:var(--nt-surface-2);
+
   display:flex;
   align-items:center;
   justify-content:center;
 }
 
 .ntAvatarContent{
-  min-width:0;
   flex:1 1 auto;
+  min-width:0;
+
   display:flex;
   flex-direction:column;
   gap:6px;
@@ -195,44 +207,126 @@
 .ntAvatarTitle{
   font-size:15px;
   font-weight:900;
-  color:var(--nt-text);
 }
 
 .ntAvatarHint{
   font-size:13px;
-  line-height:1.45;
   color:var(--nt-text-muted);
 }
 
-/* oggetti interni non devono mai forzare la card */
+/* =========================
+   Empty state
+   ========================= */
+
+.ntEmptyState{
+  width:100%;
+
+  min-height:180px;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+
+  text-align:center;
+
+  gap:10px;
+  padding:18px 14px;
+
+  border-radius:18px;
+  border:1px solid var(--nt-border);
+
+  background:var(--nt-surface-soft);
+}
+
+.ntEmptyStateIcon{
+  font-size:26px;
+}
+
+.ntEmptyStateTitle{
+  font-size:15px;
+  font-weight:900;
+}
+
+.ntEmptyStateText{
+  font-size:13px;
+  line-height:1.45;
+  color:var(--nt-text-muted);
+
+  max-width:260px;
+}
+
+/* =========================
+   Divider
+   ========================= */
+
+.ntDivider{
+  width:100%;
+  height:1px;
+
+  border:none;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,.10) 12%,
+      rgba(255,255,255,.12) 50%,
+      rgba(255,255,255,.10) 88%,
+      rgba(255,255,255,0) 100%
+    );
+
+  margin:16px 0;
+}
+
+/* =========================
+   Safety rules
+   ========================= */
+
+/* nessun componente può rompere la card */
+
 .ntSection *,
-.ntSectionGlass *,
 .ntGrid-2 > *,
 .ntCluster-8 > *,
 .ntCluster-10 > *,
 .ntCluster-12 > *,
-.ntRow > *,
-.ntCol > *{
+.ntFormRow > *,
+.ntAvatarBox *,
+.ntFieldAction *{
   min-width:0;
   max-width:100%;
 }
 
+/* =========================
+   Small screens
+   ========================= */
+
 @media (max-width:390px){
+
   .ntGrid-2{
     grid-template-columns:minmax(0,1fr);
   }
 
-  .ntFieldAction{
-    padding:11px 12px;
-  }
-
-  .ntAvatarBox{
-    flex-direction:column;
-    align-items:flex-start;
+  .ntFormRow{
+    grid-template-columns:minmax(0,1fr);
   }
 
   .ntAvatarMedia{
     width:72px;
     height:72px;
   }
+
+}
+
+/* =========================
+   Large screens
+   ========================= */
+
+@media (min-width:600px){
+
+  .ntAvatarMedia{
+    width:84px;
+    height:84px;
+  }
+
 }
