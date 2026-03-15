@@ -1,51 +1,71 @@
 :root{
   --text: rgba(255,255,255,.92);
-  --muted: rgba(255,255,255,.66);
+  --muted: rgba(255,255,255,.68);
+
   --cardA: rgba(255,255,255,.11);
   --cardB: rgba(255,255,255,.06);
-  --shadow: 0 22px 70px rgba(0,0,0,.55);
+  --shadow: 0 22px 70px rgba(0,0,0,.42);
 
-  --accent1: #7C5CFF; /* viola */
-  --accent2: #2AE9FF; /* celeste */
-  --accent3: #FF4FD8; /* rosa */
+  --accent1: #7C5CFF;
+  --accent2: #2AE9FF;
+  --accent3: #FF4FD8;
   --accent4: #FFB84A;
 
-  /* =========================
-     DOT COLORS (GLOBAL)
-     ========================= */
-  --ntDotBase: var(--accent2);
-  --ntDotExtra: var(--accent1);
-  --ntDotFestivo: var(--accent3);
-  --ntDotDomenicale: var(--accent4);
   --dot-grad: linear-gradient(90deg, var(--accent2), var(--accent1), var(--accent3));
 
   --rCard: 28px;
   --blur: 18px;
 
-  /* Safe area */
   --sat: env(safe-area-inset-top);
   --sab: env(safe-area-inset-bottom);
   --sal: env(safe-area-inset-left);
   --sar: env(safe-area-inset-right);
 
-  /* Layout sizes */
-  --topH: 64px;
-  --bottomH: 92px;
-  --dotsH: 44px;
+  --topH: 72px;
+  --bottomH: 96px;
+  --dotsH: 40px;
   --sidePad: 16px;
 
-  /* MENU metrics */
   --xSize: 44px;
   --xGap: 12px;
   --xPadRight: 14px;
   --menuW: 320px;
 }
 
+/* =========================
+   Theme preset
+   ========================= */
+
+body.theme-light{
+  --text: rgba(255,255,255,.94);
+  --muted: rgba(255,255,255,.70);
+  --cardA: rgba(255,255,255,.12);
+  --cardB: rgba(255,255,255,.065);
+  background:
+    radial-gradient(900px 700px at 15% -10%, rgba(124,92,255,.22), transparent 60%),
+    radial-gradient(900px 700px at 90% 15%, rgba(42,233,255,.16), transparent 58%),
+    radial-gradient(900px 700px at 40% 120%, rgba(255,79,216,.12), transparent 55%),
+    linear-gradient(180deg, #0a1230, #0a1434 52%, #081028);
+}
+
+body.theme-dark{
+  --text: rgba(247,249,255,.94);
+  --muted: rgba(228,234,255,.68);
+  --cardA: rgba(255,255,255,.08);
+  --cardB: rgba(255,255,255,.04);
+  background:
+    radial-gradient(900px 700px at 15% -10%, rgba(124,92,255,.14), transparent 60%),
+    radial-gradient(900px 700px at 90% 15%, rgba(42,233,255,.10), transparent 58%),
+    radial-gradient(900px 700px at 40% 120%, rgba(255,79,216,.08), transparent 55%),
+    linear-gradient(180deg, #050716, #070a18 55%, #050716);
+}
+
 *{
   box-sizing:border-box;
 }
 
-html,body{
+html,
+body{
   height:100%;
 }
 
@@ -58,14 +78,8 @@ body{
   overscroll-behavior:none;
   -webkit-user-select:none;
   user-select:none;
-  background:
-    radial-gradient(900px 700px at 15% -10%, rgba(124,92,255,.25), transparent 60%),
-    radial-gradient(900px 700px at 90% 15%, rgba(42,233,255,.18), transparent 58%),
-    radial-gradient(900px 700px at 40% 120%, rgba(255,79,216,.14), transparent 55%),
-    linear-gradient(180deg, #050716, #070a18 55%, #050716);
 }
 
-/* selezione testo consentita solo nei campi input */
 input,
 textarea,
 [contenteditable="true"]{
@@ -73,14 +87,12 @@ textarea,
   user-select:text;
 }
 
-/* evita zoom iOS su focus */
 input,
 textarea,
 select{
   font-size:16px;
 }
 
-/* evita scroll orizzontali ovunque */
 body,
 .appRoot,
 .stage,
@@ -88,7 +100,10 @@ body,
   overflow-x:hidden;
 }
 
-/* ---------- Background FX ---------- */
+/* =========================
+   Background FX
+   ========================= */
+
 .bgFX{
   position:fixed;
   inset:0;
@@ -143,15 +158,10 @@ body,
   100%{ transform:translate3d(0,0,0) scale(1); }
 }
 
-.grain{
-  position:absolute;
-  inset:-40%;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
-  opacity:.10;
-  transform:rotate(8deg);
-}
+/* =========================
+   Root
+   ========================= */
 
-/* ---------- App Root ---------- */
 .appRoot{
   position:relative;
   z-index:1;
@@ -159,17 +169,21 @@ body,
   height:100svh;
   padding-left:var(--sal);
   padding-right:var(--sar);
+  display:flex;
+  flex-direction:column;
 }
 
-/* ---------- Top bar ---------- */
+/* =========================
+   Top bar
+   ========================= */
+
 .topBar{
+  flex:0 0 auto;
   height:calc(var(--topH) + var(--sat));
   padding:calc(10px + var(--sat)) var(--sidePad) 10px;
   display:flex;
   align-items:center;
   gap:12px;
-  background:linear-gradient(90deg, rgba(124,92,255,.30), rgba(42,233,255,.18), rgba(255,79,216,.22));
-  backdrop-filter:blur(var(--blur));
 }
 
 .brand{
@@ -181,7 +195,7 @@ body,
   font-weight:1000;
   letter-spacing:.2px;
   font-size:18px;
-  line-height:1.1;
+  line-height:1.08;
 }
 
 .brandSub{
@@ -197,7 +211,6 @@ body,
   height:var(--xSize);
 }
 
-/* menu button */
 .menuBtn{
   width:var(--xSize);
   height:var(--xSize);
@@ -216,71 +229,82 @@ body,
   background:rgba(255,255,255,.10);
 }
 
-/* ---------- Stage ---------- */
+/* =========================
+   Stage
+   ========================= */
+
 .stage{
-  height:calc(100% - (var(--topH) + var(--sat)) - (var(--bottomH) + var(--sab)));
+  flex:1 1 auto;
+  min-height:0;
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:center;
-  padding:12px var(--sidePad);
-  gap:12px;
+  justify-content:flex-start;
+  padding:12px var(--sidePad) 0;
 }
 
-/* ✅ VIEWPORT: deve tagliare tutto ai bordi */
+/* viewport che taglia ai bordi */
 .cardsViewport{
   width:100%;
   max-width:520px;
+  flex:1 1 auto;
+  min-height:0;
+  height:100%;
   position:relative;
   overflow:hidden;
-  border:none;
-  background:transparent;
-  touch-action:pan-y;
 }
 
-/* ✅ TRACK: niente gap, niente spazio tra card */
+/* track senza gap */
 .cardsTrack{
   display:flex;
+  width:100%;
+  height:100%;
+  min-height:0;
   gap:0;
   transform:translate3d(0,0,0);
   will-change:transform;
-  width:100%;
 }
 
-/* ✅ CARD: tutte stessa misura, nessun adattamento al contenuto */
+/* card tutte identiche, full size del viewport */
 .card{
   flex:0 0 100%;
   width:100%;
   max-width:100%;
+  height:100%;
+  min-height:0;
   border-radius:var(--rCard);
   border:1px solid rgba(255,255,255,.14);
   background:
     radial-gradient(140% 180% at 20% 0%, rgba(255,255,255,.12), transparent 55%),
     linear-gradient(180deg, var(--cardA), var(--cardB));
   backdrop-filter:blur(var(--blur));
+  -webkit-backdrop-filter:blur(var(--blur));
   box-shadow:var(--shadow);
-  height:clamp(460px, 58vh, 620px);
   overflow:hidden;
 }
 
 .cardInner{
   width:100%;
   height:100%;
-  display:flex;
-  align-items:stretch;
-  justify-content:stretch;
-  padding:18px;
   min-height:0;
+  display:flex;
+  flex-direction:column;
+  padding:18px;
 }
 
+/* mount interno full size */
 .cardMount{
   width:100%;
   height:100%;
   min-height:0;
 }
 
-/* ---------- Dots ---------- */
+/* =========================
+   Dots
+   ========================= */
+
 .dotsWrap{
+  flex:0 0 auto;
   height:var(--dotsH);
   display:flex;
   align-items:center;
@@ -293,13 +317,14 @@ body,
   align-items:center;
   justify-content:center;
   gap:12px;
-  padding:10px 14px;
+  padding:8px 14px;
   border-radius:999px;
   border:1px solid rgba(255,255,255,.14);
   background:
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
   backdrop-filter:blur(var(--blur));
+  -webkit-backdrop-filter:blur(var(--blur));
 }
 
 .dot{
@@ -316,7 +341,7 @@ body,
   width:34px;
   height:10px;
   border-radius:999px;
-  background:linear-gradient(90deg, var(--accent2), var(--accent1), var(--accent3));
+  background:var(--dot-grad);
   opacity:1;
 }
 
@@ -324,12 +349,12 @@ body,
   transform:scale(1.12);
 }
 
-/* ---------- Bottom bar ---------- */
+/* =========================
+   Bottom bar
+   ========================= */
+
 .bottomBar{
-  position:absolute;
-  left:var(--sal);
-  right:var(--sar);
-  bottom:0;
+  flex:0 0 auto;
   height:calc(var(--bottomH) + var(--sab));
   padding:10px var(--sidePad) calc(10px + var(--sab));
   display:flex;
@@ -347,10 +372,14 @@ body,
     radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
   backdrop-filter:blur(var(--blur));
+  -webkit-backdrop-filter:blur(var(--blur));
   box-shadow:0 18px 60px rgba(0,0,0,.30);
 }
 
-/* ---------- Menu Drawer ---------- */
+/* =========================
+   Menu drawer
+   ========================= */
+
 .menuOverlay{
   position:fixed;
   inset:0;
@@ -381,6 +410,7 @@ body,
     radial-gradient(140% 180% at 15% 0%, rgba(255,255,255,.12), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
   backdrop-filter:blur(var(--blur));
+  -webkit-backdrop-filter:blur(var(--blur));
   box-shadow:var(--shadow);
 }
 
@@ -412,7 +442,6 @@ body,
   filter:brightness(1.08);
 }
 
-/* Menu aperto */
 body.isMenuOpen .menuDrawer{
   transform:translateX(0);
 }
@@ -426,7 +455,6 @@ body.isMenuOpen .menuCloseBtn{
   pointer-events:auto;
 }
 
-/* quando menu aperto: nascondi tutto il resto */
 body.isMenuOpen .stage,
 body.isMenuOpen .bottomBar,
 body.isMenuOpen .brand,
