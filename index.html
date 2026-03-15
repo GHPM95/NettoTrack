@@ -1,306 +1,499 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>NettoTrack</title>
 
-  <!-- Core -->
-  <link rel="stylesheet" href="ui.css" />
-  <link rel="stylesheet" href="ui-layout.css" />
-  <link rel="stylesheet" href="ui-components.css" />
-  <link rel="stylesheet" href="ui-forms.css" />
-  <link rel="stylesheet" href="ui-feedback.css" />
-  <link rel="stylesheet" href="ui-feedback-animations.css" />
-  <link rel="stylesheet" href="ui-animations.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-  <!-- Calendar modules -->
-  <link rel="stylesheet" href="calendar-day.css" />
-  <link rel="stylesheet" href="calendar-day-animations.css" />
-  <link rel="stylesheet" href="calendar-days-strip.css" />
-  <link rel="stylesheet" href="calendar-days-strip-animations.css" />
+<title>NettoTrack</title>
+
+<!-- CORE DESIGN -->
+
+<link rel="stylesheet" href="ui.css">
+<link rel="stylesheet" href="ui-layout.css">
+<link rel="stylesheet" href="ui-components.css">
+<link rel="stylesheet" href="ui-forms.css">
+<link rel="stylesheet" href="ui-feedback.css">
+<link rel="stylesheet" href="ui-feedback-animations.css">
+<link rel="stylesheet" href="ui.animations.css">
+
+<!-- CALENDAR -->
+
+<link rel="stylesheet" href="calendar-day.css">
+<link rel="stylesheet" href="calendar-day-animations.css">
+<link rel="stylesheet" href="calendar-days-strip.css">
+<link rel="stylesheet" href="calendar-days-strip-animations.css">
+
 </head>
 
 <body class="theme-light">
-  <div class="ntAppShell">
-    <div class="ntAppBg" aria-hidden="true">
-      <div class="ntBlob ntBlob1"></div>
-      <div class="ntBlob ntBlob2"></div>
-      <div class="ntBlob ntBlob3"></div>
-    </div>
 
-    <div class="ntApp">
-      <header class="ntTopBar">
-        <div>
-          <div class="ntTopBarTitle">NettoTrack</div>
-          <div class="ntTopBarSub">Il tuo stipendio, nel tempo.</div>
-        </div>
-      </header>
+<div class="ntAppShell">
 
-      <main class="ntMain">
-        <section class="ntCardStage">
-          <div class="ntCardsViewport" id="ntCardsViewport">
-            <div class="ntCardsTrack" id="ntCardsTrack"></div>
-          </div>
-        </section>
+<div class="ntAppBg">
 
-        <div class="ntDotsRail hidden" id="ntCardDotsMount"></div>
-      </main>
+<div class="ntBlob ntBlob1"></div>
+<div class="ntBlob ntBlob2"></div>
+<div class="ntBlob ntBlob3"></div>
 
-      <footer class="ntBottomBar">
-        <button class="ntBottomBtn ntPress" type="button" id="btnInsert">
-          <div class="ntBottomIcon">＋</div>
-          <div class="ntBottomLabel">Inserisci</div>
-        </button>
+</div>
 
-        <button class="ntBottomBtn ntPress" type="button" id="btnCalendar">
-          <div class="ntBottomIcon">📅</div>
-          <div class="ntBottomLabel">Calendario</div>
-        </button>
 
-        <button class="ntBottomBtn ntPress" type="button" id="btnProfile">
-          <div class="ntBottomIcon">👤</div>
-          <div class="ntBottomLabel">Profilo</div>
-        </button>
+<div class="ntApp">
 
-        <button class="ntBottomBtn ntPress" type="button" id="btnMenu">
-          <div class="ntBottomIcon">☰</div>
-          <div class="ntBottomLabel">Menu</div>
-        </button>
-      </footer>
-    </div>
-  </div>
+<header class="ntTopBar">
 
-  <!-- Core cards -->
-  <script src="ui-cards.js"></script>
-  <script src="ui-card-manager.js"></script>
-  <script src="ui-card-actions.js"></script>
-  <script src="ui-card-wizard.js"></script>
-  <script src="ui-card-dots.js"></script>
-  <script src="ui-card-gestures.js"></script>
+<div>
 
-  <!-- Feedback -->
-  <script src="ui-select.js"></script>
-  <script src="ui-tooltip.js"></script>
-  <script src="ui-modal.js"></script>
-  <script src="ui-toast.js"></script>
-  <script src="ui-empty-state.js"></script>
+<div class="ntTopBarTitle">
+NettoTrack
+</div>
 
-  <!-- Calendar -->
-  <script src="calendar-day.js"></script>
-  <script src="calendar-days-strip.js"></script>
+<div class="ntTopBarSub">
+Il tuo stipendio, nel tempo.
+</div>
 
-  <!-- Builders -->
-  <script src="card-template.js"></script>
-  <script src="component-registry.js"></script>
+</div>
 
-  <script>
-    const viewportEl = document.getElementById("ntCardsViewport");
-    const trackEl = document.getElementById("ntCardsTrack");
-    const dotsMount = document.getElementById("ntCardDotsMount");
+</header>
 
-    if (window.NTCardDots) {
-      NTCardDots.setMount(dotsMount);
-    }
 
-    if (window.NTCards) {
-      NTCards.setElements({
-        viewportEl,
-        trackEl,
-        dotsHook: (data) => {
-          if (window.NTCardDots) NTCardDots.render(data);
-        }
-      });
-    }
 
-    if (window.NTCardGestures) {
-      NTCardGestures.setViewport(viewportEl);
-    }
+<main class="ntMain">
 
-    function registerDemoCards() {
-      if (!window.NTCards || !window.NTCardTemplate || !window.NTComponents) return;
+<section class="ntCardStage">
 
-      NTCards.registerCard({
-        id: "calendarView",
-        render() {
-          const stripMount = `<div class="ntCardSubHeaderContent" id="calendarStripMount"></div>`;
+<div class="ntCardsViewport" id="ntCardsViewport">
 
-          const body = `
-            ${NTComponents.section({
-              title: "Calendario",
-              body: `
-                ${NTComponents.emptyState({
-                  icon: "○",
-                  title: "Calendar View",
-                  text: "Qui collegheremo la vista calendario completa."
-                })}
-              `
-            })}
-          `;
+<div class="ntCardsTrack" id="ntCardsTrack"></div>
 
-          return NTCardTemplate.createCard({
-            id: "calendarView",
-            title: "Calendario",
-            body,
-            subHeader: stripMount,
-            footer: false,
-            showBack: true,
-            showNext: true
-          });
-        },
-        onOpen() {
-          const mount = document.getElementById("calendarStripMount");
-          if (!mount || !window.NTCalendarDaysStrip) return;
+</div>
 
-          const today = NTCalendarDaysStrip.formatDateISO(new Date());
-          const days = NTCalendarDaysStrip.build7DaysFromDate(new Date(), {
-            selectedDate: today,
-            hasDataMap: { [today]: true }
-          });
+</section>
 
-          NTCalendarDaysStrip.createStore({
-            mount,
-            days,
-            selectedDate: today
-          });
-        }
-      });
+<div class="ntDotsRail hidden" id="ntCardDotsMount"></div>
 
-      NTCards.registerCard({
-        id: "calendarInsert",
-        render() {
-          const body = `
-            ${NTComponents.section({
-              title: "Nuovo inserimento",
-              body: `
-                ${NTComponents.grid2({
-                  left: NTComponents.input({ placeholder: "Nome" }),
-                  right: NTComponents.input({ placeholder: "Cognome" })
-                })}
+</main>
 
-                ${NTComponents.fieldAction({
-                  label: "Data di nascita"
-                })}
 
-                ${NTComponents.button({
-                  label: "Uomo",
-                  kind: "toggle",
-                  pressed: false
-                })}
 
-                ${NTComponents.checkbox({
-                  title: "Accetto i termini",
-                  desc: "Ho letto e accetto le condizioni"
-                })}
-              `
-            })}
-          `;
+<footer class="ntBottomBar">
 
-          return NTCardTemplate.createCard({
-            id: "calendarInsert",
-            title: "Inserisci dati",
-            body,
-            footer: true,
-            showBack: true,
-            showNext: true
-          });
-        },
-        onSave() {
-          if (window.NTToast) {
-            NTToast.show({
-              title: "Dati salvati",
-              text: "Le modifiche della card sono state registrate."
-            });
-          }
-        }
-      });
+<button class="ntBottomBtn ntPress" id="btnInsert">
 
-      NTCards.registerCard({
-        id: "profile",
-        render() {
-          const body = `
-            ${NTComponents.avatar({
-              variant: "nothing",
-              title: "Profilo utente",
-              hint: "Configura il tuo profilo personale e lavorativo."
-            })}
+<div class="ntBottomIcon">＋</div>
+<div class="ntBottomLabel">Inserisci</div>
 
-            ${NTComponents.divider()}
+</button>
 
-            ${NTComponents.section({
-              title: "Informazioni",
-              body: `
-                ${NTComponents.input({ placeholder: "Paese" })}
-                ${NTComponents.input({ placeholder: "Occupazione" })}
-                ${NTComponents.textarea({ placeholder: "Note profilo" })}
-              `
-            })}
-          `;
 
-          return NTCardTemplate.createCard({
-            id: "profile",
-            title: "Profilo utente",
-            body,
-            footer: true,
-            showBack: true,
-            showNext: true
-          });
-        },
-        onSave() {
-          if (window.NTToast) {
-            NTToast.show({
-              title: "Profilo salvato",
-              text: "Le informazioni del profilo sono state aggiornate."
-            });
-          }
-        }
-      });
 
-      NTCards.registerCard({
-        id: "menu",
-        render() {
-          const body = `
-            ${NTComponents.section({
-              title: "Menu rapido",
-              body: `
-                ${NTComponents.button({ label: "FAQ", kind: "secondary" })}
-                ${NTComponents.button({ label: "Disclaimer", kind: "secondary" })}
-                ${NTComponents.button({ label: "Termini", kind: "secondary" })}
-              `
-            })}
-          `;
+<button class="ntBottomBtn ntPress" id="btnCalendar">
 
-          return NTCardTemplate.createCard({
-            id: "menu",
-            title: "Menu",
-            body,
-            footer: false,
-            showBack: true,
-            showNext: true
-          });
-        }
-      });
-    }
+<div class="ntBottomIcon">📅</div>
+<div class="ntBottomLabel">Calendario</div>
 
-    registerDemoCards();
+</button>
 
-    document.getElementById("btnInsert")?.addEventListener("click", () => {
-      window.NTCardManager?.open("calendarInsert");
-    });
 
-    document.getElementById("btnCalendar")?.addEventListener("click", () => {
-      window.NTCardManager?.open("calendarView");
-    });
 
-    document.getElementById("btnProfile")?.addEventListener("click", () => {
-      window.NTCardManager?.open("profile");
-    });
+<button class="ntBottomBtn ntPress" id="btnProfile">
 
-    document.getElementById("btnMenu")?.addEventListener("click", () => {
-      window.NTCardManager?.open("menu");
-    });
+<div class="ntBottomIcon">👤</div>
+<div class="ntBottomLabel">Profilo</div>
 
-    window.NTCardManager?.open("calendarView");
-  </script>
+</button>
+
+
+
+<button class="ntBottomBtn ntPress" id="btnMenu">
+
+<div class="ntBottomIcon">☰</div>
+<div class="ntBottomLabel">Menu</div>
+
+</button>
+
+
+</footer>
+
+</div>
+
+</div>
+
+
+
+<!-- CORE CARD SYSTEM -->
+
+<script src="ui-cards.js"></script>
+<script src="ui-cards-manager.js"></script>
+<script src="ui-cards-actions.js"></script>
+<script src="ui-cards-wizard.js"></script>
+<script src="ui-cards-dots.js"></script>
+<script src="ui-card-gestures.js"></script>
+
+
+<!-- COMPONENTS -->
+
+<script src="ui-select.js"></script>
+<script src="ui-tooltip.js"></script>
+<script src="ui.modal.js"></script>
+<script src="ui-toast.js"></script>
+<script src="ui-empty-state.js"></script>
+
+
+<!-- CALENDAR -->
+
+<script src="calendar-day.js"></script>
+<script src="calendar-days-strip.js"></script>
+
+
+<!-- COMPONENT REGISTRY -->
+
+<script src="card-template.js"></script>
+<script src="component-registry.js"></script>
+
+
+
+<script>
+
+/* =========================
+APP INIT
+========================= */
+
+const viewportEl = document.getElementById("ntCardsViewport")
+const trackEl = document.getElementById("ntCardsTrack")
+const dotsMount = document.getElementById("ntCardDotsMount")
+
+
+
+if(window.NTCardDots){
+
+NTCardDots.setMount(dotsMount)
+
+}
+
+
+if(window.NTCards){
+
+NTCards.setElements({
+
+viewportEl,
+trackEl,
+
+dotsHook:(data)=>{
+
+if(window.NTCardDots){
+
+NTCardDots.render(data)
+
+}
+
+}
+
+})
+
+}
+
+
+
+if(window.NTCardGestures){
+
+NTCardGestures.setViewport(viewportEl)
+
+}
+
+
+
+/* =========================
+DEMO CARDS
+========================= */
+
+function registerDemoCards(){
+
+if(!window.NTCards) return
+if(!window.NTCardTemplate) return
+if(!window.NTComponents) return
+
+
+
+NTCards.registerCard({
+
+id:"calendarView",
+
+render(){
+
+const stripMount = `
+<div class="ntCardSubHeaderContent" id="calendarStripMount"></div>
+`
+
+const body = `
+${NTComponents.section({
+
+title:"Calendario",
+
+body:`
+
+${NTComponents.emptyState({
+
+icon:"○",
+title:"Calendar View",
+text:"Qui collegheremo la vista calendario completa."
+
+})}
+
+`
+
+})}
+`
+
+return NTCardTemplate.createCard({
+
+id:"calendarView",
+title:"Calendario",
+body:body,
+subHeader:stripMount,
+footer:false,
+showBack:true,
+showNext:true
+
+})
+
+},
+
+onOpen(){
+
+const mount = document.getElementById("calendarStripMount")
+
+if(!mount) return
+if(!window.NTCalendarDaysStrip) return
+
+const today = NTCalendarDaysStrip.formatDateISO(new Date())
+
+const days = NTCalendarDaysStrip.build7DaysFromDate(
+
+new Date(),
+
+{
+selectedDate:today,
+hasDataMap:{ [today]:true }
+}
+
+)
+
+NTCalendarDaysStrip.createStore({
+
+mount,
+days,
+selectedDate:today
+
+})
+
+}
+
+})
+
+
+
+NTCards.registerCard({
+
+id:"calendarInsert",
+
+render(){
+
+const body = `
+
+${NTComponents.section({
+
+title:"Nuovo inserimento",
+
+body:`
+
+${NTComponents.grid2({
+
+left:NTComponents.input({placeholder:"Nome"}),
+right:NTComponents.input({placeholder:"Cognome"})
+
+})}
+
+${NTComponents.fieldAction({
+
+label:"Data di nascita"
+
+})}
+
+${NTComponents.button({
+
+label:"Uomo",
+kind:"toggle",
+pressed:false
+
+})}
+
+${NTComponents.checkbox({
+
+title:"Accetto i termini",
+desc:"Ho letto e accetto le condizioni"
+
+})}
+
+`
+
+})}
+
+`
+
+return NTCardTemplate.createCard({
+
+id:"calendarInsert",
+title:"Inserisci dati",
+body:body,
+footer:true,
+showBack:true,
+showNext:true
+
+})
+
+}
+
+})
+
+
+
+NTCards.registerCard({
+
+id:"profile",
+
+render(){
+
+const body = `
+
+${NTComponents.avatar({
+
+variant:"nothing",
+title:"Profilo utente",
+hint:"Configura il tuo profilo personale e lavorativo."
+
+})}
+
+${NTComponents.divider()}
+
+${NTComponents.section({
+
+title:"Informazioni",
+
+body:`
+
+${NTComponents.input({placeholder:"Paese"})}
+${NTComponents.input({placeholder:"Occupazione"})}
+${NTComponents.textarea({placeholder:"Note profilo"})}
+
+`
+
+})}
+
+`
+
+return NTCardTemplate.createCard({
+
+id:"profile",
+title:"Profilo utente",
+body:body,
+footer:true,
+showBack:true,
+showNext:true
+
+})
+
+}
+
+})
+
+
+
+NTCards.registerCard({
+
+id:"menu",
+
+render(){
+
+const body = `
+
+${NTComponents.section({
+
+title:"Menu rapido",
+
+body:`
+
+${NTComponents.button({label:"FAQ",kind:"secondary"})}
+${NTComponents.button({label:"Disclaimer",kind:"secondary"})}
+${NTComponents.button({label:"Termini",kind:"secondary"})}
+
+`
+
+})}
+
+`
+
+return NTCardTemplate.createCard({
+
+id:"menu",
+title:"Menu",
+body:body,
+footer:false,
+showBack:true,
+showNext:true
+
+})
+
+}
+
+})
+
+}
+
+
+
+registerDemoCards()
+
+
+
+/* =========================
+BOTTOM BAR
+========================= */
+
+document.getElementById("btnInsert").onclick = ()=>{
+
+window.NTCardManager?.open("calendarInsert")
+
+}
+
+document.getElementById("btnCalendar").onclick = ()=>{
+
+window.NTCardManager?.open("calendarView")
+
+}
+
+document.getElementById("btnProfile").onclick = ()=>{
+
+window.NTCardManager?.open("profile")
+
+}
+
+document.getElementById("btnMenu").onclick = ()=>{
+
+window.NTCardManager?.open("menu")
+
+}
+
+
+
+/* =========================
+OPEN FIRST CARD
+========================= */
+
+window.NTCardManager?.open("calendarView")
+
+</script>
+
 </body>
 </html>
