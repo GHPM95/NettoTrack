@@ -214,16 +214,12 @@
   background:var(--nt-color-accent);
 }
 
-/* =========================
-   Viewport / Track / Slide
-   ========================= */
-
 .ntCardsViewport{
   position:relative;
   width:100%;
   height:100%;
   min-height:0;
-  overflow:hidden; /* solo qui deve sparire la card */
+  overflow:hidden;
 }
 
 .ntCardsTrack{
@@ -246,16 +242,13 @@
   height:100%;
   min-height:0;
   max-width:100%;
-  overflow:visible; /* importante: non tagliare la card qui */
+  overflow:hidden;
   box-sizing:border-box;
   padding:0;
 }
 
-/* =========================
-   Gesture priority
-   ========================= */
-
 .ntCardsViewport,
+.ntCardSlide,
 .ntCard,
 .ntCardShell,
 .ntCardBody,
