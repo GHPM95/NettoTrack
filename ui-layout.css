@@ -3,6 +3,8 @@
    ========================= */
 
 :root{
+  --nt-card-header-min-h: 44px;
+  --nt-card-subheader-min-h: 54px;
   --nt-card-footer-min-h: 92px;
 }
 
@@ -40,9 +42,73 @@
   gap:12px;
 }
 
+/* =========================
+   Header
+   ========================= */
+
+.ntCardHeader{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:12px;
+  min-height:var(--nt-card-header-min-h);
+}
+
+.ntCardHeader.isHidden{
+  visibility:hidden;
+  pointer-events:none;
+}
+
+.ntCardNav{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:calc(var(--xSize) * 2 + 8px);
+}
+
+.ntCardNav.isHidden{
+  visibility:hidden;
+  pointer-events:none;
+}
+
+.ntCardTitleWrap{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-width:0;
+}
+
+.ntCardTitleWrap.isHidden{
+  visibility:hidden;
+}
+
+.ntCardTitle{
+  margin:0;
+  font-size:var(--nt-font-card-title);
+  line-height:var(--nt-line-tight);
+  font-weight:1000;
+  letter-spacing:.2px;
+  color:var(--nt-text);
+  text-align:center;
+}
+
+.ntCardHeaderSide{
+  width:var(--xSize);
+  height:var(--xSize);
+}
+
+.isGhost{
+  visibility:hidden;
+  pointer-events:none;
+}
+
+/* =========================
+   Subheader
+   ========================= */
+
 .ntCardSubHeader{
   flex:0 0 auto;
-  min-height:var(--nt-subheader-min-height);
+  min-height:var(--nt-card-subheader-min-h);
   padding:
     var(--nt-subheader-pad-y)
     var(--nt-subheader-pad-x);
@@ -51,10 +117,9 @@
   min-width:0;
 }
 
-.ntCardSubHeader.isHidden,
-.ntCardSubHeader[hidden],
-.ntCardSubHeader:empty{
-  display:none !important;
+.ntCardSubHeader.isPlaceholder{
+  visibility:hidden;
+  pointer-events:none;
 }
 
 .ntCardSubHeaderContent{
@@ -62,7 +127,7 @@
   min-width:0;
   display:flex;
   align-items:center;
-  min-height:calc(var(--nt-subheader-min-height) - (var(--nt-subheader-pad-y) * 2));
+  min-height:calc(var(--nt-card-subheader-min-h) - (var(--nt-subheader-pad-y) * 2));
 }
 
 .ntSubHeaderScrollX{
@@ -88,6 +153,10 @@
   width:max-content;
 }
 
+/* =========================
+   Body
+   ========================= */
+
 .ntCardBody{
   flex:1 1 auto;
   min-height:0;
@@ -105,7 +174,10 @@
   display:none;
 }
 
-/* footer sempre presente come spazio visivo */
+/* =========================
+   Footer
+   ========================= */
+
 .ntCardFooter{
   flex:0 0 auto;
   min-height:var(--nt-card-footer-min-h);
@@ -117,14 +189,6 @@
   align-items:flex-end;
 }
 
-.ntCardFooterRow{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  width:100%;
-}
-
-/* footer placeholder: mantiene l'altezza ma senza bottoni visibili */
 .ntCardFooter.isPlaceholder{
   pointer-events:none;
 }
@@ -133,42 +197,16 @@
   opacity:0;
 }
 
-.ntCardHeader{
+.ntCardFooterRow{
   display:grid;
-  grid-template-columns:auto 1fr auto;
-  align-items:center;
+  grid-template-columns:1fr 1fr;
   gap:12px;
-  min-height:var(--xSize);
+  width:100%;
 }
 
-.ntCardNav{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  min-width:calc(var(--xSize) * 2 + 8px);
-}
-
-.ntCardTitleWrap{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-width:0;
-}
-
-.ntCardTitle{
-  margin:0;
-  font-size:var(--nt-font-card-title);
-  line-height:var(--nt-line-tight);
-  font-weight:1000;
-  letter-spacing:.2px;
-  color:var(--nt-text);
-  text-align:center;
-}
-
-.ntCardHeaderSide{
-  width:var(--xSize);
-  height:var(--xSize);
-}
+/* =========================
+   Wizard
+   ========================= */
 
 .ntWizard{
   width:100%;
@@ -223,6 +261,10 @@
   background:var(--nt-color-accent);
 }
 
+/* =========================
+   Cards viewport system
+   ========================= */
+
 .ntCardsViewport{
   position:relative;
   width:100%;
@@ -255,6 +297,10 @@
   box-sizing:border-box;
 }
 
+/* =========================
+   Gesture priority
+   ========================= */
+
 .ntCardsViewport,
 .ntCardSlide,
 .ntCard,
@@ -273,6 +319,10 @@
 [data-nt-allow-x-scroll="true"]{
   touch-action:pan-x pan-y !important;
 }
+
+/* =========================
+   Utilities
+   ========================= */
 
 .ntStack-10 > * + *{
   margin-top:10px;
