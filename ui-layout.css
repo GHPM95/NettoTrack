@@ -2,6 +2,10 @@
    NettoTrack UI Layout
    ========================= */
 
+:root{
+  --nt-card-footer-min-h: 92px;
+}
+
 .ntCard{
   width:100%;
   height:100%;
@@ -101,18 +105,32 @@
   display:none;
 }
 
+/* footer sempre presente come spazio visivo */
 .ntCardFooter{
   flex:0 0 auto;
+  min-height:var(--nt-card-footer-min-h);
   padding-top:var(--nt-footer-gap-top);
   background:var(--nt-overlay-footer);
   backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);
+  display:flex;
+  align-items:flex-end;
 }
 
 .ntCardFooterRow{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:12px;
+  width:100%;
+}
+
+/* footer placeholder: mantiene l'altezza ma senza bottoni visibili */
+.ntCardFooter.isPlaceholder{
+  pointer-events:none;
+}
+
+.ntCardFooter.isPlaceholder .ntCardFooterRow{
+  opacity:0;
 }
 
 .ntCardHeader{
