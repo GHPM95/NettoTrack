@@ -12,56 +12,92 @@ window.NTCardTemplate = (() => {
     showBack = true,
     showNext = true
   }) {
+    const safeId = escapeHtml(id || "");
+    const safeTitle = escapeHtml(title || "");
+
     return `
-<section class="ntCard" data-card="${id}">
-  <div class="ntCardShell">
+      <section class="ntCard" data-nt-card="${safeId}">
+        <div class="ntCardShell">
+          <div class="ntCardTop">
+            <header class="ntCardHeader">
+              <div class="ntCardNav">
+                ${showBack ? `
+                  <button
+                    type="button"
+                    class="ntIconBtn ntPress jsNtCardBack"
+                    aria-label="Card precedente"
+                  >←</button>
+                ` : `<div class="ntCardHeaderSide"></div>`}
 
-    <header class="ntCardHeader">
-      <div class="ntCardNav">
-        <button
-          class="ntIconBtn ntPress ntCardBack"
-          data-nt-action="back"
-          ${showBack ? "" : "disabled"}>←</button>
+                ${showNext ? `
+                  <button
+                    type="button"
+                    class="ntIconBtn ntPress jsNtCardNext"
+                    aria-label="Card successiva"
+                  >→</button>
+                ` : `<div class="ntCardHeaderSide"></div>`}
+              </div>
 
-        <button
-          class="ntIconBtn ntPress ntCardNext"
-          data-nt-action="next"
-          ${showNext ? "" : "disabled"}>→</button>
-      </div>
+              <div class="ntCardTitleWrap">
+                <h2 class="ntCardTitle">${safeTitle}</h2>
+              </div>
 
-      <div class="ntCardTitleWrap">
-        <h1 class="ntCardTitle">${escapeHtml(title)}</h1>
-      </div>
+              <button
+                type="button"
+                class="ntIconBtn ntPress jsNtCardClose"
+                aria-label="Chiudi card"
+              >×</button>
+            </header>
 
-      <div class="ntCardHeaderSide">
-        <button class="ntIconBtn ntPress ntCardClose" data-nt-action="close">×</button>
-      </div>
-    </header>
+            ${subHeader ? `
+              <div class="ntCardSubHeader">
+                ${subHeader}
+              </div>
+            ` : ""}
+          </div>
 
-    ${subHeader ? `
-      <div class="ntCardSubHeader">
-        <div class="ntCardSubHeaderContent">
-          ${subHeader}
+          <div class="ntCardBody ntScrollY">
+            ${body}
+          </div>
+
+          ${
+            footer
+              ? `
+                <footer class="ntCardFooter">
+                  <div class="ntCardFooterRow">
+                    <button
+                      type="button"
+                      class="ntBtn ntBtnSecondary ntPress jsNtCardCancel"
+                    >annulla</button>
+
+                    <button
+                      type="button"
+                      class="ntBtn ntBtnPrimary ntPress jsNtCardSave"
+                    >salva</button>
+                  </div>
+                </footer>
+              `
+              : `
+                <footer class="ntCardFooter isPlaceholder" aria-hidden="true">
+                  <div class="ntCardFooterRow">
+                    <button
+                      type="button"
+                      class="ntBtn ntBtnSecondary"
+                      tabindex="-1"
+                    >annulla</button>
+
+                    <button
+                      type="button"
+                      class="ntBtn ntBtnPrimary"
+                      tabindex="-1"
+                    >salva</button>
+                  </div>
+                </footer>
+              `
+          }
         </div>
-      </div>
-    ` : ""}
-
-    <div class="ntCardBody ntScrollY">
-      ${body}
-    </div>
-
-    ${footer ? `
-      <footer class="ntCardFooter">
-        <div class="ntCardFooterRow">
-          <button class="ntBtnSecondary ntPress ntCardCancel" data-nt-action="cancel">annulla</button>
-          <button class="ntBtnPrimary ntPress ntCardSave" data-nt-action="save">salva</button>
-        </div>
-      </footer>
-    ` : ""}
-
-  </div>
-</section>
-`;
+      </section>
+    `;
   }
 
   function escapeHtml(value) {
