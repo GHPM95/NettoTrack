@@ -2,307 +2,204 @@
    NettoTrack Component Registry
    ========================= */
 
-window.NTComponents = (() => {
-  function section({ title = "", body = "", glass = false } = {}) {
-    return `
-      <section class="ntSection ${glass ? "ntSectionGlass" : ""}">
-        ${title ? `<h3 class="ntSectionTitle">${escapeHtml(title)}</h3>` : ""}
-        ${body ? `<div class="ntSectionText">${body}</div>` : ""}
-      </section>
-    `;
-  }
+window.NTComponents = {
 
-  function input({
-    label = "",
-    placeholder = "",
-    value = "",
-    type = "text",
-    name = "",
-    disabled = false
-  } = {}) {
+  /* =========================
+     SECTION
+     ========================= */
+
+  section({ title="", body="" }={}){
+
+    if(!title && !body) return "";
+
     return `
-      <div class="ntField">
-        ${label ? `<label class="ntLabel">${escapeHtml(label)}</label>` : ""}
-        <div class="ntInputWrap">
-          <input
-            class="ntInput"
-            type="${escapeAttr(type)}"
-            ${name ? `name="${escapeAttr(name)}"` : ""}
-            ${placeholder ? `placeholder="${escapeAttr(placeholder)}"` : ""}
-            value="${escapeAttr(value)}"
-            ${disabled ? "disabled" : ""}
-          />
-        </div>
+      <div class="ntSection">
+        ${title ? `<div class="ntSectionTitle">${title}</div>` : ""}
+        ${body ? `<div class="ntSectionBody">${body}</div>` : ""}
       </div>
     `;
-  }
 
-  function textarea({
-    label = "",
-    placeholder = "",
-    value = "",
-    name = "",
-    disabled = false
-  } = {}) {
+  },
+
+  /* =========================
+     GRID 2
+     ========================= */
+
+  grid2({ left="", right="" }={}){
+
+    if(!left && !right) return "";
+
     return `
-      <div class="ntField">
-        ${label ? `<label class="ntLabel">${escapeHtml(label)}</label>` : ""}
-        <div class="ntTextareaWrap">
-          <textarea
-            class="ntTextarea"
-            ${name ? `name="${escapeAttr(name)}"` : ""}
-            ${placeholder ? `placeholder="${escapeAttr(placeholder)}"` : ""}
-            ${disabled ? "disabled" : ""}
-          >${escapeHtml(value)}</textarea>
-        </div>
+      <div class="ntGrid-2">
+        ${left || ""}
+        ${right || ""}
       </div>
     `;
-  }
 
-  function select({
-    label = "",
-    name = "",
-    value = "",
-    options = [],
-    disabled = false
-  } = {}) {
-    const safeOptions = Array.isArray(options) ? options : [];
+  },
+
+  /* =========================
+     INPUT
+     ========================= */
+
+  input({ placeholder="", value="" }={}){
 
     return `
-      <div class="ntField">
-        ${label ? `<label class="ntLabel">${escapeHtml(label)}</label>` : ""}
-        <div class="ntSelectWrap">
-          <select
-            class="ntSelect"
-            ${name ? `name="${escapeAttr(name)}"` : ""}
-            ${disabled ? "disabled" : ""}
-          >
-            ${safeOptions.map((opt) => {
-              const item = normalizeOption(opt);
-              return `
-                <option
-                  value="${escapeAttr(item.value)}"
-                  ${String(item.value) === String(value) ? "selected" : ""}
-                >
-                  ${escapeHtml(item.label)}
-                </option>
-              `;
-            }).join("")}
-          </select>
-        </div>
+      <div class="ntInputWrap">
+        <input
+          class="ntInput"
+          type="text"
+          placeholder="${placeholder}"
+          value="${value}"
+        />
       </div>
     `;
-  }
 
-  function button({
-    label = "Button",
-    kind = "secondary",
-    pressed = false,
-    full = true,
-    disabled = false
-  } = {}) {
-    const classes = [
-      kind === "primary" ? "ntBtn ntBtnPrimary" : "ntBtn ntBtnSecondary",
-      "ntPress"
-    ];
+  },
 
-    if (pressed) classes.push("isSelected");
-    if (!full) classes.push("isAuto");
+  /* =========================
+     TEXTAREA
+     ========================= */
+
+  textarea({ placeholder="", value="" }={}){
 
     return `
-      <button
-        type="button"
-        class="${classes.join(" ")}"
-        ${pressed ? 'aria-pressed="true"' : 'aria-pressed="false"'}
-        ${disabled ? "disabled" : ""}
-      >
-        ${escapeHtml(label)}
+      <div class="ntTextareaWrap">
+        <textarea
+          class="ntTextarea"
+          placeholder="${placeholder}"
+        >${value}</textarea>
+      </div>
+    `;
+
+  },
+
+  /* =========================
+     FIELD ACTION
+     ========================= */
+
+  fieldAction({ label="", value="" }={}){
+
+    if(!label && !value) return "";
+
+    return `
+      <div class="ntFieldAction">
+        <div class="ntFieldActionLabel">${label}</div>
+        ${value ? `<div class="ntFieldActionValue">${value}</div>` : ""}
+      </div>
+    `;
+
+  },
+
+  /* =========================
+     BUTTON
+     ========================= */
+
+  button({ label="", kind="primary", pressed=false }={}){
+
+    if(!label) return "";
+
+    return `
+      <button class="ntBtn ntBtn-${kind} ${pressed ? "isSelected":""}">
+        ${label}
       </button>
     `;
-  }
 
-  function checkbox({
-    title = "",
-    desc = "",
-    checked = false,
-    disabled = false
-  } = {}) {
+  },
+
+  /* =========================
+     CHECKBOX
+     ========================= */
+
+  checkbox({ title="", desc="" }={}){
+
+    if(!title && !desc) return "";
+
     return `
       <label class="ntCheckRow">
-        <input
-          class="ntCheckInput"
-          type="checkbox"
-          ${checked ? "checked" : ""}
-          ${disabled ? "disabled" : ""}
-          hidden
-        />
-        <span class="ntCheckUi" aria-hidden="true"></span>
-
-        <span class="ntCheckContent">
-          ${title ? `<span class="ntCheckTitle">${escapeHtml(title)}</span>` : ""}
-          ${desc ? `<span class="ntCheckDesc">${escapeHtml(desc)}</span>` : ""}
-        </span>
+        <input type="checkbox"/>
+        <div class="ntCheckContent">
+          ${title ? `<div class="ntCheckTitle">${title}</div>`:""}
+          ${desc ? `<div class="ntCheckDesc">${desc}</div>`:""}
+        </div>
       </label>
     `;
-  }
 
-  function radio({
-    title = "",
-    desc = "",
-    checked = false,
-    disabled = false,
-    name = "ntRadio"
-  } = {}) {
+  },
+
+  /* =========================
+     RADIO
+     ========================= */
+
+  radio({ title="", desc="" }={}){
+
+    if(!title && !desc) return "";
+
     return `
       <label class="ntRadioRow">
-        <input
-          class="ntRadioInput"
-          type="radio"
-          name="${escapeAttr(name)}"
-          ${checked ? "checked" : ""}
-          ${disabled ? "disabled" : ""}
-          hidden
-        />
-        <span class="ntRadioUi" aria-hidden="true"></span>
-
-        <span class="ntRadioContent">
-          ${title ? `<span class="ntRadioTitle">${escapeHtml(title)}</span>` : ""}
-          ${desc ? `<span class="ntRadioDesc">${escapeHtml(desc)}</span>` : ""}
-        </span>
+        <input type="radio"/>
+        <div class="ntRadioContent">
+          ${title ? `<div class="ntRadioTitle">${title}</div>`:""}
+          ${desc ? `<div class="ntRadioDesc">${desc}</div>`:""}
+        </div>
       </label>
     `;
-  }
 
-  function grid2({ left = "", right = "" } = {}) {
-    return `
-      <div class="ntGrid-2 ntFormRow">
-        <div class="ntFormCol">${left}</div>
-        <div class="ntFormCol">${right}</div>
-      </div>
-    `;
-  }
+  },
 
-  function fieldAction({
-    label = "",
-    value = "",
-    icon = "›"
-  } = {}) {
-    return `
-      <button type="button" class="ntFieldAction ntPress">
-        <span class="ntFieldActionLabel">${escapeHtml(label)}</span>
-        <span class="ntFieldActionValue">
-          ${value ? escapeHtml(value) : escapeHtml(icon)}
-        </span>
-      </button>
-    `;
-  }
+  /* =========================
+     AVATAR
+     ========================= */
 
-  function emptyState({
-    icon = "○",
-    title = "",
-    text = ""
-  } = {}) {
-    return `
-      <div class="ntEmptyState">
-        <div class="ntEmptyStateIcon">${escapeHtml(icon)}</div>
-        ${title ? `<div class="ntEmptyStateTitle">${escapeHtml(title)}</div>` : ""}
-        ${text ? `<div class="ntEmptyStateText">${escapeHtml(text)}</div>` : ""}
-      </div>
-    `;
-  }
+  avatar({ variant="nothing", title="", hint="" }={}){
 
-  function avatar({
-    variant = "nothing",
-    title = "",
-    hint = ""
-  } = {}) {
-    const icon = variant === "user" ? "👤" : "◌";
+    if(!title && !hint) return "";
 
     return `
       <div class="ntAvatarBox">
-        <div class="ntAvatarMedia" aria-hidden="true">${icon}</div>
-        <div class="ntAvatarContent">
-          ${title ? `<div class="ntAvatarTitle">${escapeHtml(title)}</div>` : ""}
-          ${hint ? `<div class="ntAvatarHint">${escapeHtml(hint)}</div>` : ""}
+
+        <div class="ntAvatarMedia ntAvatar-${variant}">
+          <div class="ntAvatarIcon"></div>
         </div>
+
+        <div class="ntAvatarContent">
+          ${title ? `<div class="ntAvatarTitle">${title}</div>`:""}
+          ${hint ? `<div class="ntAvatarHint">${hint}</div>`:""}
+        </div>
+
       </div>
     `;
-  }
 
-  function divider() {
-    return `<hr class="ntDivider" />`;
-  }
+  },
 
-  function stack(items = [], gap = 12) {
-    const cls = gap === 10
-      ? "ntStack-10"
-      : gap === 16
-        ? "ntStack-16"
-        : gap === 18
-          ? "ntStack-18"
-          : "ntStack-12";
+  /* =========================
+     EMPTY STATE
+     ========================= */
 
-    return `<div class="${cls}">${items.join("")}</div>`;
-  }
+  emptyState({ icon="", title="", text="" }={}){
 
-  function cluster(items = [], gap = 10) {
-    const cls = gap === 8
-      ? "ntCluster-8"
-      : gap === 12
-        ? "ntCluster-12"
-        : "ntCluster-10";
+    if(!title && !text) return "";
 
-    return `<div class="${cls}">${items.join("")}</div>`;
-  }
-
-  function formActions({ left = "", right = "" } = {}) {
     return `
-      <div class="ntFormActions">
-        <div class="ntFormCol">${left}</div>
-        <div class="ntFormCol">${right}</div>
+      <div class="ntEmptyState">
+
+        ${icon ? `<div class="ntEmptyStateIcon">${icon}</div>`:""}
+        ${title ? `<div class="ntEmptyStateTitle">${title}</div>`:""}
+        ${text ? `<div class="ntEmptyStateText">${text}</div>`:""}
+
       </div>
     `;
+
+  },
+
+  /* =========================
+     DIVIDER
+     ========================= */
+
+  divider(){
+
+    return `<div class="ntDivider"></div>`;
+
   }
 
-  function normalizeOption(opt) {
-    if (typeof opt === "string" || typeof opt === "number") {
-      return { value: String(opt), label: String(opt) };
-    }
-
-    return {
-      value: String(opt?.value ?? ""),
-      label: String(opt?.label ?? opt?.value ?? "")
-    };
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  function escapeAttr(value) {
-    return escapeHtml(value);
-  }
-
-  return {
-    section,
-    input,
-    textarea,
-    select,
-    button,
-    checkbox,
-    radio,
-    grid2,
-    fieldAction,
-    emptyState,
-    avatar,
-    divider,
-    stack,
-    cluster,
-    formActions
-  };
-})();
+};
