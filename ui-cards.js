@@ -18,6 +18,10 @@ window.NTCards = (() => {
     state.trackEl = trackEl || state.trackEl;
     state.dotsHook = dotsHook || state.dotsHook;
     render();
+
+    window.addEventListener("resize", () => {
+      syncTrack();
+    });
   }
 
   function registerCard(config) {
@@ -39,6 +43,14 @@ window.NTCards = (() => {
 
   function isOpen(cardId) {
     return state.openCards.includes(cardId);
+  }
+
+  function getViewportWidth() {
+    return state.viewportEl?.clientWidth || 0;
+  }
+
+  function getTranslateXForIndex(index) {
+    return -(getViewportWidth() * index);
   }
 
   function createRuntime(cardId) {
@@ -100,21 +112,11 @@ window.NTCards = (() => {
     const runtime = getRuntime(cardId);
     if (!runtime) return;
 
-    try {
-      runtime.abortController.abort();
-    } catch {}
+    try { runtime.abortController.abort(); } catch {}
 
-    runtime.intervals.forEach((id) => {
-      try { clearInterval(id); } catch {}
-    });
-
-    runtime.timeouts.forEach((id) => {
-      try { clearTimeout(id); } catch {}
-    });
-
-    runtime.rafs.forEach((id) => {
-      try { cancelAnimationFrame(id); } catch {}
-    });
+    runtime.intervals.forEach((id) => { try { clearInterval(id); } catch {} });
+    runtime.timeouts.forEach((id) => { try { clearTimeout(id); } catch {} });
+    runtime.rafs.forEach((id) => { try { cancelAnimationFrame(id); } catch {} });
 
     runtime.observers.forEach((observer) => {
       try {
@@ -124,9 +126,7 @@ window.NTCards = (() => {
       } catch {}
     });
 
-    runtime.cleanups.forEach((fn) => {
-      try { fn(); } catch {}
-    });
+    runtime.cleanups.forEach((fn) => { try { fn(); } catch {} });
 
     state.runtime.delete(cardId);
   }
@@ -139,7 +139,6 @@ window.NTCards = (() => {
     syncTrack();
     emitCardChange();
     pulseCurrentCard();
-
     return true;
   }
 
@@ -173,7 +172,6 @@ window.NTCards = (() => {
     syncTrack();
     emitCardChange();
     pulseCurrentCard();
-
     return true;
   }
 
@@ -215,7 +213,6 @@ window.NTCards = (() => {
     syncTrack();
     emitCardChange();
     pulseCurrentCard();
-
     return true;
   }
 
@@ -288,8 +285,8 @@ window.NTCards = (() => {
   function syncTrack() {
     if (!state.trackEl) return;
 
-    const index = Math.max(0, state.activeIndex);
-    state.trackEl.style.transform = `translate3d(${-index * 100}%,0,0)`;
+    const x = getTranslateXForIndex(Math.max(0, state.activeIndex));
+    state.trackEl.style.transform = `translate3d(${x}px,0,0)`;
 
     updateDots();
   }
@@ -349,6 +346,8 @@ window.NTCards = (() => {
     addRaf,
     addObserver,
     isOpen,
+    getViewportWidth,
+    getTranslateXForIndex,
     get state() {
       return state;
     }
