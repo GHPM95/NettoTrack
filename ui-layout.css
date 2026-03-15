@@ -225,6 +225,29 @@
   overflow:hidden;
 }
 
+/* =========================
+   Card gesture priority
+   ========================= */
+
+.ntCardsViewport,
+.ntCardSlide,
+.ntCard,
+.ntCardShell,
+.ntCardBody,
+.ntCardFooter,
+.ntCardHeader,
+.ntCardSubHeader{
+  touch-action:pan-y;
+}
+
+.ntCardBody *{
+  touch-action:pan-y;
+}
+
+[data-nt-allow-x-scroll="true"]{
+  touch-action:pan-x pan-y !important;
+}
+
 .ntStack-10 > * + *{
   margin-top:10px;
 }
