@@ -17,7 +17,9 @@ window.NTCards = (() => {
     state.viewportEl = viewportEl || state.viewportEl;
     state.trackEl = trackEl || state.trackEl;
     state.dotsHook = dotsHook || state.dotsHook;
+
     render();
+    syncTrack();
 
     window.addEventListener("resize", () => {
       syncTrack();
@@ -112,11 +114,21 @@ window.NTCards = (() => {
     const runtime = getRuntime(cardId);
     if (!runtime) return;
 
-    try { runtime.abortController.abort(); } catch {}
+    try {
+      runtime.abortController.abort();
+    } catch {}
 
-    runtime.intervals.forEach((id) => { try { clearInterval(id); } catch {} });
-    runtime.timeouts.forEach((id) => { try { clearTimeout(id); } catch {} });
-    runtime.rafs.forEach((id) => { try { cancelAnimationFrame(id); } catch {} });
+    runtime.intervals.forEach((id) => {
+      try { clearInterval(id); } catch {}
+    });
+
+    runtime.timeouts.forEach((id) => {
+      try { clearTimeout(id); } catch {}
+    });
+
+    runtime.rafs.forEach((id) => {
+      try { cancelAnimationFrame(id); } catch {}
+    });
 
     runtime.observers.forEach((observer) => {
       try {
@@ -126,7 +138,9 @@ window.NTCards = (() => {
       } catch {}
     });
 
-    runtime.cleanups.forEach((fn) => { try { fn(); } catch {} });
+    runtime.cleanups.forEach((fn) => {
+      try { fn(); } catch {}
+    });
 
     state.runtime.delete(cardId);
   }
@@ -154,6 +168,7 @@ window.NTCards = (() => {
 
     createRuntime(cardId);
     render();
+    syncTrack();
 
     const def = state.registry.get(cardId);
     if (def?.onOpen) {
@@ -169,7 +184,6 @@ window.NTCards = (() => {
       });
     }
 
-    syncTrack();
     emitCardChange();
     pulseCurrentCard();
     return true;
@@ -193,7 +207,6 @@ window.NTCards = (() => {
     }
 
     cleanupRuntime(cardId);
-
     state.openCards.splice(idx, 1);
 
     if (!state.openCards.length) {
@@ -270,6 +283,7 @@ window.NTCards = (() => {
     const html = state.openCards.map((cardId) => {
       const def = state.registry.get(cardId);
       const content = def ? def.render() : "";
+
       return `
         <section class="ntCardSlide" data-card-id="${cardId}">
           ${content}
@@ -283,10 +297,13 @@ window.NTCards = (() => {
   }
 
   function syncTrack() {
-    if (!state.trackEl) return;
+    if (!state.trackEl || !state.viewportEl) return;
 
-    const x = getTranslateXForIndex(Math.max(0, state.activeIndex));
-    state.trackEl.style.transform = `translate3d(${x}px,0,0)`;
+    const index = Math.max(0, state.activeIndex);
+    const viewportWidth = state.viewportEl.clientWidth;
+    const offsetX = -(index * viewportWidth);
+
+    state.trackEl.style.transform = `translate3d(${offsetX}px,0,0)`;
     updateDots();
   }
 
