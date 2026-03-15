@@ -13,6 +13,7 @@
   width:100%;
   height:100%;
   min-height:0;
+  max-width:100%;
   overflow:hidden;
   position:relative;
 }
@@ -21,6 +22,7 @@
   width:100%;
   height:100%;
   min-height:0;
+  max-width:100%;
   display:flex;
   flex-direction:column;
   overflow:hidden;
@@ -221,10 +223,11 @@
 }
 
 .ntCardsTrack{
-  height:100%;
-  min-height:0;
   display:flex;
   flex-direction:row;
+  width:100%;
+  height:100%;
+  min-height:0;
   will-change:transform;
   touch-action:pan-y;
 }
@@ -238,9 +241,10 @@
   width:100%;
   height:100%;
   min-height:0;
+  max-width:100%;
   overflow:hidden;
-  padding:0;
   box-sizing:border-box;
+  padding:0;
 }
 
 .ntCardsViewport,
