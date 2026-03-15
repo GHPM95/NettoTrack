@@ -2,85 +2,154 @@
    NettoTrack UI Forms
    ========================= */
 
-.ntField,
-.ntFieldGroup,
-.ntInputWrap,
-.ntTextareaWrap,
-.ntSelectWrap{
-  width:100%;
-  min-width:0;
-  max-width:100%;
+:root{
+  /* base iPhone 14 Pro */
+  --nt-input-height:46px;
+  --nt-textarea-min-h:112px;
 }
 
-.ntLabel{
-  display:block;
+/* =========================
+   Field wrapper
+   ========================= */
+
+.ntField{
   width:100%;
   min-width:0;
-  margin-bottom:6px;
+
+  display:flex;
+  flex-direction:column;
+
+  gap:6px;
+}
+
+.ntFieldGroup{
+  width:100%;
+  min-width:0;
+}
+
+/* =========================
+   Label
+   ========================= */
+
+.ntLabel{
   font-size:14px;
   font-weight:900;
   color:var(--nt-text);
 }
 
-.ntInput,
-.ntTextarea,
-.ntSelect,
-.ntBtn,
-.ntToggleBtn{
+/* =========================
+   Input
+   ========================= */
+
+.ntInputWrap{
+  width:100%;
+  min-width:0;
+}
+
+.ntInput{
   width:100%;
   min-width:0;
   max-width:100%;
+
+  height:var(--nt-input-height);
+
+  padding:0 14px;
+
+  border-radius:16px;
+  border:1px solid var(--nt-border);
+
+  background:var(--nt-surface-soft);
+  color:var(--nt-text);
+
+  outline:none;
+
   font-family:var(--nt-font-family);
 }
 
-.ntInput,
-.ntSelect{
-  height:46px;
-  padding:0 14px;
-  border-radius:16px;
-  border:1px solid var(--nt-border);
-  background:var(--nt-surface-soft);
-  color:var(--nt-text);
-  outline:none;
-  box-shadow:none;
-}
-
-.ntTextarea{
-  min-height:112px;
-  resize:none;
-  padding:14px;
-  border-radius:16px;
-  border:1px solid var(--nt-border);
-  background:var(--nt-surface-soft);
-  color:var(--nt-text);
-  outline:none;
-  box-shadow:none;
-}
-
-.ntInput::placeholder,
-.ntTextarea::placeholder{
+.ntInput::placeholder{
   color:var(--nt-text-muted);
 }
 
-.ntInput:focus,
-.ntTextarea:focus,
-.ntSelect:focus{
-  border-color:rgba(255,255,255,.22);
+/* =========================
+   Textarea
+   ========================= */
+
+.ntTextareaWrap{
+  width:100%;
+  min-width:0;
 }
 
-.ntBtn,
-.ntToggleBtn{
-  min-height:44px;
-  padding:0 14px;
+.ntTextarea{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+
+  min-height:var(--nt-textarea-min-h);
+
+  padding:14px;
+
+  resize:none;
+
   border-radius:16px;
   border:1px solid var(--nt-border);
+
   background:var(--nt-surface-soft);
   color:var(--nt-text);
+
+  outline:none;
+}
+
+/* =========================
+   Select
+   ========================= */
+
+.ntSelectWrap{
+  width:100%;
+  min-width:0;
+}
+
+.ntSelect{
+  width:100%;
+  min-width:0;
+
+  height:var(--nt-input-height);
+
+  padding:0 14px;
+
+  border-radius:16px;
+  border:1px solid var(--nt-border);
+
+  background:var(--nt-surface-soft);
+  color:var(--nt-text);
+
+  outline:none;
+}
+
+/* =========================
+   Buttons
+   ========================= */
+
+.ntBtn{
+  width:100%;
+  min-width:0;
+
+  min-height:44px;
+
+  padding:0 14px;
+
+  border-radius:16px;
+
+  border:1px solid var(--nt-border);
+
+  background:var(--nt-surface-soft);
+
   font-size:15px;
   font-weight:900;
-  display:inline-flex;
+
+  display:flex;
   align-items:center;
   justify-content:center;
+
   text-align:center;
 }
 
@@ -90,94 +159,159 @@
 
 .ntBtnPrimary{
   border:1px solid transparent;
+
   background:
     linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
     var(--nt-accent-border-gradient) border-box;
+}
+
+/* =========================
+   Toggle buttons
+   ========================= */
+
+.ntToggleBtn{
+  width:100%;
+
+  min-height:44px;
+
+  border-radius:16px;
+
+  border:1px solid var(--nt-border);
+
+  background:var(--nt-surface-soft);
+
+  font-size:15px;
+  font-weight:900;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .ntToggleBtn.isSelected{
   border:1px solid transparent;
+
   background:
     linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
     var(--nt-accent-border-gradient) border-box;
 }
 
-.ntCheckRow,
-.ntRadioRow{
+/* =========================
+   Checkbox
+   ========================= */
+
+.ntCheckRow{
   width:100%;
   min-width:0;
-  max-width:100%;
+
   display:flex;
   align-items:flex-start;
+
   gap:12px;
+
   padding:12px 14px;
+
   border-radius:16px;
   border:1px solid var(--nt-border);
+
   background:var(--nt-surface-soft);
 }
 
-.ntCheckContent,
-.ntRadioContent{
-  min-width:0;
+.ntCheckContent{
   flex:1 1 auto;
+  min-width:0;
+
   display:flex;
   flex-direction:column;
+
   gap:4px;
 }
 
-.ntCheckTitle,
+.ntCheckTitle{
+  font-size:14px;
+  font-weight:900;
+}
+
+.ntCheckDesc{
+  font-size:13px;
+  line-height:1.45;
+  color:var(--nt-text-muted);
+}
+
+/* =========================
+   Radio
+   ========================= */
+
+.ntRadioRow{
+  width:100%;
+  min-width:0;
+
+  display:flex;
+  align-items:flex-start;
+
+  gap:12px;
+
+  padding:12px 14px;
+
+  border-radius:16px;
+  border:1px solid var(--nt-border);
+
+  background:var(--nt-surface-soft);
+}
+
+.ntRadioContent{
+  flex:1 1 auto;
+  min-width:0;
+
+  display:flex;
+  flex-direction:column;
+
+  gap:4px;
+}
+
 .ntRadioTitle{
   font-size:14px;
   font-weight:900;
-  color:var(--nt-text);
 }
 
-.ntCheckDesc,
 .ntRadioDesc{
   font-size:13px;
   line-height:1.45;
   color:var(--nt-text-muted);
 }
 
-.ntCheckUi,
-.ntRadioUi{
-  flex:0 0 auto;
-}
-
-.ntFormRow{
-  width:100%;
-  min-width:0;
-  display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-  gap:12px;
-}
-
-.ntFormCol{
-  min-width:0;
-  max-width:100%;
-}
+/* =========================
+   Form actions
+   ========================= */
 
 .ntFormActions{
   width:100%;
   min-width:0;
+
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+
   gap:12px;
 }
 
-/* difesa anti-collasso / anti-overflow */
+/* =========================
+   Safety
+   ========================= */
+
 .ntField *,
-.ntFieldGroup *,
-.ntFormRow > *,
-.ntFormActions > *,
 .ntCheckRow *,
-.ntRadioRow *{
+.ntRadioRow *,
+.ntFormActions *{
   min-width:0;
   max-width:100%;
 }
 
+/* =========================
+   Small screens
+   ========================= */
+
 @media (max-width:390px){
-  .ntFormRow,
+
   .ntFormActions{
     grid-template-columns:minmax(0,1fr);
   }
@@ -187,8 +321,4 @@
     height:44px;
   }
 
-  .ntBtn,
-  .ntToggleBtn{
-    min-height:44px;
-  }
 }
