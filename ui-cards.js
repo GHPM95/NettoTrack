@@ -21,9 +21,7 @@ window.NTCards = (() => {
     render();
     syncTrack();
 
-    window.addEventListener("resize", () => {
-      syncTrack();
-    });
+    window.addEventListener("resize", syncTrack);
   }
 
   function registerCard(config) {
@@ -32,7 +30,7 @@ window.NTCards = (() => {
     state.registry.set(config.id, {
       id: config.id,
       title: config.title || "",
-      render: config.render || (() => ""),
+      render: typeof config.render === "function" ? config.render : (() => ""),
       onOpen: config.onOpen || null,
       onClose: config.onClose || null,
       onSave: config.onSave || null,
@@ -172,10 +170,11 @@ window.NTCards = (() => {
 
     const def = state.registry.get(cardId);
     if (def?.onOpen) {
+      const runtime = ensureRuntime(cardId);
       def.onOpen({
         cardId,
-        runtime: ensureRuntime(cardId),
-        signal: ensureRuntime(cardId).signal,
+        runtime,
+        signal: runtime.signal,
         addCleanup: (fn) => addCleanup(cardId, fn),
         addInterval: (id) => addInterval(cardId, id),
         addTimeout: (id) => addTimeout(cardId, id),
@@ -216,11 +215,7 @@ window.NTCards = (() => {
       return true;
     }
 
-    if (idx < state.openCards.length) {
-      state.activeIndex = idx;
-    } else {
-      state.activeIndex = state.openCards.length - 1;
-    }
+    state.activeIndex = idx < state.openCards.length ? idx : state.openCards.length - 1;
 
     render();
     syncTrack();
@@ -285,10 +280,9 @@ window.NTCards = (() => {
       const content = def ? def.render() : "";
 
       return `
-        <section class="ntCardSlide" data-card-id="${cardId}">
-          ${content}
-        </section>
-      `;
+<section class="ntCardSlide" data-card-id="${escapeHtml(cardId)}">
+  ${content}
+</section>`;
     }).join("");
 
     state.trackEl.innerHTML = html;
@@ -335,12 +329,26 @@ window.NTCards = (() => {
     const activeId = getActiveCardId();
     if (!activeId || !state.trackEl) return;
 
-    const el = state.trackEl.querySelector(`[data-card-id="${activeId}"]`);
+    const el = state.trackEl.querySelector(`[data-card-id="${cssEscape(activeId)}"]`);
     if (!el) return;
 
     el.classList.remove("ntCardEnter");
     void el.offsetWidth;
     el.classList.add("ntCardEnter");
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function cssEscape(value) {
+    if (window.CSS?.escape) return window.CSS.escape(value);
+    return String(value).replace(/"/g, '\\"');
   }
 
   return {
