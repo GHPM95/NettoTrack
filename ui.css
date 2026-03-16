@@ -1,7 +1,7 @@
 /* =========================
    NettoTrack UI
    Shell app + tema + top/bottom bar
-   Il layout card resta in ui-layout.css
+   Layout card demandato a ui-layout.css
    ========================= */
 
 :root{
@@ -20,17 +20,6 @@
   --nt-line-tight: 1.1;
 
   --xSize: 44px;
-
-  --nt-subheader-min-height: 54px;
-  --nt-subheader-pad-y: 4px;
-  --nt-subheader-pad-x: 0;
-  --nt-subheader-gap: 8px;
-
-  --nt-card-body-pad-y: 12px;
-  --nt-card-body-pad-x: 2px;
-  --nt-wizard-body-pad-x: 2px;
-  --nt-wizard-body-pad-y: 12px;
-  --nt-footer-gap-top: 12px;
 
   --nt-text: #ffffff;
   --nt-text-muted: rgba(255,255,255,.68);
@@ -66,10 +55,6 @@
 
   --nt-pressed-fill:#2d2457;
 }
-
-/* =========================
-   Base
-   ========================= */
 
 html,
 body{
@@ -196,6 +181,7 @@ h1,h2,h3,h4,h5,h6,p{
   display:flex;
   align-items:center;
   min-height:54px;
+  padding:0 16px;
 }
 
 .ntTopBarTitle{
@@ -224,6 +210,10 @@ h1,h2,h3,h4,h5,h6,p{
   display:flex;
   flex-direction:column;
   gap:12px;
+
+  /* solo la zona card arriva ai bordi schermo */
+  margin-left:-16px;
+  margin-right:-16px;
 }
 
 .ntCardStage{
@@ -232,6 +222,11 @@ h1,h2,h3,h4,h5,h6,p{
   position:relative;
   overflow:hidden;
 }
+
+/* IMPORTANTE:
+   niente .ntCardsViewport / .ntCardsTrack / .ntCardSlide qui.
+   restano solo in ui-layout.css
+*/
 
 /* =========================
    Dots
@@ -243,6 +238,10 @@ h1,h2,h3,h4,h5,h6,p{
   align-items:center;
   gap:8px;
   min-height:18px;
+
+  /* i puntini restano allineati con top/bottom bar */
+  margin-left:16px;
+  margin-right:16px;
 }
 
 .ntDotsRail .ntDotNav{
@@ -268,6 +267,7 @@ h1,h2,h3,h4,h5,h6,p{
   display:grid;
   grid-template-columns:repeat(4, 1fr);
   gap:10px;
+  padding:0 16px;
 }
 
 .ntBottomBtn{
@@ -321,6 +321,26 @@ h1,h2,h3,h4,h5,h6,p{
 
 @media (min-width:600px){
   .ntApp{
+    padding-left:20px;
+    padding-right:20px;
+  }
+
+  .ntTopBar{
+    padding-left:20px;
+    padding-right:20px;
+  }
+
+  .ntMain{
+    margin-left:-20px;
+    margin-right:-20px;
+  }
+
+  .ntDotsRail{
+    margin-left:20px;
+    margin-right:20px;
+  }
+
+  .ntBottomBar{
     padding-left:20px;
     padding-right:20px;
   }
