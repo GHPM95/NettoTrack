@@ -3,13 +3,21 @@
    ========================= */
 
 :root{
-  --nt-card-header-min-h: 44px;
-  --nt-card-subheader-min-h: 54px;
-  --nt-card-footer-min-h: 92px;
+  --nt-card-header-min-h:44px;
+  --nt-card-subheader-min-h:54px;
+  --nt-card-footer-min-h:92px;
+
+  /* spazio laterale card */
+  --nt-card-side-gap: clamp(16px,4vw,22px);
 }
+
+/* =========================
+   CARD CONTAINER
+   ========================= */
 
 .ntCard{
   width:100%;
+  max-width:860px;
   height:100%;
   min-height:0;
   overflow:hidden;
@@ -20,20 +28,32 @@
   width:100%;
   height:100%;
   min-height:0;
+
   display:flex;
   flex-direction:column;
+
   overflow:hidden;
   position:relative;
-  border-radius:24px;
+
+  border-radius:26px;
+
   border:1px solid var(--nt-border-strong);
+
   background:var(--nt-surface-1);
+
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.10),
     0 20px 40px rgba(0,0,0,.22);
+
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
+
   padding:14px;
 }
+
+/* =========================
+   CARD HEADER
+   ========================= */
 
 .ntCardTop{
   flex:0 0 auto;
@@ -54,7 +74,6 @@
   display:flex;
   align-items:center;
   gap:8px;
-  min-width:calc(var(--xSize) * 2 + 8px);
 }
 
 .ntCardTitleWrap{
@@ -66,17 +85,16 @@
 
 .ntCardTitle{
   margin:0;
-  font-size:var(--nt-font-card-title);
-  line-height:var(--nt-line-tight);
+  font-size:18px;
+  line-height:1.1;
   font-weight:1000;
   letter-spacing:.2px;
-  color:var(--nt-text);
   text-align:center;
 }
 
 .ntCardHeaderSide{
-  width:var(--xSize);
-  height:var(--xSize);
+  width:44px;
+  height:44px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -87,38 +105,24 @@
   pointer-events:none;
 }
 
+/* =========================
+   SUB HEADER
+   ========================= */
+
 .ntCardSubHeader{
   flex:0 0 auto;
   min-height:var(--nt-card-subheader-min-h);
-  padding:
-    var(--nt-subheader-pad-y)
-    var(--nt-subheader-pad-x);
   display:flex;
   align-items:center;
-  min-width:0;
-}
-
-.ntCardSubHeader.isPlaceholder{
-  visibility:hidden;
-  pointer-events:none;
-}
-
-.ntCardSubHeaderContent{
-  width:100%;
-  min-width:0;
-  display:flex;
-  align-items:center;
-  min-height:calc(var(--nt-card-subheader-min-h) - (var(--nt-subheader-pad-y) * 2));
 }
 
 .ntSubHeaderScrollX{
   width:100%;
-  min-width:0;
   overflow-x:auto;
   overflow-y:hidden;
+
   -webkit-overflow-scrolling:touch;
-  overscroll-behavior-x:contain;
-  overscroll-behavior-y:none;
+
   scrollbar-width:none;
 }
 
@@ -129,45 +133,45 @@
 .ntSubHeaderRow{
   display:flex;
   align-items:center;
-  gap:var(--nt-subheader-gap);
+  gap:10px;
   min-width:max-content;
-  width:max-content;
 }
+
+/* =========================
+   CARD BODY
+   ========================= */
 
 .ntCardBody{
   flex:1 1 auto;
   min-height:0;
+
   overflow-y:auto;
   overflow-x:hidden;
+
   -webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;
+
   scrollbar-width:none;
-  padding:
-    var(--nt-card-body-pad-y)
-    var(--nt-card-body-pad-x);
+
+  padding:12px 2px;
 }
 
 .ntCardBody::-webkit-scrollbar{
   display:none;
 }
 
+/* =========================
+   CARD FOOTER
+   ========================= */
+
 .ntCardFooter{
   flex:0 0 auto;
+
   min-height:var(--nt-card-footer-min-h);
-  padding-top:var(--nt-footer-gap-top);
-  background:var(--nt-overlay-footer);
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
+
+  padding-top:12px;
+
   display:flex;
   align-items:flex-end;
-}
-
-.ntCardFooter.isPlaceholder{
-  pointer-events:none;
-}
-
-.ntCardFooter.isPlaceholder .ntCardFooterRow{
-  opacity:0;
 }
 
 .ntCardFooterRow{
@@ -177,27 +181,33 @@
   width:100%;
 }
 
+/* =========================
+   WIZARD
+   ========================= */
+
 .ntWizard{
   width:100%;
   height:100%;
   min-height:0;
+
   display:flex;
   flex-direction:column;
+
   overflow:hidden;
 }
 
 .ntWizardContent{
   flex:1 1 auto;
   min-height:0;
+
   overflow-y:auto;
   overflow-x:hidden;
+
   -webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;
+
+  padding:0 2px 12px;
+
   scrollbar-width:none;
-  padding:
-    0
-    var(--nt-wizard-body-pad-x)
-    var(--nt-wizard-body-pad-y);
 }
 
 .ntWizardContent::-webkit-scrollbar{
@@ -215,78 +225,65 @@
   gap:12px;
 }
 
-.ntStepBar{
-  flex:0 0 auto;
-  height:8px;
-  border-radius:999px;
-  background:rgba(255,255,255,.08);
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.08);
-}
-
-.ntStepBarFill{
-  height:100%;
-  border-radius:999px;
-  background:var(--nt-color-accent);
-}
+/* =========================
+   CARD SWIPE VIEWPORT
+   ========================= */
 
 .ntCardsViewport{
   position:relative;
+
   width:100%;
   height:100%;
+
   flex:1 1 auto;
   min-height:0;
-  overflow:hidden; /* il taglio deve avvenire qui */
+
+  overflow:hidden;
 }
+
+/* =========================
+   CARD TRACK
+   ========================= */
 
 .ntCardsTrack{
   width:100%;
   height:100%;
-  min-height:0;
+
   display:flex;
   flex-direction:row;
   flex-wrap:nowrap;
+
   will-change:transform;
+
   touch-action:pan-y;
 }
 
-.ntCardsTrack.isGestureLockY{
-  touch-action:pan-x;
-}
+/* =========================
+   CARD SLIDE
+   ========================= */
 
 .ntCardSlide{
   flex:0 0 100%;
+
   width:100%;
   max-width:100%;
+
   height:100%;
   min-height:0;
-  overflow:visible; /* la card non deve essere tagliata dalla slide */
-  padding:0;
+
+  overflow:visible;
+
+  padding:0 var(--nt-card-side-gap);
+
   box-sizing:border-box;
+
+  display:flex;
+  justify-content:center;
 }
 
-.ntCardsViewport,
-.ntCardSlide,
-.ntCard,
-.ntCardShell,
-.ntCardBody,
-.ntCardFooter,
-.ntCardHeader,
-.ntCardSubHeader{
-  touch-action:pan-y;
-}
-
-.ntCardBody *{
-  touch-action:pan-y;
-}
-
-[data-nt-allow-x-scroll="true"]{
-  touch-action:pan-x pan-y !important;
-}
-
-.ntStack-10 > * + *{
-  margin-top:10px;
-}
+/* =========================
+   STACK UTILITIES
+   ========================= */
 
 .ntStack-12 > * + *{
   margin-top:12px;
@@ -296,38 +293,28 @@
   margin-top:16px;
 }
 
-.ntStack-18 > * + *{
-  margin-top:18px;
-}
-
-.ntCluster-8{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-}
-
 .ntCluster-10{
   display:flex;
   flex-wrap:wrap;
   gap:10px;
 }
 
-.ntCluster-12{
-  display:flex;
-  flex-wrap:wrap;
+.ntGrid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
   gap:12px;
 }
 
-.ntGrid-2{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-  gap:12px;
-}
+/* =========================
+   DIVIDER
+   ========================= */
 
 .ntDivider{
   height:1px;
   width:100%;
+
   border:none;
+
   background:
     linear-gradient(
       90deg,
@@ -337,5 +324,6 @@
       rgba(255,255,255,.10) 88%,
       rgba(255,255,255,0) 100%
     );
+
   margin:16px 0;
 }
