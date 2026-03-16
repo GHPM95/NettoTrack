@@ -8,16 +8,18 @@
   --nt-card-subheader-min-h: 52px;
   --nt-card-footer-min-h: 74px;
 
-  --nt-card-side-gap: clamp(16px, 4vw, 22px);
+  /* NON usare gap laterale card */
+  --nt-card-side-gap: 0px;
 
-  --nt-card-max-w: 860px;
+  /* larghezza piena */
+  --nt-card-max-w: 100%;
 
-  /* card più bassa per lasciare SEMPRE spazio ai dots */
+  /* altezza lasciata com'è per i dots */
   --nt-card-max-h: clamp(500px, 58svh, 610px);
 
   --nt-header-btn-size: 44px;
 
-  /* spazio riservato ai puntini */
+  /* spazio riservato ai dots */
   --nt-dots-space: 26px;
 }
 
@@ -27,7 +29,7 @@
 
 .ntCard{
   width:100%;
-  max-width:var(--nt-card-max-w);
+  max-width:100%;
   height:100%;
   min-height:0;
   overflow:hidden;
@@ -308,7 +310,8 @@
 
   overflow:visible;
 
-  padding:0 var(--nt-card-side-gap);
+  /* TOLTO il padding laterale che creava i bordi */
+  padding:0;
 
   box-sizing:border-box;
 
@@ -402,7 +405,7 @@
 @media (max-width:390px){
   :root{
     --nt-card-max-h: clamp(485px, 56svh, 590px);
-    --nt-card-side-gap: 14px;
+    --nt-card-side-gap: 0px;
     --nt-card-footer-min-h: 68px;
     --nt-dots-space: 24px;
   }
