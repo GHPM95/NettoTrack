@@ -42,10 +42,6 @@
   gap:12px;
 }
 
-/* =========================
-   Header
-   ========================= */
-
 .ntCardHeader{
   display:grid;
   grid-template-columns:auto 1fr auto;
@@ -90,10 +86,6 @@
   visibility:hidden;
   pointer-events:none;
 }
-
-/* =========================
-   Subheader
-   ========================= */
 
 .ntCardSubHeader{
   flex:0 0 auto;
@@ -142,10 +134,6 @@
   width:max-content;
 }
 
-/* =========================
-   Body
-   ========================= */
-
 .ntCardBody{
   flex:1 1 auto;
   min-height:0;
@@ -162,10 +150,6 @@
 .ntCardBody::-webkit-scrollbar{
   display:none;
 }
-
-/* =========================
-   Footer
-   ========================= */
 
 .ntCardFooter{
   flex:0 0 auto;
@@ -192,10 +176,6 @@
   gap:12px;
   width:100%;
 }
-
-/* =========================
-   Wizard
-   ========================= */
 
 .ntWizard{
   width:100%;
@@ -250,10 +230,6 @@
   background:var(--nt-color-accent);
 }
 
-/* =========================
-   Cards viewport system
-   ========================= */
-
 .ntCardsViewport{
   position:relative;
   width:100%;
@@ -264,10 +240,12 @@
 }
 
 .ntCardsTrack{
+  width:100%;
   height:100%;
   min-height:0;
   display:flex;
   flex-direction:row;
+  flex-wrap:nowrap;
   will-change:transform;
   touch-action:pan-y;
 }
@@ -279,16 +257,13 @@
 .ntCardSlide{
   flex:0 0 100%;
   width:100%;
+  max-width:100%;
   height:100%;
   min-height:0;
   overflow:hidden;
   padding:0;
   box-sizing:border-box;
 }
-
-/* =========================
-   Gesture priority
-   ========================= */
 
 .ntCardsViewport,
 .ntCardSlide,
@@ -308,10 +283,6 @@
 [data-nt-allow-x-scroll="true"]{
   touch-action:pan-x pan-y !important;
 }
-
-/* =========================
-   Utilities
-   ========================= */
 
 .ntStack-10 > * + *{
   margin-top:10px;
