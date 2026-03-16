@@ -173,6 +173,7 @@ h1,h2,h3,h4,h5,h6,p{
   display:flex;
   align-items:center;
   min-height:54px;
+  padding:0 16px;
 }
 
 .ntTopBarTitle{
@@ -197,6 +198,10 @@ h1,h2,h3,h4,h5,h6,p{
   display:flex;
   flex-direction:column;
   gap:10px;
+
+  /* la zona card arriva ai bordi utili dello schermo */
+  margin-left:-16px;
+  margin-right:-16px;
 }
 
 .ntCardStage{
@@ -216,6 +221,10 @@ h1,h2,h3,h4,h5,h6,p{
   display:flex;
   align-items:center;
   justify-content:center;
+
+  /* i dots restano allineati col layout interno */
+  margin-left:16px;
+  margin-right:16px;
 }
 
 .ntSmartDots{
@@ -281,6 +290,7 @@ h1,h2,h3,h4,h5,h6,p{
   display:grid;
   grid-template-columns:repeat(4, 1fr);
   gap:10px;
+  padding:0 16px;
 }
 
 .ntBottomBtn{
@@ -330,6 +340,26 @@ h1,h2,h3,h4,h5,h6,p{
 
 @media (min-width:600px){
   .ntApp{
+    padding-left:20px;
+    padding-right:20px;
+  }
+
+  .ntTopBar{
+    padding-left:20px;
+    padding-right:20px;
+  }
+
+  .ntMain{
+    margin-left:-20px;
+    margin-right:-20px;
+  }
+
+  .ntDotsRail{
+    margin-left:20px;
+    margin-right:20px;
+  }
+
+  .ntBottomBar{
     padding-left:20px;
     padding-right:20px;
   }
