@@ -8,18 +8,16 @@
   --nt-card-subheader-min-h: 52px;
   --nt-card-footer-min-h: 74px;
 
-  /* NON usare gap laterale card */
+  /* NIENTE gap laterale card */
   --nt-card-side-gap: 0px;
 
-  /* larghezza piena */
+  /* card piena in larghezza */
   --nt-card-max-w: 100%;
 
-  /* altezza lasciata com'è per i dots */
+  /* altezza lasciata compatibile coi dots */
   --nt-card-max-h: clamp(500px, 58svh, 610px);
 
   --nt-header-btn-size: 44px;
-
-  /* spazio riservato ai dots */
   --nt-dots-space: 26px;
 }
 
@@ -270,7 +268,7 @@
 
   display:flex;
   align-items:flex-start;
-  justify-content:center;
+  justify-content:stretch;
 }
 
 /* =========================
@@ -301,16 +299,14 @@
 
 .ntCardSlide{
   flex:0 0 100%;
-
   width:100%;
   max-width:100%;
-
   height:100%;
   min-height:0;
 
   overflow:visible;
 
-  /* TOLTO il padding laterale che creava i bordi */
+  /* tolto il padding che ricreava i bordi laterali */
   padding:0;
 
   box-sizing:border-box;
