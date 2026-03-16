@@ -280,9 +280,10 @@ window.NTCards = (() => {
       const content = def ? def.render() : "";
 
       return `
-<section class="ntCardSlide" data-card-id="${escapeHtml(cardId)}">
-  ${content}
-</section>`;
+        <section class="ntCardSlide" data-card-id="${escapeHtml(cardId)}">
+          ${content}
+        </section>
+      `;
     }).join("");
 
     state.trackEl.innerHTML = html;
