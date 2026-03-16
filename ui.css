@@ -111,6 +111,10 @@ h1,h2,h3,h4,h5,h6,p{
   display:none !important;
 }
 
+/* =========================
+   App shell
+   ========================= */
+
 .ntAppShell{
   position:relative;
   min-height:100dvh;
@@ -168,12 +172,15 @@ h1,h2,h3,h4,h5,h6,p{
   gap:14px;
 }
 
+/* =========================
+   Top bar
+   ========================= */
+
 .ntTopBar{
   flex:0 0 auto;
   display:flex;
   align-items:center;
   min-height:54px;
-  padding:0 16px;
 }
 
 .ntTopBarTitle{
@@ -192,6 +199,10 @@ h1,h2,h3,h4,h5,h6,p{
   font-weight:700;
 }
 
+/* =========================
+   Main
+   ========================= */
+
 .ntMain{
   flex:1 1 auto;
   min-height:0;
@@ -199,7 +210,7 @@ h1,h2,h3,h4,h5,h6,p{
   flex-direction:column;
   gap:10px;
 
-  /* la zona card arriva ai bordi utili dello schermo */
+  /* allarga SOLO il contenitore card */
   margin-left:-16px;
   margin-right:-16px;
 }
@@ -212,7 +223,7 @@ h1,h2,h3,h4,h5,h6,p{
 }
 
 /* =========================
-   SMART DOTS
+   Smart dots
    ========================= */
 
 .ntDotsRail{
@@ -222,7 +233,7 @@ h1,h2,h3,h4,h5,h6,p{
   align-items:center;
   justify-content:center;
 
-  /* i dots restano allineati col layout interno */
+  /* i dots restano allineati al layout interno */
   margin-left:16px;
   margin-right:16px;
 }
@@ -285,12 +296,15 @@ h1,h2,h3,h4,h5,h6,p{
   opacity:1;
 }
 
+/* =========================
+   Bottom bar
+   ========================= */
+
 .ntBottomBar{
   flex:0 0 auto;
   display:grid;
   grid-template-columns:repeat(4, 1fr);
   gap:10px;
-  padding:0 16px;
 }
 
 .ntBottomBtn{
@@ -325,6 +339,10 @@ h1,h2,h3,h4,h5,h6,p{
   color:var(--nt-text-muted);
 }
 
+/* =========================
+   Utilities
+   ========================= */
+
 .ntScrollY{
   min-height:0;
   overflow-y:auto;
@@ -344,11 +362,6 @@ h1,h2,h3,h4,h5,h6,p{
     padding-right:20px;
   }
 
-  .ntTopBar{
-    padding-left:20px;
-    padding-right:20px;
-  }
-
   .ntMain{
     margin-left:-20px;
     margin-right:-20px;
@@ -357,11 +370,6 @@ h1,h2,h3,h4,h5,h6,p{
   .ntDotsRail{
     margin-left:20px;
     margin-right:20px;
-  }
-
-  .ntBottomBar{
-    padding-left:20px;
-    padding-right:20px;
   }
 
   .ntTopBarTitle{
