@@ -39,19 +39,12 @@
   transition:transform .22s ease;
 }
 
-/* distanza visiva SOLO durante lo swipe */
+/* niente restringimento della card durante lo swipe */
 .ntCardShell{
   transition:
-    transform .18s ease,
     box-shadow .18s ease,
     opacity .18s ease;
   transform-origin:center center;
-}
-
-.ntCardSlide.isPeekCurrent .ntCardShell,
-.ntCardSlide.isPeekNext .ntCardShell,
-.ntCardSlide.isPeekPrev .ntCardShell{
-  transform:scale(.965);
 }
 
 @keyframes ntCardEnter{
