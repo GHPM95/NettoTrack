@@ -1,5 +1,6 @@
 /* =========================
    NettoTrack Card Gestures
+   swipe + sync smart dots
    ========================= */
 
 window.NTCardGestures = (() => {
@@ -24,7 +25,9 @@ window.NTCardGestures = (() => {
   }
 
   function bind() {
-    if (!viewportEl) return;
+    if (!viewportEl || viewportEl.dataset.ntGesturesBound === "true") return;
+
+    viewportEl.dataset.ntGesturesBound = "true";
 
     viewportEl.addEventListener("touchstart", onStart, { passive: true });
     viewportEl.addEventListener("touchmove", onMove, { passive: false });
@@ -51,13 +54,15 @@ window.NTCardGestures = (() => {
     const target = e.target;
     gesture.allowInnerXScroll = !!target?.closest?.('[data-nt-allow-x-scroll="true"]');
 
-    if (window.NTCards?.state?.trackEl) {
-      window.NTCards.state.trackEl.style.transition = "none";
+    const trackEl = window.NTCards?.state?.trackEl;
+    if (trackEl) {
+      trackEl.style.transition = "none";
     }
   }
 
   function onMove(e) {
     if (!gesture.tracking) return;
+
     const t = e.touches[0];
     if (!t) return;
 
@@ -77,6 +82,7 @@ window.NTCardGestures = (() => {
     if (gesture.lock === "x") {
       e.preventDefault();
       dragTrackWithFinger();
+      syncDotsWithDrag();
       return;
     }
 
@@ -84,10 +90,11 @@ window.NTCardGestures = (() => {
       const activeId = window.NTCards?.getActiveCardId?.();
       if (activeId !== armedCardId) return;
 
-      const activeSlide = viewportEl.querySelector(`[data-card-id="${activeId}"]`);
+      const activeSlide = viewportEl?.querySelector?.(`[data-card-id="${activeId}"]`);
       if (activeSlide) {
         activeSlide.style.transform = `translateY(${gesture.deltaY}px)`;
       }
+
       e.preventDefault();
     }
   }
@@ -102,9 +109,13 @@ window.NTCardGestures = (() => {
       const threshold = Math.min(90, width * 0.18);
 
       if (gesture.deltaX < -threshold) {
-        if (!window.NTCards?.goNextCard?.()) snapBackTrack();
+        if (!window.NTCards?.goNextCard?.()) {
+          snapBackTrack();
+        }
       } else if (gesture.deltaX > threshold) {
-        if (!window.NTCards?.goPrevCard?.()) snapBackTrack();
+        if (!window.NTCards?.goPrevCard?.()) {
+          snapBackTrack();
+        }
       } else {
         snapBackTrack();
       }
@@ -114,13 +125,15 @@ window.NTCardGestures = (() => {
 
     if (armedCardId) {
       const activeId = window.NTCards?.getActiveCardId?.();
-      const activeSlide = viewportEl?.querySelector(`[data-card-id="${activeId}"]`);
+      const activeSlide = viewportEl?.querySelector?.(`[data-card-id="${activeId}"]`);
+
       if (activeSlide) {
         if (gesture.deltaY > 100) {
           activeSlide.style.transform = "";
           disarmCloseMode();
+
           if (window.NTCardManager?.closeActive) {
-            NTCardManager.closeActive();
+            window.NTCardManager.closeActive();
           } else {
             window.NTCards?.closeActiveCard?.();
           }
@@ -130,12 +143,14 @@ window.NTCardGestures = (() => {
       }
     }
 
+    syncDotsToActiveCard();
     resetGesture();
   }
 
   function onCancel() {
     restoreTrackTransition();
     snapBackTrack();
+    syncDotsToActiveCard();
     resetGesture();
   }
 
@@ -167,7 +182,27 @@ window.NTCardGestures = (() => {
   function restoreTrackTransition() {
     const trackEl = window.NTCards?.state?.trackEl;
     if (!trackEl) return;
+
     trackEl.style.transition = "transform .22s ease";
+  }
+
+  function syncDotsWithDrag() {
+    const width = viewportEl?.clientWidth || 1;
+    const activeIndex = window.NTCards?.state?.activeIndex ?? 0;
+
+    const progress = activeIndex - (gesture.deltaX / width);
+
+    if (window.NTCardDots?.syncFromProgress) {
+      window.NTCardDots.syncFromProgress(progress);
+    }
+  }
+
+  function syncDotsToActiveCard() {
+    const activeIndex = window.NTCards?.state?.activeIndex ?? 0;
+
+    if (window.NTCardDots?.setActive) {
+      window.NTCardDots.setActive(activeIndex, true);
+    }
   }
 
   function onPointerDown(e) {
@@ -194,7 +229,8 @@ window.NTCardGestures = (() => {
 
   function armCloseMode(cardId) {
     armedCardId = cardId;
-    const activeCard = viewportEl?.querySelector(`[data-card-id="${cardId}"] .ntCard`);
+
+    const activeCard = viewportEl?.querySelector?.(`[data-card-id="${cardId}"] .ntCard`);
     if (activeCard) {
       activeCard.classList.add("isCloseArmed");
     }
@@ -210,10 +246,12 @@ window.NTCardGestures = (() => {
 
   function disarmCloseMode() {
     if (!armedCardId) return;
-    const activeCard = viewportEl?.querySelector(`[data-card-id="${armedCardId}"] .ntCard`);
+
+    const activeCard = viewportEl?.querySelector?.(`[data-card-id="${armedCardId}"] .ntCard`);
     if (activeCard) {
       activeCard.classList.remove("isCloseArmed");
     }
+
     armedCardId = null;
   }
 
