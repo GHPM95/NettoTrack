@@ -111,10 +111,6 @@ h1,h2,h3,h4,h5,h6,p{
   display:none !important;
 }
 
-/* =========================
-   App shell
-   ========================= */
-
 .ntAppShell{
   position:relative;
   min-height:100dvh;
@@ -172,16 +168,11 @@ h1,h2,h3,h4,h5,h6,p{
   gap:14px;
 }
 
-/* =========================
-   Top bar
-   ========================= */
-
 .ntTopBar{
   flex:0 0 auto;
   display:flex;
   align-items:center;
   min-height:54px;
-  padding:0 16px;
 }
 
 .ntTopBarTitle{
@@ -200,20 +191,12 @@ h1,h2,h3,h4,h5,h6,p{
   font-weight:700;
 }
 
-/* =========================
-   Main
-   ========================= */
-
 .ntMain{
   flex:1 1 auto;
   min-height:0;
   display:flex;
   flex-direction:column;
-  gap:12px;
-
-  /* solo la zona card arriva ai bordi schermo */
-  margin-left:-16px;
-  margin-right:-16px;
+  gap:10px;
 }
 
 .ntCardStage{
@@ -223,51 +206,81 @@ h1,h2,h3,h4,h5,h6,p{
   overflow:hidden;
 }
 
-/* IMPORTANTE:
-   niente .ntCardsViewport / .ntCardsTrack / .ntCardSlide qui.
-   restano solo in ui-layout.css
-*/
-
 /* =========================
-   Dots
+   SMART DOTS
    ========================= */
 
 .ntDotsRail{
+  min-height:26px;
+  height:26px;
   display:flex;
-  justify-content:center;
   align-items:center;
-  gap:8px;
-  min-height:18px;
-
-  /* i puntini restano allineati con top/bottom bar */
-  margin-left:16px;
-  margin-right:16px;
+  justify-content:center;
 }
 
-.ntDotsRail .ntDotNav{
-  width:8px;
-  height:8px;
+.ntSmartDots{
+  position:relative;
+  width:56px;
+  height:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.ntSmartDotsTrack{
+  position:absolute;
+  inset:0;
   border-radius:999px;
-  border:none;
-  background:rgba(255,255,255,.22);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
+  background:rgba(255,255,255,.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 2px 8px rgba(0,0,0,.14);
 }
 
-.ntDotsRail .ntDotNav.isActive{
+.ntSmartDotsThumb{
+  position:absolute;
+  top:0;
+  left:0;
   width:18px;
+  height:18px;
+  border-radius:999px;
   background:linear-gradient(90deg,#32c5ff 0%, #756bff 45%, #ff4fd8 100%);
+  box-shadow:
+    0 0 10px rgba(117,107,255,.28),
+    inset 0 1px 0 rgba(255,255,255,.28);
+  transform:translateX(19px);
 }
 
-/* =========================
-   Bottom bar
-   ========================= */
+.ntSmartDotsButtons{
+  position:relative;
+  z-index:2;
+  width:56px;
+  height:18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 2px;
+}
+
+.ntDotNav{
+  width:12px;
+  height:12px;
+  border:none;
+  border-radius:999px;
+  background:transparent;
+  opacity:.9;
+  padding:0;
+}
+
+.ntDotNav.isActive{
+  opacity:1;
+}
 
 .ntBottomBar{
   flex:0 0 auto;
   display:grid;
   grid-template-columns:repeat(4, 1fr);
   gap:10px;
-  padding:0 16px;
 }
 
 .ntBottomBtn{
@@ -302,10 +315,6 @@ h1,h2,h3,h4,h5,h6,p{
   color:var(--nt-text-muted);
 }
 
-/* =========================
-   Utilities
-   ========================= */
-
 .ntScrollY{
   min-height:0;
   overflow-y:auto;
@@ -321,26 +330,6 @@ h1,h2,h3,h4,h5,h6,p{
 
 @media (min-width:600px){
   .ntApp{
-    padding-left:20px;
-    padding-right:20px;
-  }
-
-  .ntTopBar{
-    padding-left:20px;
-    padding-right:20px;
-  }
-
-  .ntMain{
-    margin-left:-20px;
-    margin-right:-20px;
-  }
-
-  .ntDotsRail{
-    margin-left:20px;
-    margin-right:20px;
-  }
-
-  .ntBottomBar{
     padding-left:20px;
     padding-right:20px;
   }
