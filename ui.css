@@ -1,5 +1,7 @@
 /* =========================
    NettoTrack UI
+   Shell app + tema + top/bottom bar
+   Il layout card resta in ui-layout.css
    ========================= */
 
 :root{
@@ -65,6 +67,10 @@
   --nt-pressed-fill:#2d2457;
 }
 
+/* =========================
+   Base
+   ========================= */
+
 html,
 body{
   height:100%;
@@ -119,6 +125,10 @@ h1,h2,h3,h4,h5,h6,p{
 .hidden{
   display:none !important;
 }
+
+/* =========================
+   App shell
+   ========================= */
 
 .ntAppShell{
   position:relative;
@@ -177,12 +187,15 @@ h1,h2,h3,h4,h5,h6,p{
   gap:14px;
 }
 
+/* =========================
+   Top bar
+   ========================= */
+
 .ntTopBar{
   flex:0 0 auto;
   display:flex;
   align-items:center;
   min-height:54px;
-  padding:0 16px;
 }
 
 .ntTopBarTitle{
@@ -201,16 +214,16 @@ h1,h2,h3,h4,h5,h6,p{
   font-weight:700;
 }
 
+/* =========================
+   Main
+   ========================= */
+
 .ntMain{
   flex:1 1 auto;
   min-height:0;
   display:flex;
   flex-direction:column;
   gap:12px;
-
-  /* porta lo swipe fino al bordo schermo */
-  margin-left:-16px;
-  margin-right:-16px;
 }
 
 .ntCardStage{
@@ -220,16 +233,16 @@ h1,h2,h3,h4,h5,h6,p{
   overflow:hidden;
 }
 
+/* =========================
+   Dots
+   ========================= */
+
 .ntDotsRail{
   display:flex;
   justify-content:center;
   align-items:center;
   gap:8px;
   min-height:18px;
-
-  /* i puntini restano allineati al layout interno */
-  margin-left:16px;
-  margin-right:16px;
 }
 
 .ntDotsRail .ntDotNav{
@@ -246,12 +259,15 @@ h1,h2,h3,h4,h5,h6,p{
   background:linear-gradient(90deg,#32c5ff 0%, #756bff 45%, #ff4fd8 100%);
 }
 
+/* =========================
+   Bottom bar
+   ========================= */
+
 .ntBottomBar{
   flex:0 0 auto;
   display:grid;
   grid-template-columns:repeat(4, 1fr);
   gap:10px;
-  padding:0 16px;
 }
 
 .ntBottomBtn{
@@ -286,6 +302,10 @@ h1,h2,h3,h4,h5,h6,p{
   color:var(--nt-text-muted);
 }
 
+/* =========================
+   Utilities
+   ========================= */
+
 .ntScrollY{
   min-height:0;
   overflow-y:auto;
@@ -301,26 +321,6 @@ h1,h2,h3,h4,h5,h6,p{
 
 @media (min-width:600px){
   .ntApp{
-    padding-left:20px;
-    padding-right:20px;
-  }
-
-  .ntTopBar{
-    padding-left:20px;
-    padding-right:20px;
-  }
-
-  .ntMain{
-    margin-left:-20px;
-    margin-right:-20px;
-  }
-
-  .ntDotsRail{
-    margin-left:20px;
-    margin-right:20px;
-  }
-
-  .ntBottomBar{
     padding-left:20px;
     padding-right:20px;
   }
