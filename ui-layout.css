@@ -10,11 +10,15 @@
 
   --nt-card-side-gap: clamp(16px, 4vw, 22px);
 
-  /* iPhone 14 Pro: card più contenuta, non a tutto schermo */
   --nt-card-max-w: 860px;
-  --nt-card-max-h: clamp(540px, 62svh, 650px);
+
+  /* card più bassa per lasciare SEMPRE spazio ai dots */
+  --nt-card-max-h: clamp(500px, 58svh, 610px);
 
   --nt-header-btn-size: 44px;
+
+  /* spazio riservato ai puntini */
+  --nt-dots-space: 26px;
 }
 
 /* =========================
@@ -217,10 +221,8 @@
   width:100%;
   height:100%;
   min-height:0;
-
   display:flex;
   flex-direction:column;
-
   overflow:hidden;
 }
 
@@ -319,7 +321,7 @@
    ========================= */
 
 .ntCardBody .ntEmptyState{
-  min-height:132px;
+  min-height:124px;
   padding:12px 10px;
 }
 
@@ -328,8 +330,8 @@
 }
 
 .ntCardBody .ntAvatarMedia{
-  width:64px;
-  height:64px;
+  width:62px;
+  height:62px;
   border-radius:16px;
 }
 
@@ -344,7 +346,7 @@
 }
 
 .ntCardBody .ntTextarea{
-  min-height:92px;
+  min-height:88px;
 }
 
 .ntCardBody .ntGrid-2{
@@ -357,6 +359,18 @@
 
 .ntCardBody .ntDivider{
   margin:10px 0;
+}
+
+/* =========================
+   DOTS SPACE SUPPORT
+   ========================= */
+
+.ntDotsRail{
+  min-height:var(--nt-dots-space);
+  height:var(--nt-dots-space);
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 /* =========================
@@ -387,9 +401,10 @@
 
 @media (max-width:390px){
   :root{
-    --nt-card-max-h: clamp(520px, 60svh, 620px);
+    --nt-card-max-h: clamp(485px, 56svh, 590px);
     --nt-card-side-gap: 14px;
-    --nt-card-footer-min-h: 70px;
+    --nt-card-footer-min-h: 68px;
+    --nt-dots-space: 24px;
   }
 
   .ntCardShell{
@@ -401,8 +416,8 @@
   }
 
   .ntCardBody .ntAvatarMedia{
-    width:60px;
-    height:60px;
+    width:58px;
+    height:58px;
   }
 
   .ntCardBody .ntInput,
@@ -411,7 +426,7 @@
   }
 
   .ntCardBody .ntTextarea{
-    min-height:86px;
+    min-height:82px;
   }
 }
 
@@ -421,6 +436,6 @@
 
 @media (min-width:600px){
   :root{
-    --nt-card-max-h: clamp(560px, 64svh, 680px);
+    --nt-card-max-h: clamp(520px, 60svh, 640px);
   }
 }
