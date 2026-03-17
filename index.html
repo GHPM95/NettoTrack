@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="ui-feedback.css" />
   <link rel="stylesheet" href="ui-feedback-animations.css" />
   <link rel="stylesheet" href="ui-animations.css" />
+  <link rel="stylesheet" href="ui-menu-layout.css" />
 
   <link rel="stylesheet" href="calendar-day.css" />
   <link rel="stylesheet" href="calendar-day-animations.css" />
@@ -29,6 +30,13 @@
 
     <div class="ntApp">
       <header class="ntTopBar">
+        <button
+          type="button"
+          class="ntIconBtn ntPress ntTopAction"
+          data-nt-open-menu
+          aria-label="Apri menu"
+        >☰</button>
+
         <div>
           <div class="ntTopBarTitle">NettoTrack</div>
           <div class="ntTopBarSub">Il tuo stipendio, nel tempo.</div>
@@ -46,26 +54,48 @@
       </main>
 
       <footer class="ntBottomBar">
-        <button class="ntBottomBtn ntPress" type="button" id="btnInsert">
+        <button class="ntBottomBtn ntPress" type="button" id="btnInsert" data-nav="insert">
           <div class="ntBottomIcon">＋</div>
           <div class="ntBottomLabel">Inserisci</div>
         </button>
 
-        <button class="ntBottomBtn ntPress" type="button" id="btnCalendar">
+        <button class="ntBottomBtn ntPress" type="button" id="btnCalendar" data-nav="calendar">
           <div class="ntBottomIcon">📅</div>
           <div class="ntBottomLabel">Calendario</div>
         </button>
 
-        <button class="ntBottomBtn ntPress" type="button" id="btnProfile">
+        <button class="ntBottomBtn ntPress" type="button" id="btnProfile" data-nav="profile">
           <div class="ntBottomIcon">👤</div>
           <div class="ntBottomLabel">Profilo</div>
         </button>
 
-        <button class="ntBottomBtn ntPress" type="button" id="btnMenu">
+        <button class="ntBottomBtn ntPress" type="button" id="btnMenu" data-nav="menu">
           <div class="ntBottomIcon">☰</div>
           <div class="ntBottomLabel">Menu</div>
         </button>
       </footer>
+    </div>
+  </div>
+
+  <!-- Menu overlay -->
+  <div class="ntMenuOverlay" id="ntMenuOverlay" aria-hidden="true">
+    <div class="ntMenuBackdrop"></div>
+
+    <div class="ntMenuShell">
+      <div class="ntMenuPanelWrap">
+        <aside class="ntMenuPanel"></aside>
+      </div>
+
+      <div class="ntMenuCloseZone">
+        <div class="ntMenuCloseBtnWrap">
+          <button
+            type="button"
+            class="ntIconBtn ntPress"
+            data-nt-close-menu
+            aria-label="Chiudi menu"
+          >×</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -87,6 +117,9 @@
 
   <script src="card-template.js"></script>
   <script src="component-registry.js"></script>
+
+  <script src="ui-menu-content.js"></script>
+  <script src="ui-menu.js"></script>
 
   <script>
     const viewportEl = document.getElementById("ntCardsViewport");
@@ -293,7 +326,12 @@
     });
 
     document.getElementById("btnMenu")?.addEventListener("click", () => {
-      window.NTCardManager?.open("menu");
+      window.NTMenu?.open();
+    });
+
+    window.NTMenu?.init({
+      overlaySelector: "#ntMenuOverlay",
+      openBtnSelector: "[data-nt-open-menu]"
     });
 
     window.NTCardManager?.open("calendarView");
