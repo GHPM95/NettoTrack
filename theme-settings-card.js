@@ -3,17 +3,12 @@
    ========================= */
 
 window.NTThemeSettingsCard = (() => {
-  function applyTheme(mode) {
-    const nextMode = mode === "dark" ? "theme-dark" : "theme-light";
-    document.body.classList.remove("theme-light", "theme-dark");
-    document.body.classList.add(nextMode);
-    localStorage.setItem("ntThemeMode", nextMode);
-  }
+  let systemThemeMedia = null;
+  let systemThemeListenerBound = false;
 
-  function getCurrentTheme() {
+  function getStoredThemeMode() {
     const saved = localStorage.getItem("ntThemeMode");
-    if (saved === "theme-dark" || saved === "theme-light") return saved;
-    return document.body.classList.contains("theme-dark") ? "theme-dark" : "theme-light";
+    return saved === "theme-dark" || saved === "theme-light" ? saved : "theme-light";
   }
 
   function getThemeAutoMode() {
@@ -24,6 +19,53 @@ window.NTThemeSettingsCard = (() => {
 
   function setThemeAutoMode(value) {
     localStorage.setItem("ntThemeAutoMode", value ? "1" : "0");
+  }
+
+  function getSystemThemeClass() {
+    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
+    return prefersDark ? "theme-dark" : "theme-light";
+  }
+
+  function getActiveThemeClass() {
+    return getThemeAutoMode() ? getSystemThemeClass() : getStoredThemeMode();
+  }
+
+  function applyThemeClass(themeClass) {
+    document.body.classList.remove("theme-light", "theme-dark");
+    document.body.classList.add(themeClass);
+  }
+
+  function applyManualTheme(mode) {
+    const nextMode = mode === "dark" ? "theme-dark" : "theme-light";
+    localStorage.setItem("ntThemeMode", nextMode);
+    applyThemeClass(nextMode);
+    updateThemeSelectionUI(nextMode);
+  }
+
+  function applyAutomaticThemeIfNeeded() {
+    if (!getThemeAutoMode()) return;
+    const systemTheme = getSystemThemeClass();
+    applyThemeClass(systemTheme);
+    updateThemeSelectionUI(systemTheme);
+  }
+
+  function ensureSystemThemeListener() {
+    if (systemThemeListenerBound || !window.matchMedia) return;
+
+    systemThemeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const onSystemThemeChange = () => {
+      applyAutomaticThemeIfNeeded();
+      syncAutoCheckboxUI();
+    };
+
+    if (typeof systemThemeMedia.addEventListener === "function") {
+      systemThemeMedia.addEventListener("change", onSystemThemeChange);
+    } else if (typeof systemThemeMedia.addListener === "function") {
+      systemThemeMedia.addListener(onSystemThemeChange);
+    }
+
+    systemThemeListenerBound = true;
   }
 
   function updateThemeSelectionUI(currentThemeClass) {
@@ -45,27 +87,50 @@ window.NTThemeSettingsCard = (() => {
     });
   }
 
+  function syncAutoCheckboxUI() {
+    const autoCheckbox = document.getElementById("ntThemeAutoToggle");
+    if (!autoCheckbox) return;
+    autoCheckbox.checked = getThemeAutoMode();
+  }
+
   function bindThemeCard() {
     const root = document.getElementById("ntThemeModes");
     if (!root) return;
 
-    const current = getCurrentTheme();
-    updateThemeSelectionUI(current);
+    ensureSystemThemeListener();
+
+    const currentTheme = getActiveThemeClass();
+    applyThemeClass(currentTheme);
+    updateThemeSelectionUI(currentTheme);
+    syncAutoCheckboxUI();
 
     root.querySelectorAll("[data-nt-theme]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const selected = btn.dataset.ntTheme === "dark" ? "theme-dark" : "theme-light";
-        applyTheme(selected === "theme-dark" ? "dark" : "light");
-        updateThemeSelectionUI(selected);
+        const selectedMode = btn.dataset.ntTheme === "dark" ? "dark" : "light";
+
+        if (getThemeAutoMode()) {
+          setThemeAutoMode(false);
+          syncAutoCheckboxUI();
+        }
+
+        applyManualTheme(selectedMode);
       });
     });
 
     const autoCheckbox = document.getElementById("ntThemeAutoToggle");
     if (autoCheckbox) {
-      autoCheckbox.checked = getThemeAutoMode();
-
       autoCheckbox.addEventListener("change", () => {
         setThemeAutoMode(autoCheckbox.checked);
+
+        if (autoCheckbox.checked) {
+          const systemTheme = getSystemThemeClass();
+          applyThemeClass(systemTheme);
+          updateThemeSelectionUI(systemTheme);
+        } else {
+          const manualTheme = getStoredThemeMode();
+          applyThemeClass(manualTheme);
+          updateThemeSelectionUI(manualTheme);
+        }
       });
     }
   }
@@ -100,7 +165,7 @@ window.NTThemeSettingsCard = (() => {
             ${NTComponents.checkbox({
               id: "ntThemeAutoToggle",
               title: "Modalità automatica",
-              desc: "Attiva o disattiva la gestione automatica del tema",
+              desc: "Segue automaticamente il tema del dispositivo",
               checked: true
             })}
           </div>
@@ -122,12 +187,13 @@ window.NTThemeSettingsCard = (() => {
     });
   }
 
+  function initThemeOnAppStart() {
+    ensureSystemThemeListener();
+    applyThemeClass(getActiveThemeClass());
+  }
+
   return {
     register,
-    bindThemeCard,
-    applyTheme,
-    getCurrentTheme,
-    getThemeAutoMode,
-    setThemeAutoMode
+    initThemeOnAppStart
   };
 })();
