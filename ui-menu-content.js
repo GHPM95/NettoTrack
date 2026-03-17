@@ -45,10 +45,16 @@ window.NTMenuContent = (() => {
               <span class="ntMenuRowLabel">Backup dati</span>
               <span class="ntMenuRowValue">Presto</span>
             </button>
+          </div>
+        </section>
 
-            <button type="button" class="ntMenuRow ntPress" data-nt-menu-action="settings">
-              <span class="ntMenuRowLabel">Impostazioni</span>
-              <span class="ntMenuRowValue">Presto</span>
+        <section class="ntMenuSection">
+          <h3 class="ntMenuSectionTitle">Impostazioni</h3>
+
+          <div class="ntMenuGroup">
+            <button type="button" class="ntMenuRow ntPress" data-nt-menu-action="settings-theme">
+              <span class="ntMenuRowLabel">Aspetto e tema</span>
+              <span class="ntMenuRowValue">Apri</span>
             </button>
           </div>
         </section>
