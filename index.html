@@ -174,12 +174,6 @@
           updateThemeSelectionUI(selected);
         });
       });
-
-      /* qui va agganciato il tuo on/off universale già esistente */
-      const autoMount = document.getElementById("ntThemeAutoMount");
-      if (autoMount) {
-        autoMount.innerHTML = "";
-      }
     }
 
     function registerDemoCards() {
@@ -269,6 +263,14 @@
             showBack: true,
             showNext: true
           });
+        },
+        onSave() {
+          if (window.NTToast) {
+            NTToast.show({
+              title: "Dati salvati",
+              text: "Le modifiche della card sono state registrate."
+            });
+          }
         }
       });
 
@@ -302,6 +304,14 @@
             showBack: true,
             showNext: true
           });
+        },
+        onSave() {
+          if (window.NTToast) {
+            NTToast.show({
+              title: "Profilo salvato",
+              text: "Le informazioni del profilo sono state aggiornate."
+            });
+          }
         }
       });
 
@@ -326,8 +336,6 @@
                 </div>
               </button>
             </div>
-
-            <div class="ntThemeAutoMount" id="ntThemeAutoMount"></div>
           `;
 
           return NTCardTemplate.createCard({
