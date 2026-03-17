@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="ui-feedback-animations.css" />
   <link rel="stylesheet" href="ui-animations.css" />
   <link rel="stylesheet" href="ui-menu-layout.css" />
+  <link rel="stylesheet" href="ui-theme-settings.css" />
 
   <link rel="stylesheet" href="calendar-day.css" />
   <link rel="stylesheet" href="calendar-day-animations.css" />
@@ -54,12 +55,11 @@
       </main>
 
       <footer class="ntBottomBar">
-  <div class="ntBottomSmartCard" id="ntBottomSmartCard"></div>
-</footer>
+        <div class="ntBottomSmartCard" id="ntBottomSmartCard"></div>
+      </footer>
     </div>
   </div>
 
-  <!-- Menu overlay -->
   <div class="ntMenuOverlay" id="ntMenuOverlay" aria-hidden="true">
     <div class="ntMenuBackdrop"></div>
 
@@ -128,6 +128,54 @@
       NTCardGestures.setViewport(viewportEl);
     }
 
+    function applyTheme(mode) {
+      const nextMode = mode === "dark" ? "theme-dark" : "theme-light";
+      document.body.classList.remove("theme-light", "theme-dark");
+      document.body.classList.add(nextMode);
+      localStorage.setItem("ntThemeMode", nextMode);
+    }
+
+    function getCurrentTheme() {
+      const saved = localStorage.getItem("ntThemeMode");
+      if (saved === "theme-dark" || saved === "theme-light") return saved;
+      return document.body.classList.contains("theme-dark") ? "theme-dark" : "theme-light";
+    }
+
+    function bindThemeCard() {
+      const root = document.getElementById("ntThemeModes");
+      if (!root) return;
+
+      const current = getCurrentTheme();
+      updateThemeSelectionUI(current);
+
+      root.querySelectorAll("[data-nt-theme]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const selected = btn.dataset.ntTheme === "dark" ? "theme-dark" : "theme-light";
+          applyTheme(selected === "theme-dark" ? "dark" : "light");
+          updateThemeSelectionUI(selected);
+        });
+      });
+    }
+
+    function updateThemeSelectionUI(currentThemeClass) {
+      const root = document.getElementById("ntThemeModes");
+      if (!root) return;
+
+      root.querySelectorAll("[data-nt-theme]").forEach((btn) => {
+        const isDark = btn.dataset.ntTheme === "dark";
+        const shouldBeActive =
+          (isDark && currentThemeClass === "theme-dark") ||
+          (!isDark && currentThemeClass === "theme-light");
+
+        btn.classList.toggle("isSelected", shouldBeActive);
+
+        const stateEl = btn.querySelector(".ntThemeModeState");
+        if (stateEl) {
+          stateEl.textContent = shouldBeActive ? "In uso" : "Tocca per attivare";
+        }
+      });
+    }
+
     function registerDemoCards() {
       if (!window.NTCards || !window.NTCardTemplate || !window.NTComponents) return;
 
@@ -154,7 +202,7 @@
             title: "Calendario",
             body,
             subHeader,
-            footer: false,
+            footer: true,
             showBack: true,
             showNext: true
           });
@@ -268,53 +316,56 @@
       });
 
       NTCards.registerCard({
-        id: "menu",
+        id: "themeSettings",
         render() {
           const body = `
             ${NTComponents.section({
-              title: "Menu rapido",
+              title: "Aspetto e tema",
               body: `
-                ${NTComponents.button({ label: "FAQ", kind: "secondary" })}
-                ${NTComponents.button({ label: "Disclaimer", kind: "secondary" })}
-                ${NTComponents.button({ label: "Termini", kind: "secondary" })}
+                <div class="ntThemeModes" id="ntThemeModes">
+                  <button type="button" class="ntThemeMode ntPress" data-nt-theme="light">
+                    <div class="ntThemeModePreview ntThemeModePreview--light"></div>
+                    <div class="ntThemeModeLabel">Modalità chiara</div>
+                    <div class="ntThemeModeState">Tocca per attivare</div>
+                  </button>
+
+                  <button type="button" class="ntThemeMode ntPress" data-nt-theme="dark">
+                    <div class="ntThemeModePreview ntThemeModePreview--dark"></div>
+                    <div class="ntThemeModeLabel">Modalità scura</div>
+                    <div class="ntThemeModeState">Tocca per attivare</div>
+                  </button>
+                </div>
               `
             })}
           `;
 
           return NTCardTemplate.createCard({
-            id: "menu",
-            title: "Menu",
+            id: "themeSettings",
+            title: "Aspetto e tema",
             body,
             footer: false,
             showBack: true,
-            showNext: true
+            showNext: false
           });
+        },
+        onOpen() {
+          bindThemeCard();
         }
       });
     }
 
     registerDemoCards();
 
-    document.getElementById("btnInsert")?.addEventListener("click", () => {
-      window.NTCardManager?.open("calendarInsert");
-    });
-
-    document.getElementById("btnCalendar")?.addEventListener("click", () => {
-      window.NTCardManager?.open("calendarView");
-    });
-
-    document.getElementById("btnProfile")?.addEventListener("click", () => {
-      window.NTCardManager?.open("profile");
-    });
-
-    document.getElementById("btnMenu")?.addEventListener("click", () => {
-      window.NTMenu?.open();
-    });
-
     window.NTMenu?.init({
       overlaySelector: "#ntMenuOverlay",
       openBtnSelector: "[data-nt-open-menu]"
     });
+
+    const savedTheme = localStorage.getItem("ntThemeMode");
+    if (savedTheme === "theme-dark" || savedTheme === "theme-light") {
+      document.body.classList.remove("theme-light", "theme-dark");
+      document.body.classList.add(savedTheme);
+    }
 
     window.NTCardManager?.open("calendarView");
   </script>
