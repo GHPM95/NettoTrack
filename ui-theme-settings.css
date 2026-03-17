@@ -4,12 +4,12 @@
 
 .ntThemeModes{
   display:grid;
-  grid-template-columns:1fr;
+  grid-template-columns:1fr 1fr;
   gap:14px;
 }
 
 .ntThemeMode{
-  min-height:144px;
+  min-height:168px;
   border-radius:24px;
   border:1px solid var(--nt-border);
   background:var(--nt-surface-2);
@@ -19,7 +19,8 @@
   padding:14px;
   display:flex;
   flex-direction:column;
-  justify-content:space-between;
+  justify-content:flex-start;
+  gap:12px;
   align-items:stretch;
   text-align:left;
 }
@@ -39,6 +40,7 @@
   border:1px solid rgba(255,255,255,.12);
   overflow:hidden;
   position:relative;
+  flex:0 0 auto;
 }
 
 .ntThemeModePreview--light{
@@ -76,7 +78,7 @@
 }
 
 .ntThemeAuto{
-  margin-top:14px;
+  margin-top:16px;
 }
 
 @media (max-width:390px){
@@ -85,7 +87,7 @@
   }
 
   .ntThemeMode{
-    min-height:136px;
+    min-height:156px;
     border-radius:22px;
     padding:12px;
   }
