@@ -98,9 +98,20 @@
 
 .ntMenuCloseBtnWrap{
   position:absolute;
-  top:calc(env(safe-area-inset-top) + 18px);
-  right:var(--nt-menu-gap-right);
+  top:calc(env(safe-area-inset-top) + 20px);
+  right:16px;
   z-index:3;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.ntMenuCloseBtnWrap .ntIconBtn{
+  width:46px;
+  height:46px;
+  min-width:46px;
+  min-height:46px;
 }
 
 .ntMenuBody{
@@ -230,6 +241,17 @@
     min-height:50px;
     padding:12px 14px;
   }
+
+  .ntMenuCloseBtnWrap{
+    right:14px;
+  }
+
+  .ntMenuCloseBtnWrap .ntIconBtn{
+    width:44px;
+    height:44px;
+    min-width:44px;
+    min-height:44px;
+  }
 }
 
 @media (min-width:600px){
@@ -240,5 +262,16 @@
     --nt-menu-radius-right: 38px;
     --nt-menu-header-pad-x: 20px;
     --nt-menu-body-pad-x: 20px;
+  }
+
+  .ntMenuCloseBtnWrap{
+    right:18px;
+  }
+
+  .ntMenuCloseBtnWrap .ntIconBtn{
+    width:48px;
+    height:48px;
+    min-width:48px;
+    min-height:48px;
   }
 }
