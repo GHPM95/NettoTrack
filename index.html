@@ -141,41 +141,6 @@
       return document.body.classList.contains("theme-dark") ? "theme-dark" : "theme-light";
     }
 
-    function getThemeAutoMode() {
-      const saved = localStorage.getItem("ntThemeAutoMode");
-      if (saved === "0" || saved === "1") return saved === "1";
-      return true;
-    }
-
-    function setThemeAutoMode(value) {
-      localStorage.setItem("ntThemeAutoMode", value ? "1" : "0");
-    }
-
-    function bindThemeCard() {
-      const root = document.getElementById("ntThemeModes");
-      if (!root) return;
-
-      const current = getCurrentTheme();
-      const autoInput = document.getElementById("ntThemeAutoToggle");
-
-      updateThemeSelectionUI(current);
-
-      if (autoInput) {
-        autoInput.checked = getThemeAutoMode();
-        autoInput.addEventListener("change", () => {
-          setThemeAutoMode(autoInput.checked);
-        });
-      }
-
-      root.querySelectorAll("[data-nt-theme]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const selected = btn.dataset.ntTheme === "dark" ? "theme-dark" : "theme-light";
-          applyTheme(selected === "theme-dark" ? "dark" : "light");
-          updateThemeSelectionUI(selected);
-        });
-      });
-    }
-
     function updateThemeSelectionUI(currentThemeClass) {
       const root = document.getElementById("ntThemeModes");
       if (!root) return;
@@ -193,6 +158,28 @@
           stateEl.textContent = shouldBeActive ? "In uso" : "Tocca per attivare";
         }
       });
+    }
+
+    function bindThemeCard() {
+      const root = document.getElementById("ntThemeModes");
+      if (!root) return;
+
+      const current = getCurrentTheme();
+      updateThemeSelectionUI(current);
+
+      root.querySelectorAll("[data-nt-theme]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const selected = btn.dataset.ntTheme === "dark" ? "theme-dark" : "theme-light";
+          applyTheme(selected === "theme-dark" ? "dark" : "light");
+          updateThemeSelectionUI(selected);
+        });
+      });
+
+      /* qui va agganciato il tuo on/off universale già esistente */
+      const autoMount = document.getElementById("ntThemeAutoMount");
+      if (autoMount) {
+        autoMount.innerHTML = "";
+      }
     }
 
     function registerDemoCards() {
@@ -282,14 +269,6 @@
             showBack: true,
             showNext: true
           });
-        },
-        onSave() {
-          if (window.NTToast) {
-            NTToast.show({
-              title: "Dati salvati",
-              text: "Le modifiche della card sono state registrate."
-            });
-          }
         }
       });
 
@@ -323,14 +302,6 @@
             showBack: true,
             showNext: true
           });
-        },
-        onSave() {
-          if (window.NTToast) {
-            NTToast.show({
-              title: "Profilo salvato",
-              text: "Le informazioni del profilo sono state aggiornate."
-            });
-          }
         }
       });
 
@@ -356,14 +327,7 @@
               </button>
             </div>
 
-            <div class="ntThemeAuto">
-              ${NTComponents.checkbox({
-                id: "ntThemeAutoToggle",
-                title: "Modalità automatica",
-                desc: "Attiva o disattiva la gestione automatica del tema",
-                checked: true
-              })}
-            </div>
+            <div class="ntThemeAutoMount" id="ntThemeAutoMount"></div>
           `;
 
           return NTCardTemplate.createCard({
