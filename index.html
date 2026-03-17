@@ -141,12 +141,31 @@
       return document.body.classList.contains("theme-dark") ? "theme-dark" : "theme-light";
     }
 
+    function getThemeAutoMode() {
+      const saved = localStorage.getItem("ntThemeAutoMode");
+      if (saved === "0" || saved === "1") return saved === "1";
+      return true;
+    }
+
+    function setThemeAutoMode(value) {
+      localStorage.setItem("ntThemeAutoMode", value ? "1" : "0");
+    }
+
     function bindThemeCard() {
       const root = document.getElementById("ntThemeModes");
       if (!root) return;
 
       const current = getCurrentTheme();
+      const autoInput = document.getElementById("ntThemeAutoToggle");
+
       updateThemeSelectionUI(current);
+
+      if (autoInput) {
+        autoInput.checked = getThemeAutoMode();
+        autoInput.addEventListener("change", () => {
+          setThemeAutoMode(autoInput.checked);
+        });
+      }
 
       root.querySelectorAll("[data-nt-theme]").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -320,20 +339,33 @@
         render() {
           const body = `
             ${NTComponents.section({
-              title: "Aspetto e tema",
+              title: false,
               body: `
                 <div class="ntThemeModes" id="ntThemeModes">
                   <button type="button" class="ntThemeMode ntPress" data-nt-theme="light">
                     <div class="ntThemeModePreview ntThemeModePreview--light"></div>
-                    <div class="ntThemeModeLabel">Modalità chiara</div>
-                    <div class="ntThemeModeState">Tocca per attivare</div>
+                    <div class="ntThemeModeText">
+                      <div class="ntThemeModeLabel">Modalità chiara</div>
+                      <div class="ntThemeModeState">Tocca per attivare</div>
+                    </div>
                   </button>
 
                   <button type="button" class="ntThemeMode ntPress" data-nt-theme="dark">
                     <div class="ntThemeModePreview ntThemeModePreview--dark"></div>
-                    <div class="ntThemeModeLabel">Modalità scura</div>
-                    <div class="ntThemeModeState">Tocca per attivare</div>
+                    <div class="ntThemeModeText">
+                      <div class="ntThemeModeLabel">Modalità scura</div>
+                      <div class="ntThemeModeState">Tocca per attivare</div>
+                    </div>
                   </button>
+                </div>
+
+                <div class="ntThemeAuto">
+                  ${NTComponents.checkbox({
+                    id: "ntThemeAutoToggle",
+                    title: "Modalità automatica",
+                    desc: "Attiva la gestione automatica del tema",
+                    checked: true
+                  })}
                 </div>
               `
             })}
