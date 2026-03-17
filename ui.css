@@ -54,6 +54,9 @@
   --nt-accent-fill:#0b1326;
 
   --nt-pressed-fill:#2d2457;
+
+  /* stessa logica larghezza della card centrale */
+  --nt-smart-card-side-gap: 16px;
 }
 
 html,
@@ -237,8 +240,6 @@ h1,h2,h3,h4,h5,h6,p{
   display:flex;
   align-items:center;
   justify-content:center;
-
-  /* i dots restano allineati al layout interno */
   margin-left:16px;
   margin-right:16px;
 }
@@ -302,63 +303,32 @@ h1,h2,h3,h4,h5,h6,p{
 }
 
 /* =========================
-   Bottom bar
+   Bottom smart card
    ========================= */
 
 .ntBottomBar{
   flex:0 0 auto;
-  display:grid;
-  grid-template-columns:repeat(4, 1fr);
-  gap:10px;
-}
-
-.ntBottomBtn{
-  min-height:58px;
-  border:1px solid var(--nt-border);
-  border-radius:20px;
-  background:var(--nt-surface-2);
-  color:var(--nt-text);
   display:flex;
-  flex-direction:column;
-  align-items:center;
   justify-content:center;
-  gap:4px;
-  font-family:var(--nt-font-family);
-  padding:8px 6px;
-}
+  align-items:center;
 
-.ntBottomBtn:active{
-  background:var(--nt-pressed-fill);
-}
+  /* evita “righe” o layout residui */
+  min-height:64px;
+  background:transparent;
+  border:none;
+  box-shadow:none;
 
-.ntBottomIcon{
-  font-size:18px;
-  line-height:1;
-  font-weight:900;
-}
-
-.ntBottomLabel{
-  font-size:12px;
-  line-height:1.1;
-  font-weight:800;
-  color:var(--nt-text-muted);
-}
-
-/* =========================
-   Bottom Smart Card
-   ========================= */
-
-.ntBottomBar{
-  flex:0 0 auto;
+  /* stessa larghezza visiva della card centrale */
+  margin-left:calc(-1 * var(--nt-smart-card-side-gap));
+  margin-right:calc(-1 * var(--nt-smart-card-side-gap));
 }
 
 .ntBottomSmartCard{
-  width:100%;
+  width:calc(100% - (var(--nt-smart-card-side-gap) * 2));
   min-height:64px;
 
   border-radius:22px;
   border:1px solid var(--nt-border);
-
   background:var(--nt-surface-2);
 
   display:flex;
@@ -393,6 +363,10 @@ h1,h2,h3,h4,h5,h6,p{
 }
 
 @media (min-width:600px){
+  :root{
+    --nt-smart-card-side-gap: 20px;
+  }
+
   .ntApp{
     padding-left:20px;
     padding-right:20px;
@@ -416,7 +390,8 @@ h1,h2,h3,h4,h5,h6,p{
     font-size:22px;
   }
 
-  .ntBottomBtn{
-    min-height:62px;
+  .ntBottomBar{
+    margin-left:-20px;
+    margin-right:-20px;
   }
 }
