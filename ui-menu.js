@@ -69,6 +69,7 @@ window.NTMenu = (() => {
     if (!overlayEl) return;
     isOpen = true;
     overlayEl.classList.add("isOpen");
+    overlayEl.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
   }
 
@@ -76,6 +77,7 @@ window.NTMenu = (() => {
     if (!overlayEl) return;
     isOpen = false;
     overlayEl.classList.remove("isOpen");
+    overlayEl.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
   }
 
@@ -84,17 +86,22 @@ window.NTMenu = (() => {
 
     switch (action) {
       case "go-insert":
-        document.querySelector('[data-nav="insert"]')?.click();
+        document.getElementById("btnInsert")?.click();
         close();
         break;
 
       case "go-calendar":
-        document.querySelector('[data-nav="calendar"]')?.click();
+        document.getElementById("btnCalendar")?.click();
         close();
         break;
 
       case "go-profile":
-        document.querySelector('[data-nav="profile"]')?.click();
+        document.getElementById("btnProfile")?.click();
+        close();
+        break;
+
+      case "settings-theme":
+        window.NTCardManager?.open("themeSettings");
         close();
         break;
 
