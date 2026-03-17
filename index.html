@@ -338,37 +338,32 @@
         id: "themeSettings",
         render() {
           const body = `
-            ${NTComponents.section({
-              title: false,
-              body: `
-                <div class="ntThemeModes" id="ntThemeModes">
-                  <button type="button" class="ntThemeMode ntPress" data-nt-theme="light">
-                    <div class="ntThemeModePreview ntThemeModePreview--light"></div>
-                    <div class="ntThemeModeText">
-                      <div class="ntThemeModeLabel">Modalità chiara</div>
-                      <div class="ntThemeModeState">Tocca per attivare</div>
-                    </div>
-                  </button>
-
-                  <button type="button" class="ntThemeMode ntPress" data-nt-theme="dark">
-                    <div class="ntThemeModePreview ntThemeModePreview--dark"></div>
-                    <div class="ntThemeModeText">
-                      <div class="ntThemeModeLabel">Modalità scura</div>
-                      <div class="ntThemeModeState">Tocca per attivare</div>
-                    </div>
-                  </button>
+            <div class="ntThemeModes" id="ntThemeModes">
+              <button type="button" class="ntThemeMode ntPress" data-nt-theme="light">
+                <div class="ntThemeModePreview ntThemeModePreview--light"></div>
+                <div class="ntThemeModeText">
+                  <div class="ntThemeModeLabel">Modalità chiara</div>
+                  <div class="ntThemeModeState">Tocca per attivare</div>
                 </div>
+              </button>
 
-                <div class="ntThemeAuto">
-                  ${NTComponents.checkbox({
-                    id: "ntThemeAutoToggle",
-                    title: "Modalità automatica",
-                    desc: "Attiva la gestione automatica del tema",
-                    checked: true
-                  })}
+              <button type="button" class="ntThemeMode ntPress" data-nt-theme="dark">
+                <div class="ntThemeModePreview ntThemeModePreview--dark"></div>
+                <div class="ntThemeModeText">
+                  <div class="ntThemeModeLabel">Modalità scura</div>
+                  <div class="ntThemeModeState">Tocca per attivare</div>
                 </div>
-              `
-            })}
+              </button>
+            </div>
+
+            <div class="ntThemeAuto">
+              ${NTComponents.checkbox({
+                id: "ntThemeAutoToggle",
+                title: "Modalità automatica",
+                desc: "Attiva o disattiva la gestione automatica del tema",
+                checked: true
+              })}
+            </div>
           `;
 
           return NTCardTemplate.createCard({
