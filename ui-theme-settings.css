@@ -9,6 +9,10 @@
   align-items:stretch;
 }
 
+/* =========================
+   Card modalità (chiara / scura)
+   ========================= */
+
 .ntThemeMode{
   min-height:210px;
   border-radius:24px;
@@ -16,7 +20,7 @@
   background:var(--nt-surface-2);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.10),
-    0 12px 28px rgba(0,0,0,.20);
+    0 14px 30px rgba(0,0,0,.22);
   padding:14px;
   display:flex;
   flex-direction:column;
@@ -24,19 +28,30 @@
   align-items:stretch;
   gap:12px;
   text-align:left;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
-.ntThemeMode.isSelected{
-  border-color:rgba(117,107,255,.55);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.12),
-    0 0 0 1px rgba(50,197,255,.28),
-    0 12px 28px rgba(0,0,0,.22);
+.ntThemeMode:active{
+  transform:scale(.98);
 }
+
+/* Stato selezionato */
+
+.ntThemeMode.isSelected{
+  border-color:rgba(117,107,255,.65);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 0 0 1px rgba(50,197,255,.30),
+    0 16px 32px rgba(0,0,0,.24);
+}
+
+/* =========================
+   Preview grafica
+   ========================= */
 
 .ntThemeModePreview{
   width:100%;
-  height:116px;
+  height:120px;
   border-radius:22px;
   border:1px solid rgba(255,255,255,.12);
   overflow:hidden;
@@ -44,19 +59,27 @@
   flex:0 0 auto;
 }
 
+/* Light preview */
+
 .ntThemeModePreview--light{
   background:
     radial-gradient(circle at 18% 15%, rgba(92,150,255,.18), transparent 28%),
     radial-gradient(circle at 84% 16%, rgba(255,92,204,.10), transparent 24%),
-    linear-gradient(180deg, #e9edf7 0%, #dce3f1 100%);
+    linear-gradient(180deg, #eef2fb 0%, #dde5f3 100%);
 }
+
+/* Dark preview */
 
 .ntThemeModePreview--dark{
   background:
-    radial-gradient(circle at 18% 15%, rgba(92,150,255,.20), transparent 28%),
-    radial-gradient(circle at 84% 16%, rgba(255,92,204,.12), transparent 24%),
-    linear-gradient(180deg, #0f1730 0%, #121b38 42%, #0d1327 100%);
+    radial-gradient(circle at 18% 15%, rgba(92,150,255,.22), transparent 28%),
+    radial-gradient(circle at 84% 16%, rgba(255,92,204,.14), transparent 24%),
+    linear-gradient(180deg, #0f1730 0%, #121b38 42%, #0c1226 100%);
 }
+
+/* =========================
+   Testo modalità
+   ========================= */
 
 .ntThemeModeText{
   display:flex;
@@ -78,17 +101,26 @@
   color:var(--nt-text-muted);
 }
 
-.ntThemeAutoMount{
+/* =========================
+   Checkbox automatico
+   ========================= */
+
+.ntThemeAuto{
   margin-top:16px;
 }
 
+/* =========================
+   Responsive (iPhone)
+   ========================= */
+
 @media (max-width:390px){
+
   .ntThemeModes{
     gap:12px;
   }
 
   .ntThemeMode{
-    min-height:194px;
+    min-height:190px;
     border-radius:22px;
     padding:12px;
   }
@@ -97,4 +129,5 @@
     height:104px;
     border-radius:18px;
   }
+
 }
