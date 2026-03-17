@@ -1,0 +1,215 @@
+/* =========================
+   NettoTrack Menu Layout
+   ========================= */
+
+:root{
+  --nt-menu-w: min(76vw, 340px);
+  --nt-menu-z: 9999;
+  --nt-menu-gap-right: 14px;
+}
+
+.ntMenuOverlay{
+  position:fixed;
+  inset:0;
+  z-index:var(--nt-menu-z);
+
+  display:flex;
+  align-items:stretch;
+  justify-content:flex-start;
+
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .22s ease;
+}
+
+.ntMenuOverlay.isOpen{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.ntMenuBackdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(7,10,22,.42);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+
+.ntMenuShell{
+  position:relative;
+  z-index:2;
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:stretch;
+  justify-content:flex-start;
+}
+
+.ntMenuPanelWrap{
+  width:var(--nt-menu-w);
+  max-width:var(--nt-menu-w);
+  height:100%;
+  transform:translateX(-105%);
+  transition:transform .24s ease;
+  padding:
+    calc(env(safe-area-inset-top) + 14px)
+    0
+    calc(env(safe-area-inset-bottom) + 14px)
+    14px;
+}
+
+.ntMenuOverlay.isOpen .ntMenuPanelWrap{
+  transform:translateX(0);
+}
+
+.ntMenuPanel{
+  width:100%;
+  height:100%;
+  min-height:0;
+
+  display:flex;
+  flex-direction:column;
+
+  border-radius:28px;
+  overflow:hidden;
+
+  border:1px solid var(--nt-border-strong);
+  background:var(--nt-surface-1);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 24px 48px rgba(0,0,0,.30);
+
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+
+.ntMenuCloseZone{
+  flex:1 1 auto;
+  min-width:0;
+  position:relative;
+}
+
+.ntMenuCloseBtnWrap{
+  position:absolute;
+  top:calc(env(safe-area-inset-top) + 18px);
+  right:var(--nt-menu-gap-right);
+  z-index:3;
+}
+
+.ntMenuBody{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding:18px 16px 18px;
+}
+
+.ntMenuBody::-webkit-scrollbar{
+  display:none;
+}
+
+.ntMenuHeader{
+  flex:0 0 auto;
+  padding:18px 16px 8px;
+}
+
+.ntMenuTitle{
+  margin:0;
+  font-size:22px;
+  line-height:1.1;
+  font-weight:1000;
+  color:var(--nt-text);
+}
+
+.ntMenuSub{
+  margin-top:6px;
+  font-size:13px;
+  line-height:1.4;
+  font-weight:700;
+  color:var(--nt-text-muted);
+}
+
+.ntMenuSection + .ntMenuSection{
+  margin-top:18px;
+}
+
+.ntMenuSectionTitle{
+  margin:0 0 10px;
+  font-size:14px;
+  line-height:1.2;
+  font-weight:1000;
+  color:var(--nt-text);
+}
+
+.ntMenuList{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.ntMenuRow{
+  width:100%;
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:18px;
+  border:1px solid var(--nt-border);
+  background:var(--nt-surface-soft);
+}
+
+.ntMenuRowLabel{
+  min-width:0;
+  flex:1 1 auto;
+  font-size:15px;
+  line-height:1.2;
+  font-weight:900;
+  color:var(--nt-text);
+}
+
+.ntMenuRowValue{
+  flex:0 0 auto;
+  font-size:13px;
+  line-height:1.2;
+  font-weight:800;
+  color:var(--nt-text-muted);
+}
+
+.ntMenuGroup{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.ntMenuTopAction{
+  width:44px;
+  height:44px;
+  min-width:44px;
+  min-height:44px;
+}
+
+@media (min-width:600px){
+  :root{
+    --nt-menu-w: min(72vw, 380px);
+    --nt-menu-gap-right: 18px;
+  }
+
+  .ntMenuPanelWrap{
+    padding-left:18px;
+  }
+
+  .ntMenuHeader{
+    padding-left:18px;
+    padding-right:18px;
+  }
+
+  .ntMenuBody{
+    padding-left:18px;
+    padding-right:18px;
+  }
+}
