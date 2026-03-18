@@ -157,22 +157,21 @@ body.theme-dark{
    ========================= */
 body.theme-light{
   --nt-body-bg:
-    radial-gradient(circle at 18% 12%, rgba(133,96,255,.30), transparent 30%),
-    radial-gradient(circle at 82% 14%, rgba(255,92,204,.24), transparent 26%),
-    radial-gradient(circle at 62% 52%, rgba(92,228,255,.24), transparent 24%),
-    radial-gradient(circle at 50% 86%, rgba(255,120,210,.18), transparent 28%),
-    linear-gradient(180deg, #f3eefc 0%, #efe7fb 46%, #f4dff4 100%);
+    radial-gradient(circle at 16% 14%, rgba(218,210,249,.88), transparent 34%),
+    radial-gradient(circle at 84% 18%, rgba(240,220,245,.82), transparent 32%),
+    radial-gradient(circle at 58% 78%, rgba(242,225,243,.72), transparent 34%),
+    linear-gradient(180deg, #f7f2fb 0%, #f4eef9 46%, #f2e6f3 100%);
 
-  --nt-blob-1: rgba(133,96,255,.24);
-  --nt-blob-2: rgba(255,92,204,.20);
-  --nt-blob-3: rgba(92,228,255,.20);
+  --nt-blob-1: rgba(218,210,249,.46);
+  --nt-blob-2: rgba(240,220,245,.38);
+  --nt-blob-3: rgba(226,214,248,.30);
 
   --nt-shell-edge-shadow:
     linear-gradient(
       180deg,
-      rgba(244,223,244,0) 0%,
-      rgba(244,223,244,.62) 55%,
-      #f4dff4 100%
+      rgba(242,230,243,0) 0%,
+      rgba(242,230,243,.70) 55%,
+      #f2e6f3 100%
     );
 }
 
