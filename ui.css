@@ -156,21 +156,21 @@ body.theme-dark{
    ========================= */
 body.theme-light{
   --nt-body-bg:
-    radial-gradient(circle at 18% 12%, rgba(126,170,255,.26), transparent 30%),
-    radial-gradient(circle at 82% 16%, rgba(156,132,255,.22), transparent 28%),
-    radial-gradient(circle at 58% 82%, rgba(116,223,255,.18), transparent 26%),
-    linear-gradient(180deg, #eef3ff 0%, #e8edfb 46%, #e3e8f6 100%);
+    radial-gradient(circle at 18% 12%, rgba(50,197,255,.18), transparent 28%),
+    radial-gradient(circle at 82% 14%, rgba(255,79,216,.16), transparent 26%),
+    radial-gradient(circle at 58% 78%, rgba(117,107,255,.20), transparent 28%),
+    linear-gradient(180deg, #eceffd 0%, #e8ebfb 48%, #e6e4f6 100%);
 
-  --nt-blob-1: rgba(126,170,255,.22);
-  --nt-blob-2: rgba(156,132,255,.18);
-  --nt-blob-3: rgba(116,223,255,.16);
+  --nt-blob-1: rgba(50,197,255,.16);
+  --nt-blob-2: rgba(255,79,216,.14);
+  --nt-blob-3: rgba(117,107,255,.16);
 
   --nt-shell-edge-shadow:
     linear-gradient(
       180deg,
-      rgba(227,232,246,0) 0%,
-      rgba(227,232,246,.68) 55%,
-      #e3e8f6 100%
+      rgba(230,228,246,0) 0%,
+      rgba(230,228,246,.72) 55%,
+      #e6e4f6 100%
     );
 }
 
