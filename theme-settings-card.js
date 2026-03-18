@@ -1,14 +1,13 @@
-/* =========================
-   NettoTrack Theme Settings Card
-   ========================= */
-
+/* ========================= NettoTrack Theme Settings Card ========================= */
 window.NTThemeSettingsCard = (() => {
   let systemThemeMedia = null;
   let systemThemeListenerBound = false;
 
   function getStoredThemeMode() {
     const saved = localStorage.getItem("ntThemeMode");
-    return saved === "theme-dark" || saved === "theme-light" ? saved : "theme-light";
+    return saved === "theme-dark" || saved === "theme-light"
+      ? saved
+      : "theme-light";
   }
 
   function getThemeAutoMode() {
@@ -135,39 +134,55 @@ window.NTThemeSettingsCard = (() => {
     }
   }
 
+  function renderAutoModeRow() {
+    return `
+      <label class="ntCheckRow themeAutoInline" for="ntThemeAutoToggle">
+        <input
+          id="ntThemeAutoToggle"
+          class="ntToolCheck themeToolCheck"
+          type="checkbox"
+          role="switch"
+          aria-label="Modalità automatica"
+        />
+        <span class="ntCheckContent">
+          <span class="ntCheckTitle">Modalità automatica</span>
+        </span>
+      </label>
+    `;
+  }
+
   function register() {
-    if (!window.NTCards || !window.NTCardTemplate || !window.NTComponents) return;
+    if (!window.NTCards || !window.NTCardTemplate) return;
 
     NTCards.registerCard({
       id: "themeSettings",
 
       render() {
         const body = `
-          <div class="ntThemeModes" id="ntThemeModes">
-            <button type="button" class="ntThemeMode ntPress" data-nt-theme="light">
-              <div class="ntThemeModePreview ntThemeModePreview--light"></div>
-              <div class="ntThemeModeText">
-                <div class="ntThemeModeLabel">Modalità chiara</div>
-                <div class="ntThemeModeState">Tocca per attivare</div>
-              </div>
-            </button>
+          <div id="ntThemeModes" class="ntThemeSettings">
+            <div class="ntThemeModesGrid">
+              <button
+                type="button"
+                class="ntThemeModeCard"
+                data-nt-theme="light"
+                aria-pressed="false"
+              >
+                <span class="ntThemeModeTitle">Modalità chiara</span>
+                <span class="ntThemeModeState">Tocca per attivare</span>
+              </button>
 
-            <button type="button" class="ntThemeMode ntPress" data-nt-theme="dark">
-              <div class="ntThemeModePreview ntThemeModePreview--dark"></div>
-              <div class="ntThemeModeText">
-                <div class="ntThemeModeLabel">Modalità scura</div>
-                <div class="ntThemeModeState">Tocca per attivare</div>
-              </div>
-            </button>
-          </div>
+              <button
+                type="button"
+                class="ntThemeModeCard"
+                data-nt-theme="dark"
+                aria-pressed="false"
+              >
+                <span class="ntThemeModeTitle">Modalità scura</span>
+                <span class="ntThemeModeState">Tocca per attivare</span>
+              </button>
+            </div>
 
-          <div class="ntThemeAuto">
-            ${NTComponents.checkbox({
-              id: "ntThemeAutoToggle",
-              title: "Modalità automatica",
-              desc: "Segue automaticamente il tema del dispositivo",
-              checked: true
-            })}
+            ${renderAutoModeRow()}
           </div>
         `;
 
