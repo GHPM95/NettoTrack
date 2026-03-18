@@ -79,10 +79,12 @@ window.NTThemeSettingsCard = (() => {
 
       btn.classList.toggle("isSelected", shouldBeActive);
 
-      const stateEl = btn.querySelector(".ntThemeModeState");
+      const stateEl = btn.querySelector(".themeSub");
       if (stateEl) {
         stateEl.textContent = shouldBeActive ? "In uso" : "Tocca per attivare";
       }
+
+      btn.setAttribute("aria-pressed", shouldBeActive ? "true" : "false");
     });
   }
 
@@ -134,23 +136,6 @@ window.NTThemeSettingsCard = (() => {
     }
   }
 
-  function renderAutoModeRow() {
-    return `
-      <label class="ntCheckRow themeAutoInline" for="ntThemeAutoToggle">
-        <input
-          id="ntThemeAutoToggle"
-          class="ntToolCheck themeToolCheck"
-          type="checkbox"
-          role="switch"
-          aria-label="Modalità automatica"
-        />
-        <span class="ntCheckContent">
-          <span class="ntCheckTitle">Modalità automatica</span>
-        </span>
-      </label>
-    `;
-  }
-
   function register() {
     if (!window.NTCards || !window.NTCardTemplate) return;
 
@@ -159,30 +144,42 @@ window.NTThemeSettingsCard = (() => {
 
       render() {
         const body = `
-          <div id="ntThemeModes" class="ntThemeSettings">
-            <div class="ntThemeModesGrid">
+          <div id="ntThemeModes" class="themeRoot">
+            <div class="themeModes">
               <button
                 type="button"
-                class="ntThemeModeCard"
+                class="themeCard"
                 data-nt-theme="light"
                 aria-pressed="false"
               >
-                <span class="ntThemeModeTitle">Modalità chiara</span>
-                <span class="ntThemeModeState">Tocca per attivare</span>
+                <span class="themePreview light" aria-hidden="true"></span>
+                <span class="themeLabel">Modalità chiara</span>
+                <span class="themeSub">Tocca per attivare</span>
               </button>
 
               <button
                 type="button"
-                class="ntThemeModeCard"
+                class="themeCard"
                 data-nt-theme="dark"
                 aria-pressed="false"
               >
-                <span class="ntThemeModeTitle">Modalità scura</span>
-                <span class="ntThemeModeState">Tocca per attivare</span>
+                <span class="themePreview dark" aria-hidden="true"></span>
+                <span class="themeLabel">Modalità scura</span>
+                <span class="themeSub">Tocca per attivare</span>
               </button>
             </div>
 
-            ${renderAutoModeRow()}
+            <div class="themeAutoOnlyRow">
+              <input
+                id="ntThemeAutoToggle"
+                class="themeAutoCheck"
+                type="checkbox"
+                aria-label="Modalità automatica"
+              />
+              <label for="ntThemeAutoToggle" class="themeAutoOnlyLabel">
+                Modalità automatica
+              </label>
+            </div>
           </div>
         `;
 
