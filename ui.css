@@ -1,6 +1,6 @@
 /* =========================
-   NettoTrack UI
-   Shell app + tema + top/bottom bar
+   NettoTrack UI Shell
+   app + tema + top/bottom bar
    Layout card demandato a ui-layout.css
    ========================= */
 
@@ -18,12 +18,11 @@
 
   --nt-font-card-title: 18px;
   --nt-line-tight: 1.1;
-
   --xSize: 44px;
 
+  /* testo / superfici base */
   --nt-text: #ffffff;
   --nt-text-muted: rgba(255,255,255,.68);
-
   --nt-border: rgba(255,255,255,.10);
   --nt-border-strong: rgba(255,255,255,.14);
 
@@ -49,11 +48,31 @@
 
   --nt-color-accent:
     linear-gradient(90deg,#32c5ff 0%, #756bff 45%, #ff4fd8 100%);
+
   --nt-accent-border-gradient:
     linear-gradient(90deg,#32c5ff 0%, #756bff 45%, #ff4fd8 100%);
-  --nt-accent-fill:#0b1326;
 
-  --nt-pressed-fill:#2d2457;
+  --nt-accent-fill: #0b1326;
+  --nt-pressed-fill: #2d2457;
+
+  /* shell bg: default = dark attuale */
+  --nt-body-bg:
+    radial-gradient(circle at 18% 12%, rgba(92,150,255,.24), transparent 28%),
+    radial-gradient(circle at 84% 16%, rgba(255,92,204,.16), transparent 26%),
+    radial-gradient(circle at 56% 82%, rgba(115,228,255,.14), transparent 24%),
+    linear-gradient(180deg, #0f1730 0%, #121b38 42%, #0d1327 100%);
+
+  --nt-blob-1: rgba(96,132,255,.28);
+  --nt-blob-2: rgba(255,84,194,.20);
+  --nt-blob-3: rgba(76,208,255,.16);
+
+  --nt-shell-edge-shadow:
+    linear-gradient(
+      180deg,
+      rgba(13,19,39,0) 0%,
+      rgba(13,19,39,.65) 50%,
+      #0d1327 100%
+    );
 
   /* stessa logica larghezza della card centrale */
   --nt-smart-card-side-gap: 16px;
@@ -75,11 +94,85 @@ body{
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
   overflow:hidden;
-  background:
+  background:var(--nt-body-bg);
+  transition:
+    background .35s ease,
+    color .25s ease;
+}
+
+/* =========================
+   THEME: DARK = NettoTrack attuale
+   ========================= */
+body.theme-dark{
+  --nt-text: #ffffff;
+  --nt-text-muted: rgba(255,255,255,.68);
+  --nt-border: rgba(255,255,255,.10);
+  --nt-border-strong: rgba(255,255,255,.14);
+
+  --nt-surface-1:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.08), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
+
+  --nt-surface-2:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+
+  --nt-surface-soft:
+    radial-gradient(140% 220% at 25% 0%, rgba(255,255,255,.06), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+
+  --nt-overlay-footer:
+    linear-gradient(
+      180deg,
+      rgba(16,18,30,0) 0%,
+      rgba(16,18,30,.16) 24%,
+      rgba(16,18,30,.32) 100%
+    );
+
+  --nt-accent-fill: #0b1326;
+  --nt-pressed-fill: #2d2457;
+
+  --nt-body-bg:
     radial-gradient(circle at 18% 12%, rgba(92,150,255,.24), transparent 28%),
     radial-gradient(circle at 84% 16%, rgba(255,92,204,.16), transparent 26%),
     radial-gradient(circle at 56% 82%, rgba(115,228,255,.14), transparent 24%),
     linear-gradient(180deg, #0f1730 0%, #121b38 42%, #0d1327 100%);
+
+  --nt-blob-1: rgba(96,132,255,.28);
+  --nt-blob-2: rgba(255,84,194,.20);
+  --nt-blob-3: rgba(76,208,255,.16);
+
+  --nt-shell-edge-shadow:
+    linear-gradient(
+      180deg,
+      rgba(13,19,39,0) 0%,
+      rgba(13,19,39,.65) 50%,
+      #0d1327 100%
+    );
+}
+
+/* =========================
+   THEME: LIGHT = solo sfondo chiaro
+   rosa / viola / celeste
+   ========================= */
+body.theme-light{
+  --nt-body-bg:
+    radial-gradient(circle at 18% 12%, rgba(120,190,255,.35), transparent 30%),
+    radial-gradient(circle at 82% 14%, rgba(255,120,210,.22), transparent 26%),
+    radial-gradient(circle at 56% 82%, rgba(140,110,255,.28), transparent 26%),
+    linear-gradient(180deg, #f4f7ff 0%, #eef2ff 45%, #e9edff 100%);
+
+  --nt-blob-1: rgba(120,190,255,.28);
+  --nt-blob-2: rgba(255,120,210,.18);
+  --nt-blob-3: rgba(140,110,255,.22);
+
+  --nt-shell-edge-shadow:
+    linear-gradient(
+      180deg,
+      rgba(233,237,255,0) 0%,
+      rgba(233,237,255,.65) 55%,
+      #e9edff 100%
+    );
 }
 
 *,
@@ -117,7 +210,6 @@ h1,h2,h3,h4,h5,h6,p{
 /* =========================
    App shell
    ========================= */
-
 .ntAppShell{
   position:relative;
   min-height:100dvh;
@@ -143,7 +235,7 @@ h1,h2,h3,h4,h5,h6,p{
   height:220px;
   left:-40px;
   top:5%;
-  background:rgba(96,132,255,.28);
+  background:var(--nt-blob-1);
 }
 
 .ntBlob2{
@@ -151,7 +243,7 @@ h1,h2,h3,h4,h5,h6,p{
   height:180px;
   right:-28px;
   top:12%;
-  background:rgba(255,84,194,.20);
+  background:var(--nt-blob-2);
 }
 
 .ntBlob3{
@@ -159,7 +251,7 @@ h1,h2,h3,h4,h5,h6,p{
   height:190px;
   left:42%;
   bottom:8%;
-  background:rgba(76,208,255,.16);
+  background:var(--nt-blob-3);
 }
 
 .ntApp{
@@ -168,17 +260,13 @@ h1,h2,h3,h4,h5,h6,p{
   min-height:100dvh;
   display:flex;
   flex-direction:column;
-  padding:
-    calc(var(--nt-safe-top) + 12px)
-    16px
-    calc(var(--nt-safe-bottom) + 12px);
+  padding: calc(var(--nt-safe-top) + 12px) 16px calc(var(--nt-safe-bottom) + 12px);
   gap:14px;
 }
 
 /* =========================
    Top bar
    ========================= */
-
 .ntTopBar{
   flex:0 0 auto;
   display:flex;
@@ -210,7 +298,6 @@ h1,h2,h3,h4,h5,h6,p{
 /* =========================
    Main
    ========================= */
-
 .ntMain{
   flex:1 1 auto;
   min-height:0;
@@ -231,7 +318,6 @@ h1,h2,h3,h4,h5,h6,p{
 /* =========================
    Smart dots
    ========================= */
-
 .ntDotsRail{
   min-height:26px;
   height:26px;
@@ -303,7 +389,6 @@ h1,h2,h3,h4,h5,h6,p{
 /* =========================
    Bottom smart card
    ========================= */
-
 .ntBottomBar{
   flex:0 0 auto;
   display:flex;
@@ -327,13 +412,7 @@ h1,h2,h3,h4,h5,h6,p{
   right:0;
   bottom:-1px;
   height:4px;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(13,19,39,0) 0%,
-      rgba(13,19,39,.65) 50%,
-      #0d1327 100%
-    );
+  background:var(--nt-shell-edge-shadow);
   pointer-events:none;
   z-index:2;
 }
@@ -360,7 +439,6 @@ h1,h2,h3,h4,h5,h6,p{
 /* =========================
    Utilities
    ========================= */
-
 .ntScrollY{
   min-height:0;
   overflow-y:auto;
