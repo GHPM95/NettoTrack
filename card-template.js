@@ -1,7 +1,4 @@
-/* =========================
-   NettoTrack Card Template
-   ========================= */
-
+/* ========================= NettoTrack Card Template ========================= */
 window.NTCardTemplate = (() => {
   function createCard({
     id = "",
@@ -17,96 +14,88 @@ window.NTCardTemplate = (() => {
     const hasSubHeader = String(subHeader || "").trim().length > 0;
 
     return `
-      <section class="ntCard" data-nt-card="${safeId}">
-        <div class="ntCardShell">
+      <section class="ntCard" data-card-id="${safeId}">
+        <header class="ntCardHeader">
+          <div class="ntCardHeaderSide ntCardHeaderSide--left">
+            ${
+              showBack
+                ? `
+                  <button
+                    type="button"
+                    class="ntCardIconBtn jsNtCardBack"
+                    data-nt-action="back"
+                    aria-label="Indietro"
+                    disabled
+                  >
+                    ←
+                  </button>
+                `
+                : ``
+            }
 
-          <div class="ntCardTop">
-            <header class="ntCardHeader">
-              <div class="ntCardNav">
-                ${
-                  showBack
-                    ? `
-                      <button
-                        type="button"
-                        class="ntIconBtn ntPress jsNtCardBack"
-                        aria-label="Card precedente"
-                      >←</button>
-                    `
-                    : `<div class="ntCardHeaderSide isGhost"></div>`
-                }
+            ${
+              showNext
+                ? `
+                  <button
+                    type="button"
+                    class="ntCardIconBtn jsNtCardNext"
+                    data-nt-action="next"
+                    aria-label="Avanti"
+                    disabled
+                  >
+                    →
+                  </button>
+                `
+                : ``
+            }
+          </div>
 
-                ${
-                  showNext
-                    ? `
-                      <button
-                        type="button"
-                        class="ntIconBtn ntPress jsNtCardNext"
-                        aria-label="Card successiva"
-                      >→</button>
-                    `
-                    : `<div class="ntCardHeaderSide isGhost"></div>`
-                }
-              </div>
+          <div class="ntCardHeaderCenter">
+            <h2 class="ntCardTitle">${safeTitle}</h2>
+            ${hasSubHeader ? `<div class="ntCardSubHeader">${subHeader}</div>` : ``}
+          </div>
 
-              <div class="ntCardTitleWrap ${safeTitle ? "" : "isGhost"}">
-                <h2 class="ntCardTitle">${safeTitle}</h2>
-              </div>
+          <div class="ntCardHeaderSide ntCardHeaderSide--right">
+            <button
+              type="button"
+              class="ntCardIconBtn jsNtCardClose"
+              data-nt-action="close"
+              aria-label="Chiudi"
+            >
+              ×
+            </button>
+          </div>
+        </header>
 
-              <div class="ntCardHeaderSide">
+        <div class="ntCardBody">
+          ${body}
+        </div>
+
+        ${
+          footer
+            ? `
+              <footer class="ntCardFooter">
                 <button
                   type="button"
-                  class="ntIconBtn ntPress jsNtCardClose"
-                  aria-label="Chiudi card"
-                >×</button>
-              </div>
-            </header>
+                  class="ntCardFooterBtn ntCardFooterBtn--ghost jsNtCardCancel"
+                  data-nt-action="cancel"
+                  disabled
+                >
+                  annulla
+                </button>
 
-            <div class="ntCardSubHeader ${hasSubHeader ? "" : "isPlaceholder"}">
-              <div class="ntCardSubHeaderContent">
-                ${hasSubHeader ? subHeader : ""}
-              </div>
-            </div>
-          </div>
-
-          <div class="ntCardBody ntScrollY">
-            ${body}
-          </div>
-
-          <footer class="ntCardFooter ${footer ? "" : "isPlaceholder"}">
-            <div class="ntCardFooterRow">
-              ${
-                footer
-                  ? `
-                    <button
-                      type="button"
-                      class="ntBtn ntBtnSecondary ntPress jsNtCardCancel"
-                    >annulla</button>
-
-                    <button
-                      type="button"
-                      class="ntBtn ntBtnPrimary ntPress jsNtCardSave"
-                    >salva</button>
-                  `
-                  : `
-                    <button
-                      type="button"
-                      class="ntBtn ntBtnSecondary"
-                      tabindex="-1"
-                      aria-hidden="true"
-                    >annulla</button>
-
-                    <button
-                      type="button"
-                      class="ntBtn ntBtnPrimary"
-                      tabindex="-1"
-                      aria-hidden="true"
-                    >salva</button>
-                  `
-              }
-            </div>
-          </footer>
-
-        </div>
+                <button
+                  type="button"
+                  class="ntCardFooterBtn ntCardFooterBtn--primary jsNtCardSave"
+                  data-nt-action="save"
+                  disabled
+                >
+                  salva
+                </button>
+              </footer>
+            `
+            : ``
+        }
       </section>
     `;
   }
@@ -117,10 +106,8 @@ window.NTCardTemplate = (() => {
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+      .replaceAll("'", "&#39;");
   }
 
-  return {
-    createCard
-  };
+  return { createCard };
 })();
