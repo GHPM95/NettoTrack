@@ -4,13 +4,10 @@
   --nt-card-header-min-h: 50px;
   --nt-card-header-gap: 12px;
   --nt-card-subheader-min-h: 52px;
-  --nt-card-footer-min-h: 74px;
+  --nt-card-footer-min-h: 84px;
 
-  /* la card NON è fullscreen */
   --nt-card-side-gap: 16px;
   --nt-card-max-w: calc(100% - (var(--nt-card-side-gap) * 2));
-
-  /* altezza lasciata compatibile coi dots */
   --nt-card-max-h: clamp(500px, 58svh, 610px);
 
   --nt-header-btn-size: 44px;
@@ -56,17 +53,35 @@
 
 .ntCardHeader{
   display:grid;
-  grid-template-columns:auto 1fr auto;
-  align-items:center; /* fix: centratura verticale header */
+  grid-template-columns:var(--nt-header-btn-size) 1fr var(--nt-header-btn-size);
+  align-items:center;
   gap:12px;
   min-height:var(--nt-card-header-min-h);
+}
+
+.ntCardHeaderSide{
+  width:var(--nt-header-btn-size);
+  min-width:var(--nt-header-btn-size);
+  height:var(--nt-header-btn-size);
+  min-height:var(--nt-header-btn-size);
+  display:flex;
+  align-items:center;
+}
+
+.ntCardHeaderSide--left{
+  justify-content:flex-start;
+  overflow:hidden;
+}
+
+.ntCardHeaderSide--right{
+  justify-content:flex-end;
 }
 
 .ntCardNav{
   display:flex;
   align-items:center;
   gap:10px;
-  overflow:hidden; /* fix: evita frecce tagliate/fuori card */
+  overflow:hidden;
 }
 
 .ntCardTitleWrap{
@@ -87,26 +102,11 @@
   text-align:center;
 }
 
-.ntCardHeaderSide{
-  min-width:var(--nt-header-btn-size);
-  min-height:var(--nt-header-btn-size);
-  display:flex;
-  align-items:center; /* fix */
-  justify-content:center;
-}
-
-.ntCardHeaderSide--left{
-  justify-content:flex-start;
-  padding-left:4px; /* fix: evita taglio freccia sinistra */
-}
-
-.ntCardHeaderSide--right{
-  justify-content:flex-end;
-}
-
 .ntCardHeaderGhost{
   width:var(--nt-header-btn-size);
   height:var(--nt-header-btn-size);
+  min-width:var(--nt-header-btn-size);
+  min-height:var(--nt-header-btn-size);
   display:block;
   visibility:hidden;
   pointer-events:none;
@@ -139,11 +139,6 @@
 .ntIconBtn[disabled],
 .ntIconBtn.isBlocked{
   opacity:.42;
-  pointer-events:none;
-}
-
-.isGhost{
-  visibility:hidden;
   pointer-events:none;
 }
 
@@ -198,6 +193,19 @@
   align-items:flex-end;
 }
 
+.ntCardFooterShell{
+  width:100%;
+  padding:10px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 10px 24px rgba(0,0,0,.14);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+
 .ntCardFooterRow{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -205,7 +213,6 @@
   width:100%;
 }
 
-/* footer buttons fix */
 .ntCardFooterBtn{
   position:relative;
   height:48px;
@@ -234,18 +241,17 @@
 
 .ntCardFooterBtn--ghost{
   background:rgba(255,255,255,.08);
-  color:rgba(255,255,255,.80);
+  color:rgba(255,255,255,.82);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.10),
     0 4px 12px rgba(0,0,0,.12);
 }
 
 .ntCardFooterBtn--primary{
-  background:linear-gradient(
-    135deg,
-    rgba(90,140,255,.25),
-    rgba(200,90,255,.25)
-  );
+  background:
+    linear-gradient(rgba(255,255,255,.08), rgba(255,255,255,.08)) padding-box,
+    var(--nt-accent-border-gradient) border-box;
+  border:1px solid transparent;
   color:#fff;
   box-shadow:
     0 6px 18px rgba(0,0,0,.25),
@@ -254,7 +260,7 @@
 
 .ntCardFooterBtn:disabled,
 .ntCardFooterBtn.isBlocked{
-  opacity:.35;
+  opacity:.38;
   pointer-events:none;
 }
 
@@ -410,7 +416,7 @@
     --nt-card-side-gap:14px;
     --nt-card-max-w:calc(100% - (var(--nt-card-side-gap) * 2));
     --nt-card-max-h:clamp(485px, 56svh, 590px);
-    --nt-card-footer-min-h:68px;
+    --nt-card-footer-min-h:76px;
     --nt-dots-space:24px;
   }
 
@@ -434,6 +440,11 @@
 
   .ntCardBody .ntTextarea{
     min-height:82px;
+  }
+
+  .ntCardFooterShell{
+    padding:8px;
+    border-radius:20px;
   }
 
   .ntCardFooterBtn{
