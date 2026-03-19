@@ -1,5 +1,6 @@
 /* ========================= NettoTrack Card Template ========================= */
 window.NTCardTemplate = (() => {
+
   function createCard({
     id = "",
     title = "",
@@ -9,18 +10,25 @@ window.NTCardTemplate = (() => {
     showBack = true,
     showNext = true
   } = {}) {
+
     const safeId = escapeHtml(id);
     const safeTitle = escapeHtml(title);
     const hasSubHeader = String(subHeader || "").trim().length > 0;
 
     return `
       <section class="ntCard" data-card-id="${safeId}">
+        
         <div class="ntCardShell">
 
+          <!-- ================= HEADER ================= -->
           <div class="ntCardTop">
+
             <header class="ntCardHeader">
+
+              <!-- LEFT (FRECCE) -->
               <div class="ntCardHeaderSide ntCardHeaderSide--left">
                 <div class="ntCardNav">
+
                   ${
                     showBack
                       ? `
@@ -34,9 +42,7 @@ window.NTCardTemplate = (() => {
                           ←
                         </button>
                       `
-                      : `
-                        <span class="ntCardHeaderGhost"></span>
-                      `
+                      : `<span class="ntCardHeaderGhost"></span>`
                   }
 
                   ${
@@ -52,17 +58,18 @@ window.NTCardTemplate = (() => {
                           →
                         </button>
                       `
-                      : `
-                        <span class="ntCardHeaderGhost"></span>
-                      `
+                      : `<span class="ntCardHeaderGhost"></span>`
                   }
+
                 </div>
               </div>
 
+              <!-- CENTER (TITOLO) -->
               <div class="ntCardTitleWrap">
                 <h2 class="ntCardTitle">${safeTitle}</h2>
               </div>
 
+              <!-- RIGHT (X) -->
               <div class="ntCardHeaderSide ntCardHeaderSide--right">
                 <button
                   type="button"
@@ -73,6 +80,7 @@ window.NTCardTemplate = (() => {
                   ×
                 </button>
               </div>
+
             </header>
 
             ${
@@ -84,17 +92,22 @@ window.NTCardTemplate = (() => {
                 `
                 : ``
             }
+
           </div>
 
+          <!-- ================= BODY ================= -->
           <div class="ntCardBody">
             ${body}
           </div>
 
+          <!-- ================= FOOTER ================= -->
           ${
             footer
               ? `
                 <footer class="ntCardFooter">
+
                   <div class="ntCardFooterRow">
+
                     <button
                       type="button"
                       class="ntCardFooterBtn ntCardFooterBtn--ghost jsNtCardCancel"
@@ -114,7 +127,9 @@ window.NTCardTemplate = (() => {
                     >
                       salva
                     </button>
+
                   </div>
+
                 </footer>
               `
               : ``
@@ -135,4 +150,5 @@ window.NTCardTemplate = (() => {
   }
 
   return { createCard };
+
 })();
