@@ -1,6 +1,5 @@
 /* ========================= NettoTrack Card Template ========================= */
 window.NTCardTemplate = (() => {
-
   function createCard({
     id = "",
     title = "",
@@ -10,66 +9,64 @@ window.NTCardTemplate = (() => {
     showBack = true,
     showNext = true
   } = {}) {
-
     const safeId = escapeHtml(id);
     const safeTitle = escapeHtml(title);
     const hasSubHeader = String(subHeader || "").trim().length > 0;
 
+    const leftNavHtml = (showBack || showNext)
+      ? `
+        <div class="ntCardNav">
+          ${
+            showBack
+              ? `
+                <button
+                  type="button"
+                  class="ntIconBtn jsNtCardBack"
+                  data-nt-action="back"
+                  aria-label="Indietro"
+                  disabled
+                >
+                  ←
+                </button>
+              `
+              : ``
+          }
+
+          ${
+            showNext
+              ? `
+                <button
+                  type="button"
+                  class="ntIconBtn jsNtCardNext"
+                  data-nt-action="next"
+                  aria-label="Avanti"
+                  disabled
+                >
+                  →
+                </button>
+              `
+              : ``
+          }
+        </div>
+      `
+      : `
+        <span class="ntCardHeaderGhost" aria-hidden="true"></span>
+      `;
+
     return `
       <section class="ntCard" data-card-id="${safeId}">
-        
         <div class="ntCardShell">
 
-          <!-- ================= HEADER ================= -->
           <div class="ntCardTop">
-
             <header class="ntCardHeader">
-
-              <!-- LEFT (FRECCE) -->
               <div class="ntCardHeaderSide ntCardHeaderSide--left">
-                <div class="ntCardNav">
-
-                  ${
-                    showBack
-                      ? `
-                        <button
-                          type="button"
-                          class="ntIconBtn jsNtCardBack"
-                          data-nt-action="back"
-                          aria-label="Indietro"
-                          disabled
-                        >
-                          ←
-                        </button>
-                      `
-                      : `<span class="ntCardHeaderGhost"></span>`
-                  }
-
-                  ${
-                    showNext
-                      ? `
-                        <button
-                          type="button"
-                          class="ntIconBtn jsNtCardNext"
-                          data-nt-action="next"
-                          aria-label="Avanti"
-                          disabled
-                        >
-                          →
-                        </button>
-                      `
-                      : `<span class="ntCardHeaderGhost"></span>`
-                  }
-
-                </div>
+                ${leftNavHtml}
               </div>
 
-              <!-- CENTER (TITOLO) -->
               <div class="ntCardTitleWrap">
                 <h2 class="ntCardTitle">${safeTitle}</h2>
               </div>
 
-              <!-- RIGHT (X) -->
               <div class="ntCardHeaderSide ntCardHeaderSide--right">
                 <button
                   type="button"
@@ -80,7 +77,6 @@ window.NTCardTemplate = (() => {
                   ×
                 </button>
               </div>
-
             </header>
 
             ${
@@ -92,44 +88,39 @@ window.NTCardTemplate = (() => {
                 `
                 : ``
             }
-
           </div>
 
-          <!-- ================= BODY ================= -->
           <div class="ntCardBody">
             ${body}
           </div>
 
-          <!-- ================= FOOTER ================= -->
           ${
             footer
               ? `
                 <footer class="ntCardFooter">
+                  <div class="ntCardFooterShell">
+                    <div class="ntCardFooterRow">
+                      <button
+                        type="button"
+                        class="ntCardFooterBtn ntCardFooterBtn--ghost jsNtCardCancel"
+                        data-nt-action="cancel"
+                        aria-label="Annulla"
+                        disabled
+                      >
+                        annulla
+                      </button>
 
-                  <div class="ntCardFooterRow">
-
-                    <button
-                      type="button"
-                      class="ntCardFooterBtn ntCardFooterBtn--ghost jsNtCardCancel"
-                      data-nt-action="cancel"
-                      aria-label="Annulla"
-                      disabled
-                    >
-                      annulla
-                    </button>
-
-                    <button
-                      type="button"
-                      class="ntCardFooterBtn ntCardFooterBtn--primary jsNtCardSave"
-                      data-nt-action="save"
-                      aria-label="Salva"
-                      disabled
-                    >
-                      salva
-                    </button>
-
+                      <button
+                        type="button"
+                        class="ntCardFooterBtn ntCardFooterBtn--primary jsNtCardSave"
+                        data-nt-action="save"
+                        aria-label="Salva"
+                        disabled
+                      >
+                        salva
+                      </button>
+                    </div>
                   </div>
-
                 </footer>
               `
               : ``
@@ -150,5 +141,4 @@ window.NTCardTemplate = (() => {
   }
 
   return { createCard };
-
 })();
