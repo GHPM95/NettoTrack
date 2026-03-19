@@ -1,16 +1,10 @@
-/* =========================
-   NettoTrack Card Wizard
-   ========================= */
-
+/* ========================= NettoTrack Card Wizard ========================= */
 window.NTCardWizard = (() => {
   const store = new Map();
 
   function ensure(cardId) {
     if (!store.has(cardId)) {
-      store.set(cardId, {
-        step: 0,
-        total: 1
-      });
+      store.set(cardId, { step: 0, total: 1 });
     }
     return store.get(cardId);
   }
@@ -18,6 +12,8 @@ window.NTCardWizard = (() => {
   function setTotal(cardId, total) {
     const wizard = ensure(cardId);
     wizard.total = Math.max(1, Number(total || 1));
+    wizard.step = Math.max(0, Math.min(wizard.total - 1, wizard.step));
+    emit(cardId);
   }
 
   function setStep(cardId, step) {
@@ -47,16 +43,22 @@ window.NTCardWizard = (() => {
   }
 
   function canPrev(cardId) {
-    return ensure(cardId).step > 0;
+    const wizard = ensure(cardId);
+    return wizard.total > 1 && wizard.step > 0;
   }
 
   function canNext(cardId) {
     const wizard = ensure(cardId);
-    return wizard.step < wizard.total - 1;
+    return wizard.total > 1 && wizard.step < wizard.total - 1;
   }
 
   function get(cardId) {
     return ensure(cardId);
+  }
+
+  function reset(cardId) {
+    store.set(cardId, { step: 0, total: 1 });
+    emit(cardId);
   }
 
   function emit(cardId) {
@@ -75,6 +77,7 @@ window.NTCardWizard = (() => {
     prev,
     canPrev,
     canNext,
-    get
+    get,
+    reset
   };
 })();
