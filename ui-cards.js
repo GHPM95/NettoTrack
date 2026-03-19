@@ -287,17 +287,21 @@ window.NTCards = (() => {
   }
 
   function render() {
-    if (!state.trackEl) return;
+  if (!state.trackEl) return;
 
-    const html = state.openCards.map((cardId) => {
-      const def = state.registry.get(cardId);
-      return def ? def.render() : "";
-    }).join("");
+  const html = state.openCards.map((cardId) => {
+    const def = state.registry.get(cardId);
 
-    state.trackEl.innerHTML = html;
-    updateDots();
-    document.dispatchEvent(new CustomEvent("nt:cardsrendered"));
-  }
+    return def
+      ? `<div class="ntCardSlide">${def.render()}</div>`
+      : "";
+  }).join("");
+
+  state.trackEl.innerHTML = html;
+
+  updateDots();
+  document.dispatchEvent(new CustomEvent("nt:cardsrendered"));
+}
 
   function syncTrack() {
     if (!state.trackEl || !state.viewportEl) return;
