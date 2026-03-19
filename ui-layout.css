@@ -1,6 +1,4 @@
-/* =========================
-   NettoTrack UI Layout
-   ========================= */
+/* ========================= NettoTrack UI Layout ========================= */
 
 :root{
   --nt-card-header-min-h: 50px;
@@ -19,384 +17,327 @@
   --nt-dots-space: 26px;
 }
 
-/* =========================
-   CARD CONTAINER
-   ========================= */
-
+/* ========================= CARD CONTAINER ========================= */
 .ntCard{
-  width: 100%;
-  max-width: var(--nt-card-max-w);
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
+  width:100%;
+  max-width:var(--nt-card-max-w);
+  height:100%;
+  min-height:0;
+  overflow:hidden;
+  position:relative;
 }
 
 .ntCardShell{
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-
-  border-radius: 26px;
-  border: 1px solid var(--nt-border-strong);
-  background: var(--nt-surface-1);
-
+  width:100%;
+  height:100%;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  position:relative;
+  border-radius:26px;
+  border:1px solid var(--nt-border-strong);
+  background:var(--nt-surface-1);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.10),
     0 20px 40px rgba(0,0,0,.22);
-
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  padding: 14px;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  padding:14px;
 }
 
-/* =========================
-   CARD HEADER
-   ========================= */
-
+/* ========================= CARD HEADER ========================= */
 .ntCardTop{
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--nt-card-header-gap);
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:var(--nt-card-header-gap);
 }
 
 .ntCardHeader{
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 12px;
-  min-height: var(--nt-card-header-min-h);
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:start;
+  gap:12px;
+  min-height:var(--nt-card-header-min-h);
 }
 
 .ntCardNav{
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 
 .ntCardTitleWrap{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-width: 0;
+  min-width:0;
+  min-height:var(--nt-header-btn-size);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding-top:2px;
 }
 
 .ntCardTitle{
-  margin: 0;
-  font-size: 18px;
-  line-height: 1.1;
-  font-weight: 1000;
-  letter-spacing: .2px;
-  text-align: center;
+  margin:0;
+  font-size:18px;
+  line-height:1.1;
+  font-weight:1000;
+  letter-spacing:.2px;
+  text-align:center;
 }
 
 .ntCardHeaderSide{
-  width: var(--nt-header-btn-size);
-  height: var(--nt-header-btn-size);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-width:var(--nt-header-btn-size);
+  min-height:var(--nt-header-btn-size);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
 }
 
-/* =========================
-   HEADER ICON BUTTONS
-   ========================= */
+.ntCardHeaderSide--left{
+  justify-content:flex-start;
+}
 
+.ntCardHeaderSide--right{
+  justify-content:flex-end;
+}
+
+.ntCardHeaderGhost{
+  width:var(--nt-header-btn-size);
+  height:var(--nt-header-btn-size);
+  display:block;
+  visibility:hidden;
+  pointer-events:none;
+  flex:0 0 auto;
+}
+
+/* ========================= HEADER ICON BUTTONS ========================= */
 .ntIconBtn{
-  width: var(--nt-header-btn-size);
-  height: var(--nt-header-btn-size);
-  min-width: var(--nt-header-btn-size);
-  min-height: var(--nt-header-btn-size);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0;
-
-  border-radius: 16px;
-  border: 1px solid var(--nt-border);
-  background: var(--nt-surface-2);
-
+  width:var(--nt-header-btn-size);
+  height:var(--nt-header-btn-size);
+  min-width:var(--nt-header-btn-size);
+  min-height:var(--nt-header-btn-size);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  border-radius:16px;
+  border:1px solid var(--nt-border);
+  background:var(--nt-surface-2);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.10),
     0 4px 12px rgba(0,0,0,.16);
+  color:var(--nt-text);
+  font-size:22px;
+  font-weight:900;
+  line-height:1;
+  flex:0 0 auto;
+}
 
-  color: var(--nt-text);
-  font-size: 22px;
-  font-weight: 900;
-  line-height: 1;
-
-  flex: 0 0 auto;
+.ntIconBtn[disabled],
+.ntIconBtn.isBlocked{
+  opacity:.42;
+  pointer-events:none;
 }
 
 .isGhost{
-  visibility: hidden;
-  pointer-events: none;
+  visibility:hidden;
+  pointer-events:none;
 }
 
-/* =========================
-   SUB HEADER
-   ========================= */
-
+/* ========================= SUB HEADER ========================= */
 .ntCardSubHeader{
-  flex: 0 0 auto;
-  min-height: var(--nt-card-subheader-min-h);
-  display: flex;
-  align-items: center;
+  flex:0 0 auto;
+  min-height:var(--nt-card-subheader-min-h);
+  display:flex;
+  align-items:center;
 }
 
 .ntSubHeaderScrollX{
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
 }
 
 .ntSubHeaderScrollX::-webkit-scrollbar{
-  display: none;
+  display:none;
 }
 
 .ntSubHeaderRow{
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: max-content;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:max-content;
 }
 
-/* =========================
-   CARD BODY
-   ========================= */
-
+/* ========================= CARD BODY ========================= */
 .ntCardBody{
-  flex: 1 1 auto;
-  min-height: 0;
-
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-
-  padding: 8px 2px 0;
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding:8px 2px 0;
 }
 
 .ntCardBody::-webkit-scrollbar{
-  display: none;
+  display:none;
 }
 
-/* =========================
-   CARD FOOTER
-   ========================= */
-
+/* ========================= CARD FOOTER ========================= */
 .ntCardFooter{
-  flex: 0 0 auto;
-  min-height: var(--nt-card-footer-min-h);
-  padding-top: 12px;
-  display: flex;
-  align-items: flex-end;
+  flex:0 0 auto;
+  min-height:var(--nt-card-footer-min-h);
+  padding-top:12px;
+  display:flex;
+  align-items:flex-end;
 }
 
 .ntCardFooterRow{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  width: 100%;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  width:100%;
 }
 
-/* =========================
-   WIZARD
-   ========================= */
-
+/* ========================= WIZARD ========================= */
 .ntWizard{
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  width:100%;
+  height:100%;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
 }
 
 .ntWizardContent{
-  flex: 1 1 auto;
-  min-height: 0;
-
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-
-  padding: 0 2px 8px;
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding:0 2px 8px;
 }
 
 .ntWizardContent::-webkit-scrollbar{
-  display: none;
+  display:none;
 }
 
 .ntWizardActions{
-  flex: 0 0 auto;
-  padding-top: 12px;
+  flex:0 0 auto;
+  padding-top:12px;
 }
 
 .ntWizardActionsRow{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
 }
 
-/* =========================
-   CARD SWIPE VIEWPORT
-   ========================= */
-
+/* ========================= CARD SWIPE VIEWPORT ========================= */
 .ntCardsViewport{
-  position: relative;
-  width: 100%;
-  height: 100%;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  position:relative;
+  width:100%;
+  height:100%;
+  flex:1 1 auto;
+  min-height:0;
+  overflow:hidden;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
 }
 
-/* =========================
-   CARD TRACK
-   ========================= */
-
+/* ========================= CARD TRACK ========================= */
 .ntCardsTrack{
-  width: 100%;
-  height: var(--nt-card-max-h);
-  min-height: var(--nt-card-max-h);
-  max-height: var(--nt-card-max-h);
-
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-
-  will-change: transform;
-  touch-action: pan-y;
+  width:100%;
+  height:var(--nt-card-max-h);
+  min-height:var(--nt-card-max-h);
+  max-height:var(--nt-card-max-h);
+  display:flex;
+  flex-direction:row;
+  flex-wrap:nowrap;
+  will-change:transform;
+  touch-action:pan-y;
 }
 
 .ntCardsTrack.isGestureLockY{
-  touch-action: pan-x;
+  touch-action:pan-x;
 }
 
-/* ================= CARD SLIDE FIX ================= */
-.ntCardSlide {
-  width: 100%;
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
+/* ========================= CARD SLIDE ========================= */
+.ntCardSlide{
+  flex:0 0 100%;
+  width:100%;
+  max-width:100%;
+  height:100%;
+  min-height:0;
+  overflow:visible;
+  padding:0;
+  box-sizing:border-box;
+  display:flex;
+  justify-content:center;
 }
 
-/* ================= ICON BTN FIX ================= */
-.ntIconBtn {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(12px);
-
-  border: 1px solid rgba(255,255,255,0.12);
-
-  color: #fff;
-  font-size: 18px;
-
-  transition: all .2s ease;
-}
-
-.ntIconBtn:disabled {
-  opacity: 0.3;
-}
-
-/* ================= FOOTER FIX ================= */
-.ntCardFooterRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-/* =========================
-   INTERNAL PROPORTIONS
-   ========================= */
-
+/* ========================= INTERNAL PROPORTIONS ========================= */
 .ntCardBody .ntEmptyState{
-  min-height: 124px;
-  padding: 12px 10px;
+  min-height:124px;
+  padding:12px 10px;
 }
 
 .ntCardBody .ntAvatarBox{
-  padding: 8px 10px;
+  padding:8px 10px;
 }
 
 .ntCardBody .ntAvatarMedia{
-  width: 62px;
-  height: 62px;
-  border-radius: 16px;
+  width:62px;
+  height:62px;
+  border-radius:16px;
 }
 
 .ntCardBody .ntFieldAction{
-  min-height: 42px;
-  padding: 9px 11px;
+  min-height:42px;
+  padding:9px 11px;
 }
 
 .ntCardBody .ntInput,
 .ntCardBody .ntSelect{
-  height: 42px;
+  height:42px;
 }
 
 .ntCardBody .ntTextarea{
-  min-height: 88px;
+  min-height:88px;
 }
 
 .ntCardBody .ntGrid-2{
-  gap: 10px;
+  gap:10px;
 }
 
 .ntCardBody .ntSection{
-  gap: 10px;
+  gap:10px;
 }
 
 .ntCardBody .ntDivider{
-  margin: 10px 0;
+  margin:10px 0;
 }
 
-/* =========================
-   DOTS SPACE SUPPORT
-   ========================= */
-
+/* ========================= DOTS SPACE SUPPORT ========================= */
 .ntDotsRail{
-  min-height: var(--nt-dots-space);
-  height: var(--nt-dots-space);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height:var(--nt-dots-space);
+  height:var(--nt-dots-space);
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-/* =========================
-   DIVIDER
-   ========================= */
-
+/* ========================= DIVIDER ========================= */
 .ntDivider{
-  height: 1px;
-  width: 100%;
-  border: none;
-
+  height:1px;
+  width:100%;
+  border:none;
   background:
     linear-gradient(
       90deg,
@@ -406,46 +347,45 @@
       rgba(255,255,255,.10) 88%,
       rgba(255,255,255,0) 100%
     );
-
-  margin: 12px 0;
+  margin:12px 0;
 }
 
 @media (max-width:390px){
   :root{
-    --nt-card-side-gap: 14px;
-    --nt-card-max-w: calc(100% - (var(--nt-card-side-gap) * 2));
-    --nt-card-max-h: clamp(485px, 56svh, 590px);
-    --nt-card-footer-min-h: 68px;
-    --nt-dots-space: 24px;
+    --nt-card-side-gap:14px;
+    --nt-card-max-w:calc(100% - (var(--nt-card-side-gap) * 2));
+    --nt-card-max-h:clamp(485px, 56svh, 590px);
+    --nt-card-footer-min-h:68px;
+    --nt-dots-space:24px;
   }
 
   .ntCardShell{
-    padding: 12px;
+    padding:12px;
   }
 
   .ntCardTitle{
-    font-size: 17px;
+    font-size:17px;
   }
 
   .ntCardBody .ntAvatarMedia{
-    width: 58px;
-    height: 58px;
+    width:58px;
+    height:58px;
   }
 
   .ntCardBody .ntInput,
   .ntCardBody .ntSelect{
-    height: 40px;
+    height:40px;
   }
 
   .ntCardBody .ntTextarea{
-    min-height: 82px;
+    min-height:82px;
   }
 }
 
 @media (min-width:600px){
   :root{
-    --nt-card-side-gap: 20px;
-    --nt-card-max-w: calc(100% - (var(--nt-card-side-gap) * 2));
-    --nt-card-max-h: clamp(520px, 60svh, 640px);
+    --nt-card-side-gap:20px;
+    --nt-card-max-w:calc(100% - (var(--nt-card-side-gap) * 2));
+    --nt-card-max-h:clamp(520px, 60svh, 640px);
   }
 }
