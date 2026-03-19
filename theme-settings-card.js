@@ -39,6 +39,7 @@ window.NTThemeSettingsCard = (() => {
     localStorage.setItem("ntThemeMode", nextMode);
     applyThemeClass(nextMode);
     updateThemeSelectionUI(nextMode);
+    refreshFooterState();
   }
 
   function applyAutomaticThemeIfNeeded() {
@@ -46,6 +47,7 @@ window.NTThemeSettingsCard = (() => {
     const systemTheme = getSystemThemeClass();
     applyThemeClass(systemTheme);
     updateThemeSelectionUI(systemTheme);
+    refreshFooterState();
   }
 
   function ensureSystemThemeListener() {
@@ -65,6 +67,86 @@ window.NTThemeSettingsCard = (() => {
     }
 
     systemThemeListenerBound = true;
+  }
+
+  function getDraft() {
+    const autoCheckbox = document.getElementById("ntThemeAutoToggle");
+
+    let manualTheme = "theme-light";
+    const selectedBtn = document.querySelector("#ntThemeModes [data-nt-theme].isSelected");
+    if (selectedBtn?.dataset?.ntTheme === "dark") {
+      manualTheme = "theme-dark";
+    } else if (selectedBtn?.dataset?.ntTheme === "light") {
+      manualTheme = "theme-light";
+    } else {
+      manualTheme = getStoredThemeMode();
+    }
+
+    return {
+      autoMode: autoCheckbox ? Boolean(autoCheckbox.checked) : getThemeAutoMode(),
+      manualTheme
+    };
+  }
+
+  function getCommittedDraft() {
+    return {
+      autoMode: getThemeAutoMode(),
+      manualTheme: getStoredThemeMode()
+    };
+  }
+
+  function applyDraft(draft) {
+    const nextDraft = draft || getCommittedDraft();
+
+    setThemeAutoMode(Boolean(nextDraft.autoMode));
+    localStorage.setItem(
+      "ntThemeMode",
+      nextDraft.manualTheme === "theme-dark" ? "theme-dark" : "theme-light"
+    );
+
+    syncAutoCheckboxUI();
+
+    if (nextDraft.autoMode) {
+      const systemTheme = getSystemThemeClass();
+      applyThemeClass(systemTheme);
+      updateThemeSelectionUI(systemTheme);
+    } else {
+      applyThemeClass(nextDraft.manualTheme);
+      updateThemeSelectionUI(nextDraft.manualTheme);
+    }
+
+    refreshFooterState();
+  }
+
+  function saveDraft(draft) {
+    const nextDraft = draft || getDraft();
+
+    setThemeAutoMode(Boolean(nextDraft.autoMode));
+    localStorage.setItem(
+      "ntThemeMode",
+      nextDraft.manualTheme === "theme-dark" ? "theme-dark" : "theme-light"
+    );
+
+    if (nextDraft.autoMode) {
+      const systemTheme = getSystemThemeClass();
+      applyThemeClass(systemTheme);
+      updateThemeSelectionUI(systemTheme);
+    } else {
+      applyThemeClass(nextDraft.manualTheme);
+      updateThemeSelectionUI(nextDraft.manualTheme);
+    }
+
+    refreshFooterState();
+  }
+
+  function hasChanges(draft, committedDraft) {
+    const a = draft || getDraft();
+    const b = committedDraft || getCommittedDraft();
+
+    return (
+      Boolean(a.autoMode) !== Boolean(b.autoMode) ||
+      String(a.manualTheme) !== String(b.manualTheme)
+    );
   }
 
   function updateThemeSelectionUI(currentThemeClass) {
@@ -94,6 +176,14 @@ window.NTThemeSettingsCard = (() => {
     autoCheckbox.checked = getThemeAutoMode();
   }
 
+  function refreshFooterState() {
+    const activeId = window.NTCards?.getActiveCardId?.();
+    if (activeId === "themeSettings") {
+      window.NTCards?.refreshCardState?.("themeSettings");
+      window.NTCards?.refreshActionState?.("themeSettings");
+    }
+  }
+
   function bindThemeCard() {
     const root = document.getElementById("ntThemeModes");
     if (!root) return;
@@ -104,6 +194,7 @@ window.NTThemeSettingsCard = (() => {
     applyThemeClass(currentTheme);
     updateThemeSelectionUI(currentTheme);
     syncAutoCheckboxUI();
+    refreshFooterState();
 
     root.querySelectorAll("[data-nt-theme]").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -132,6 +223,8 @@ window.NTThemeSettingsCard = (() => {
           applyThemeClass(manualTheme);
           updateThemeSelectionUI(manualTheme);
         }
+
+        refreshFooterState();
       });
     }
   }
@@ -184,26 +277,41 @@ window.NTThemeSettingsCard = (() => {
         `;
 
         return NTCardTemplate.createCard({
-          render() {
-  const body = `
-    <div id="ntThemeModes" class="themeRoot">
-      ...
-    </div>
-  `;
-
-  return NTCardTemplate.createCard({
-    id: "themeSettings",
-    title: "Aspetto e tema",
-    body,
-
-    showBack: false,
-    showNext: false,
-    footer: true
-  });
-}
+          id: "themeSettings",
+          title: "Aspetto e tema",
+          body,
+          showBack: false,
+          showNext: false,
+          footer: true
+        });
+      },
 
       onOpen() {
         bindThemeCard();
+      },
+
+      getDraft() {
+        return getDraft();
+      },
+
+      applyDraft({ draft }) {
+        applyDraft(draft);
+      },
+
+      hasChanges({ draft, committedDraft }) {
+        return hasChanges(draft, committedDraft);
+      },
+
+      onSave({ draft }) {
+        saveDraft(draft);
+      },
+
+      onAutoSave({ draft }) {
+        saveDraft(draft);
+      },
+
+      onCancel({ committedDraft }) {
+        applyDraft(committedDraft || getCommittedDraft());
       }
     });
   }
@@ -217,5 +325,4 @@ window.NTThemeSettingsCard = (() => {
     register,
     initThemeOnAppStart
   };
-  
 })();
