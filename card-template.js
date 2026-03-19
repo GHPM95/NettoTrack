@@ -1,5 +1,6 @@
 /* ========================= NettoTrack Card Template ========================= */
 window.NTCardTemplate = (() => {
+
   function createCard({
     id = "",
     title = "",
@@ -9,93 +10,77 @@ window.NTCardTemplate = (() => {
     showBack = true,
     showNext = true
   } = {}) {
+
     const safeId = escapeHtml(id);
     const safeTitle = escapeHtml(title);
     const hasSubHeader = String(subHeader || "").trim().length > 0;
 
     return `
       <section class="ntCard" data-card-id="${safeId}">
-        <header class="ntCardHeader">
-          <div class="ntCardHeaderSide ntCardHeaderSide--left">
-            ${
-              showBack
-                ? `
-                  <button
-                    type="button"
-                    class="ntCardIconBtn jsNtCardBack"
-                    data-nt-action="back"
-                    aria-label="Indietro"
-                    disabled
-                  >
-                    ←
-                  </button>
-                `
-                : ``
-            }
+        
+        <div class="ntCardShell">
 
-            ${
-              showNext
-                ? `
-                  <button
-                    type="button"
-                    class="ntCardIconBtn jsNtCardNext"
-                    data-nt-action="next"
-                    aria-label="Avanti"
-                    disabled
-                  >
-                    →
-                  </button>
-                `
-                : ``
-            }
+          <!-- HEADER -->
+          <div class="ntCardTop">
+
+            <div class="ntCardNav">
+              ${
+                showBack
+                  ? `<button class="ntIconBtn jsNtCardBack" data-nt-action="back" disabled>←</button>`
+                  : ""
+              }
+
+              ${
+                showNext
+                  ? `<button class="ntIconBtn jsNtCardNext" data-nt-action="next" disabled>→</button>`
+                  : ""
+              }
+            </div>
+
+            <div class="ntCardTitleWrap">
+              <h2 class="ntCardTitle">${safeTitle}</h2>
+              ${hasSubHeader ? `<div class="ntCardSubHeader">${subHeader}</div>` : ``}
+            </div>
+
+            <button class="ntIconBtn jsNtCardClose" data-nt-action="close">×</button>
+
           </div>
 
-          <div class="ntCardHeaderCenter">
-            <h2 class="ntCardTitle">${safeTitle}</h2>
-            ${hasSubHeader ? `<div class="ntCardSubHeader">${subHeader}</div>` : ``}
+          <!-- BODY -->
+          <div class="ntCardBody">
+            ${body}
           </div>
 
-          <div class="ntCardHeaderSide ntCardHeaderSide--right">
-            <button
-              type="button"
-              class="ntCardIconBtn jsNtCardClose"
-              data-nt-action="close"
-              aria-label="Chiudi"
-            >
-              ×
-            </button>
-          </div>
-        </header>
+          <!-- FOOTER -->
+          ${
+            footer
+              ? `
+                <div class="ntCardFooter">
+                  <div class="ntCardFooterRow">
 
-        <div class="ntCardBody">
-          ${body}
+                    <button
+                      class="ntCardFooterBtn ntCardFooterBtn--ghost jsNtCardCancel"
+                      data-nt-action="cancel"
+                      disabled
+                    >
+                      annulla
+                    </button>
+
+                    <button
+                      class="ntCardFooterBtn ntCardFooterBtn--primary jsNtCardSave"
+                      data-nt-action="save"
+                      disabled
+                    >
+                      salva
+                    </button>
+
+                  </div>
+                </div>
+              `
+              : ""
+          }
+
         </div>
-
-        ${
-          footer
-            ? `
-              <footer class="ntCardFooter">
-                <button
-                  type="button"
-                  class="ntCardFooterBtn ntCardFooterBtn--ghost jsNtCardCancel"
-                  data-nt-action="cancel"
-                  disabled
-                >
-                  annulla
-                </button>
-
-                <button
-                  type="button"
-                  class="ntCardFooterBtn ntCardFooterBtn--primary jsNtCardSave"
-                  data-nt-action="save"
-                  disabled
-                >
-                  salva
-                </button>
-              </footer>
-            `
-            : ``
-        }
       </section>
     `;
   }
@@ -110,4 +95,5 @@ window.NTCardTemplate = (() => {
   }
 
   return { createCard };
+
 })();
