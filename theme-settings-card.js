@@ -209,7 +209,4 @@ window.NTThemeSettingsCard = (() => {
     initThemeOnAppStart
   };
   
-showBack: false,
-showNext: false,
-footer: true
 })();
