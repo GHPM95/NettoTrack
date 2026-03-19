@@ -184,14 +184,23 @@ window.NTThemeSettingsCard = (() => {
         `;
 
         return NTCardTemplate.createCard({
-          id: "themeSettings",
-          title: "Aspetto e tema",
-          body,
-          footer: false,
-          showBack: true,
-          showNext: false
-        });
-      },
+          render() {
+  const body = `
+    <div id="ntThemeModes" class="themeRoot">
+      ...
+    </div>
+  `;
+
+  return NTCardTemplate.createCard({
+    id: "themeSettings",
+    title: "Aspetto e tema",
+    body,
+
+    showBack: false,
+    showNext: false,
+    footer: true
+  });
+}
 
       onOpen() {
         bindThemeCard();
