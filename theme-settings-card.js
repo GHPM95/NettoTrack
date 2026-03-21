@@ -25,13 +25,31 @@ window.NTThemeSettingsCard = (() => {
     return prefersDark ? "theme-dark" : "theme-light";
   }
 
+  function getCommittedDraft() {
+    return {
+      autoMode: getThemeAutoMode(),
+      manualTheme: getStoredThemeMode()
+    };
+  }
+
+  function normalizeManualTheme(value) {
+    return value === "theme-dark" ? "theme-dark" : "theme-light";
+  }
+
   function getActiveThemeClass() {
-    return getThemeAutoMode() ? getSystemThemeClass() : getStoredThemeMode();
+    const committed = getCommittedDraft();
+    return committed.autoMode ? getSystemThemeClass() : committed.manualTheme;
   }
 
   function applyThemeClass(themeClass) {
     document.body.classList.remove("theme-light", "theme-dark");
     document.body.classList.add(themeClass);
+  }
+
+  function syncAutoCheckboxUI(value = getThemeAutoMode()) {
+    const autoCheckbox = document.getElementById("ntThemeAutoToggle");
+    if (!autoCheckbox) return;
+    autoCheckbox.checked = Boolean(value);
   }
 
   function updateThemeSelectionUI(currentThemeClass) {
@@ -55,102 +73,117 @@ window.NTThemeSettingsCard = (() => {
     });
   }
 
-  function syncAutoCheckboxUI(autoValue = getThemeAutoMode()) {
-    const autoCheckbox = document.getElementById("ntThemeAutoToggle");
-    if (!autoCheckbox) return;
-    autoCheckbox.checked = Boolean(autoValue);
-  }
-
   function getDraft() {
     const autoCheckbox = document.getElementById("ntThemeAutoToggle");
     const selectedBtn = document.querySelector("#ntThemeModes [data-nt-theme].isSelected");
+    const committed = getCommittedDraft();
 
-    let manualTheme = "theme-light";
+    let manualTheme = committed.manualTheme;
+
     if (selectedBtn?.dataset?.ntTheme === "dark") {
       manualTheme = "theme-dark";
     } else if (selectedBtn?.dataset?.ntTheme === "light") {
       manualTheme = "theme-light";
-    } else {
-      manualTheme = getStoredThemeMode();
     }
 
     return {
-      autoMode: autoCheckbox ? Boolean(autoCheckbox.checked) : getThemeAutoMode(),
-      manualTheme
+      autoMode: autoCheckbox ? Boolean(autoCheckbox.checked) : committed.autoMode,
+      manualTheme: normalizeManualTheme(manualTheme)
     };
   }
 
-  function getCommittedDraft() {
-    return {
-      autoMode: getThemeAutoMode(),
-      manualTheme: getStoredThemeMode()
-    };
-  }
-
-  function hasChanges() {
-    const a = getDraft();
-    const b = getCommittedDraft();
+  function hasChanges({ draft, committedDraft } = {}) {
+    const current = draft || getDraft();
+    const committed = committedDraft || getCommittedDraft();
 
     return (
-      Boolean(a.autoMode) !== Boolean(b.autoMode) ||
-      String(a.manualTheme) !== String(b.manualTheme)
+      Boolean(current.autoMode) !== Boolean(committed.autoMode) ||
+      normalizeManualTheme(current.manualTheme) !== normalizeManualTheme(committed.manualTheme)
     );
-  }
-
-  function refreshFooterState() {
-    const cancelBtn = document.querySelector("[data-card-id='themeSettings'] .jsNtCardCancel");
-    const saveBtn = document.querySelector("[data-card-id='themeSettings'] .jsNtCardSave");
-    const dirty = hasChanges();
-
-    if (cancelBtn) {
-      cancelBtn.disabled = !dirty;
-      cancelBtn.classList.toggle("isBlocked", !dirty);
-    }
-
-    if (saveBtn) {
-      saveBtn.disabled = !dirty;
-      saveBtn.classList.toggle("isBlocked", !dirty);
-    }
   }
 
   function applyDraftToUI(draft) {
     const nextDraft = draft || getCommittedDraft();
+    const normalizedDraft = {
+      autoMode: Boolean(nextDraft.autoMode),
+      manualTheme: normalizeManualTheme(nextDraft.manualTheme)
+    };
 
-    syncAutoCheckboxUI(nextDraft.autoMode);
+    syncAutoCheckboxUI(normalizedDraft.autoMode);
 
-    if (nextDraft.autoMode) {
+    if (normalizedDraft.autoMode) {
       const systemTheme = getSystemThemeClass();
       applyThemeClass(systemTheme);
       updateThemeSelectionUI(systemTheme);
     } else {
-      const manualTheme =
-        nextDraft.manualTheme === "theme-dark" ? "theme-dark" : "theme-light";
-      applyThemeClass(manualTheme);
-      updateThemeSelectionUI(manualTheme);
+      applyThemeClass(normalizedDraft.manualTheme);
+      updateThemeSelectionUI(normalizedDraft.manualTheme);
     }
-
-    refreshFooterState();
   }
 
-  function applyManualTheme(mode) {
-    const nextMode = mode === "dark" ? "theme-dark" : "theme-light";
+  function persistDraft(draft) {
+    const normalizedDraft = {
+      autoMode: Boolean(draft.autoMode),
+      manualTheme: normalizeManualTheme(draft.manualTheme)
+    };
 
-    if (getThemeAutoMode()) {
-      syncAutoCheckboxUI(false);
+    setThemeAutoMode(normalizedDraft.autoMode);
+    localStorage.setItem("ntThemeMode", normalizedDraft.manualTheme);
+
+    if (normalizedDraft.autoMode) {
+      const systemTheme = getSystemThemeClass();
+      applyThemeClass(systemTheme);
+      updateThemeSelectionUI(systemTheme);
+    } else {
+      applyThemeClass(normalizedDraft.manualTheme);
+      updateThemeSelectionUI(normalizedDraft.manualTheme);
     }
 
-    applyThemeClass(nextMode);
-    updateThemeSelectionUI(nextMode);
-    refreshFooterState();
+    syncAutoCheckboxUI(normalizedDraft.autoMode);
+  }
+
+  function refreshCardStateUI() {
+    queueMicrotask(() => {
+      window.NTCards?.refreshCardState?.("themeSettings");
+      window.NTCards?.refreshActionState?.("themeSettings");
+    });
+  }
+
+  function setDraftPreviewFromMode(mode) {
+    const manualTheme = mode === "dark" ? "theme-dark" : "theme-light";
+    const autoCheckbox = document.getElementById("ntThemeAutoToggle");
+
+    if (autoCheckbox?.checked) {
+      autoCheckbox.checked = false;
+    }
+
+    applyThemeClass(manualTheme);
+    updateThemeSelectionUI(manualTheme);
+    refreshCardStateUI();
+  }
+
+  function setDraftPreviewFromAuto(autoEnabled) {
+    if (autoEnabled) {
+      const systemTheme = getSystemThemeClass();
+      applyThemeClass(systemTheme);
+      updateThemeSelectionUI(systemTheme);
+    } else {
+      const draft = getDraft();
+      applyThemeClass(draft.manualTheme);
+      updateThemeSelectionUI(draft.manualTheme);
+    }
+
+    refreshCardStateUI();
   }
 
   function applyAutomaticThemeIfNeeded() {
-    if (!getThemeAutoMode()) return;
+    const draft = getDraft();
+    if (!draft.autoMode) return;
 
     const systemTheme = getSystemThemeClass();
     applyThemeClass(systemTheme);
     updateThemeSelectionUI(systemTheme);
-    refreshFooterState();
+    refreshCardStateUI();
   }
 
   function ensureSystemThemeListener() {
@@ -160,7 +193,6 @@ window.NTThemeSettingsCard = (() => {
 
     const onSystemThemeChange = () => {
       applyAutomaticThemeIfNeeded();
-      syncAutoCheckboxUI();
     };
 
     if (typeof systemThemeMedia.addEventListener === "function") {
@@ -172,70 +204,26 @@ window.NTThemeSettingsCard = (() => {
     systemThemeListenerBound = true;
   }
 
-  function saveDraft() {
-    const draft = getDraft();
-
-    setThemeAutoMode(Boolean(draft.autoMode));
-    localStorage.setItem(
-      "ntThemeMode",
-      draft.manualTheme === "theme-dark" ? "theme-dark" : "theme-light"
-    );
-
-    if (draft.autoMode) {
-      const systemTheme = getSystemThemeClass();
-      applyThemeClass(systemTheme);
-      updateThemeSelectionUI(systemTheme);
-    } else {
-      applyThemeClass(draft.manualTheme);
-      updateThemeSelectionUI(draft.manualTheme);
-    }
-
-    refreshFooterState();
-  }
-
-  function cancelDraft() {
-    const committed = getCommittedDraft();
-    applyDraftToUI(committed);
-  }
-
   function bindThemeCard() {
     const root = document.getElementById("ntThemeModes");
     if (!root) return;
 
     ensureSystemThemeListener();
 
-    const currentTheme = getActiveThemeClass();
-    applyThemeClass(currentTheme);
-    updateThemeSelectionUI(currentTheme);
-    syncAutoCheckboxUI();
-    refreshFooterState();
+    applyDraftToUI(getCommittedDraft());
+    refreshCardStateUI();
 
     root.querySelectorAll("[data-nt-theme]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const selectedMode = btn.dataset.ntTheme === "dark" ? "dark" : "light";
-
-        if (getThemeAutoMode()) {
-          syncAutoCheckboxUI(false);
-        }
-
-        applyManualTheme(selectedMode);
+        setDraftPreviewFromMode(selectedMode);
       });
     });
 
     const autoCheckbox = document.getElementById("ntThemeAutoToggle");
     if (autoCheckbox) {
       autoCheckbox.addEventListener("change", () => {
-        if (autoCheckbox.checked) {
-          const systemTheme = getSystemThemeClass();
-          applyThemeClass(systemTheme);
-          updateThemeSelectionUI(systemTheme);
-        } else {
-          const manualTheme = getStoredThemeMode();
-          applyThemeClass(manualTheme);
-          updateThemeSelectionUI(manualTheme);
-        }
-
-        refreshFooterState();
+        setDraftPreviewFromAuto(Boolean(autoCheckbox.checked));
       });
     }
   }
@@ -301,12 +289,32 @@ window.NTThemeSettingsCard = (() => {
         bindThemeCard();
       },
 
-      onSave() {
-        saveDraft();
+      getDraft() {
+        return getDraft();
       },
 
-      onCancel() {
-        cancelDraft();
+      applyDraft({ draft }) {
+        applyDraftToUI(draft);
+        refreshCardStateUI();
+      },
+
+      hasChanges({ draft, committedDraft }) {
+        return hasChanges({ draft, committedDraft });
+      },
+
+      onSave({ draft }) {
+        persistDraft(draft || getDraft());
+        refreshCardStateUI();
+      },
+
+      onAutoSave({ draft }) {
+        persistDraft(draft || getDraft());
+        refreshCardStateUI();
+      },
+
+      onCancel({ committedDraft }) {
+        applyDraftToUI(committedDraft || getCommittedDraft());
+        refreshCardStateUI();
       }
     });
   }
