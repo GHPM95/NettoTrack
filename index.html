@@ -14,7 +14,6 @@
   <link rel="stylesheet" href="ui-animations.css" />
   <link rel="stylesheet" href="ui-menu-layout.css" />
   <link rel="stylesheet" href="ui-theme-settings.css" />
-
   <link rel="stylesheet" href="ui-profile-card.css">
   <link rel="stylesheet" href="calendar-day.css" />
   <link rel="stylesheet" href="calendar-day-animations.css" />
@@ -61,49 +60,52 @@
     </div>
   </div>
 
-  <div class="ntMenuOverlay" id="ntMenuOverlay" aria-hidden="true">
-    <div class="ntMenuBackdrop"></div>
-
-    <div class="ntMenuShell">
-      <div class="ntMenuPanelWrap">
-        <aside class="ntMenuPanel"></aside>
-      </div>
-
-      <div class="ntMenuCloseZone">
-        <div class="ntMenuCloseBtnWrap">
-          <button
-            type="button"
-            class="ntIconBtn ntPress"
-            data-nt-close-menu
-            aria-label="Chiudi menu"
-          >×</button>
+  <div class="ntMenuOverlay" id="ntMenuOverlay" hidden>
+    <aside class="ntMenuSheet" aria-label="Menu">
+      <div class="ntMenuHead">
+        <div class="ntMenuBrand">
+          <div class="ntMenuTitle">NettoTrack</div>
+          <div class="ntMenuSub">Menu rapido</div>
         </div>
+
+        <button
+          type="button"
+          class="ntIconBtn ntPress"
+          data-nt-close-menu
+          aria-label="Chiudi menu"
+        >×</button>
       </div>
-    </div>
+
+      <div class="ntMenuBody" id="ntMenuBody"></div>
+    </aside>
   </div>
 
+  <script src="ui.js"></script>
+  <script src="ui-layout.js"></script>
+  <script src="ui-components.js"></script>
+  <script src="ui-feedback.js"></script>
+  <script src="ui-feedback-animations.js"></script>
+  <script src="ui-animations.js"></script>
+  <script src="ui-card-tabs.js"></script>
   <script src="ui-cards.js"></script>
   <script src="ui-card-manager.js"></script>
   <script src="ui-card-actions.js"></script>
   <script src="ui-card-wizard.js"></script>
   <script src="ui-card-dots.js"></script>
   <script src="ui-card-gestures.js"></script>
-
   <script src="ui-select.js"></script>
   <script src="ui-tooltip.js"></script>
   <script src="ui-modal.js"></script>
   <script src="ui-toast.js"></script>
   <script src="ui-empty-state.js"></script>
-
   <script src="calendar-day.js"></script>
   <script src="calendar-days-strip.js"></script>
-
   <script src="card-template.js"></script>
   <script src="component-registry.js"></script>
-
   <script src="ui-menu-content.js"></script>
   <script src="ui-menu.js"></script>
   <script src="theme-settings-card.js"></script>
+  <script src="profile-card.js"></script>
 
   <script>
     const viewportEl = document.getElementById("ntCardsViewport");
@@ -137,7 +139,6 @@
         id: "calendarView",
         render() {
           const subHeader = `<div class="ntCardSubHeaderContent" id="calendarStripMount"></div>`;
-
           const body = `
             ${NTComponents.section({
               title: "Calendario",
@@ -227,53 +228,13 @@
           }
         }
       });
-
-      NTCards.registerCard({
-        id: "profile",
-        render() {
-          const body = `
-            ${NTComponents.avatar({
-              variant: "nothing",
-              title: "Profilo utente",
-              hint: "Configura il tuo profilo personale e lavorativo."
-            })}
-
-            ${NTComponents.divider()}
-
-            ${NTComponents.section({
-              title: "Informazioni",
-              body: `
-                ${NTComponents.input({ placeholder: "Paese" })}
-                ${NTComponents.input({ placeholder: "Occupazione" })}
-                ${NTComponents.textarea({ placeholder: "Note profilo" })}
-              `
-            })}
-          `;
-
-          return NTCardTemplate.createCard({
-            id: "profile",
-            title: "Profilo utente",
-            body,
-            footer: true,
-            showBack: true,
-            showNext: true
-          });
-        },
-        onSave() {
-          if (window.NTToast) {
-            NTToast.show({
-              title: "Profilo salvato",
-              text: "Le informazioni del profilo sono state aggiornate."
-            });
-          }
-        }
-      });
     }
 
     registerDemoCards();
 
     window.NTThemeSettingsCard?.register();
     window.NTThemeSettingsCard?.initThemeOnAppStart();
+    window.NTProfileCard?.register?.();
 
     window.NTMenu?.init({
       overlaySelector: "#ntMenuOverlay",
