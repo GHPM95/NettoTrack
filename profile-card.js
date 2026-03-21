@@ -2,6 +2,19 @@
 window.NTProfileCard = (() => {
   const PROFILE_STORAGE_KEY = "ntUserProfileData";
 
+  function safeText(value) {
+    return String(value ?? "").trim();
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
   function readProfileData() {
     try {
       const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
@@ -21,10 +34,6 @@ window.NTProfileCard = (() => {
     } catch {
       return null;
     }
-  }
-
-  function safeText(value) {
-    return String(value ?? "").trim();
   }
 
   function hasProfileData(profile = readProfileData()) {
@@ -49,12 +58,6 @@ window.NTProfileCard = (() => {
   }
 
   function openProfileWizard() {
-    /*
-      Qui agganciamo il wizard vero quando lo costruirai.
-      Per ora:
-      - prova ad aprire una card wizard esistente "profileWizard"
-      - altrimenti emette un evento custom
-    */
     if (window.NTCards?.openCard && window.NTCards.state?.registry?.has?.("profileWizard")) {
       window.NTCards.openCard("profileWizard");
       return;
@@ -62,7 +65,7 @@ window.NTProfileCard = (() => {
 
     document.dispatchEvent(new CustomEvent("nt:open-profile-wizard", {
       detail: {
-        sourceCard: "profileCard",
+        sourceCard: "profile",
         mode: hasProfileData() ? "edit" : "create"
       }
     }));
@@ -137,7 +140,7 @@ window.NTProfileCard = (() => {
     if (!window.NTCards || !window.NTCardTemplate) return;
 
     NTCards.registerCard({
-      id: "profileCard",
+      id: "profile",
 
       render() {
         const profile = readProfileData();
@@ -148,18 +151,30 @@ window.NTProfileCard = (() => {
             ${renderProfileSummary(profile)}
 
             <div class="ntProfileActionRow">
-              <button
-                type="button"
-                class="ntBtn ntBtnPrimary jsNtProfilePrimaryAction"
-              >
-                ${escapeHtml(actionLabel)}
-              </button>
+              ${window.NTComponents?.button
+                ? window.NTComponents.button({
+                    label: actionLabel,
+                    kind: "primary",
+                    pressed: false
+                  }).replace(
+                    '<button class="ntBtn ntBtn-primary ">',
+                    '<button type="button" class="ntBtn ntBtn-primary jsNtProfilePrimaryAction">'
+                  )
+                : `
+                  <button
+                    type="button"
+                    class="ntBtn ntBtn-primary jsNtProfilePrimaryAction"
+                  >
+                    ${escapeHtml(actionLabel)}
+                  </button>
+                `
+              }
             </div>
           </div>
         `;
 
         return NTCardTemplate.createCard({
-          id: "profileCard",
+          id: "profile",
           title: "Profilo utente",
           body,
           showBack: false,
@@ -169,19 +184,10 @@ window.NTProfileCard = (() => {
       },
 
       onOpen() {
-        const root = window.NTCards?.getCardRoot?.("profileCard");
+        const root = window.NTCards?.getCardRoot?.("profile");
         bindProfileCard(root);
       }
     });
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
   }
 
   return {
