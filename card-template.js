@@ -1,4 +1,3 @@
-/* ========================= NettoTrack Card Template ========================= */
 window.NTCardTemplate = (() => {
   function createCard({
     id = "",
@@ -13,7 +12,7 @@ window.NTCardTemplate = (() => {
     const safeTitle = escapeHtml(title);
     const hasSubHeader = String(subHeader || "").trim().length > 0;
 
-    const leftNavHtml = (showBack || showNext)
+    const leftSideHtml = (showBack || showNext)
       ? `
         <div class="ntCardNav">
           ${
@@ -60,7 +59,7 @@ window.NTCardTemplate = (() => {
           <div class="ntCardTop">
             <header class="ntCardHeader">
               <div class="ntCardHeaderSide ntCardHeaderSide--left">
-                ${leftNavHtml}
+                ${leftSideHtml}
               </div>
 
               <div class="ntCardTitleWrap">
@@ -98,28 +97,26 @@ window.NTCardTemplate = (() => {
             footer
               ? `
                 <footer class="ntCardFooter">
-                  <div class="ntCardFooterShell">
-                    <div class="ntCardFooterRow">
-                      <button
-                        type="button"
-                        class="ntCardFooterBtn ntCardFooterBtn--ghost jsNtCardCancel"
-                        data-nt-action="cancel"
-                        aria-label="Annulla"
-                        disabled
-                      >
-                        annulla
-                      </button>
+                  <div class="ntCardFooterRow">
+                    <button
+                      type="button"
+                      class="ntCardFooterBtn ntCardFooterBtn--ghost jsNtCardCancel"
+                      data-nt-action="cancel"
+                      aria-label="Annulla"
+                      disabled
+                    >
+                      annulla
+                    </button>
 
-                      <button
-                        type="button"
-                        class="ntCardFooterBtn ntCardFooterBtn--primary jsNtCardSave"
-                        data-nt-action="save"
-                        aria-label="Salva"
-                        disabled
-                      >
-                        salva
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      class="ntCardFooterBtn ntCardFooterBtn--primary jsNtCardSave"
+                      data-nt-action="save"
+                      aria-label="Salva"
+                      disabled
+                    >
+                      salva
+                    </button>
                   </div>
                 </footer>
               `
