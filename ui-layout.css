@@ -4,7 +4,7 @@
   --nt-card-header-min-h: 50px;
   --nt-card-header-gap: 12px;
   --nt-card-subheader-min-h: 52px;
-  --nt-card-footer-min-h: 84px;
+  --nt-card-footer-min-h: 74px;
 
   --nt-card-side-gap: 16px;
   --nt-card-max-w: calc(100% - (var(--nt-card-side-gap) * 2));
@@ -134,6 +134,16 @@
   font-weight:900;
   line-height:1;
   flex:0 0 auto;
+  transition:
+    transform .18s ease,
+    opacity .22s ease,
+    background .22s ease,
+    box-shadow .22s ease,
+    border-color .22s ease;
+}
+
+.ntIconBtn:active{
+  transform:scale(.97);
 }
 
 .ntIconBtn[disabled],
@@ -193,19 +203,6 @@
   align-items:flex-end;
 }
 
-.ntCardFooterShell{
-  width:100%;
-  padding:10px;
-  border-radius:22px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.06);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
-    0 10px 24px rgba(0,0,0,.14);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-}
-
 .ntCardFooterRow{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -222,9 +219,6 @@
   justify-content:center;
   padding:0 16px;
   border-radius:18px;
-  border:1px solid rgba(255,255,255,.18);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
   font-size:16px;
   font-weight:700;
   transition:
@@ -240,6 +234,7 @@
 }
 
 .ntCardFooterBtn--ghost{
+  border:1px solid rgba(255,255,255,.18);
   background:rgba(255,255,255,.08);
   color:rgba(255,255,255,.82);
   box-shadow:
@@ -248,14 +243,14 @@
 }
 
 .ntCardFooterBtn--primary{
-  background:
-    linear-gradient(rgba(255,255,255,.08), rgba(255,255,255,.08)) padding-box,
-    var(--nt-accent-border-gradient) border-box;
   border:1px solid transparent;
+  background:
+    linear-gradient(var(--nt-accent-fill), var(--nt-accent-fill)) padding-box,
+    var(--nt-accent-border-gradient) border-box;
   color:#fff;
   box-shadow:
     0 6px 18px rgba(0,0,0,.25),
-    inset 0 1px 0 rgba(255,255,255,.20);
+    inset 0 1px 0 rgba(255,255,255,.14);
 }
 
 .ntCardFooterBtn:disabled,
@@ -416,7 +411,7 @@
     --nt-card-side-gap:14px;
     --nt-card-max-w:calc(100% - (var(--nt-card-side-gap) * 2));
     --nt-card-max-h:clamp(485px, 56svh, 590px);
-    --nt-card-footer-min-h:76px;
+    --nt-card-footer-min-h:68px;
     --nt-dots-space:24px;
   }
 
@@ -440,11 +435,6 @@
 
   .ntCardBody .ntTextarea{
     min-height:82px;
-  }
-
-  .ntCardFooterShell{
-    padding:8px;
-    border-radius:20px;
   }
 
   .ntCardFooterBtn{
