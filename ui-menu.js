@@ -1,14 +1,13 @@
-/* =========================
-   NettoTrack Menu
-   ========================= */
-
+/* ========================= NettoTrack Menu ========================= */
 window.NTMenu = (() => {
   let overlayEl = null;
   let panelEl = null;
   let backdropEl = null;
   let closeBtnEl = null;
   let openBtnEl = null;
+  let bodyEl = null;
   let isOpen = false;
+  let isBound = false;
 
   function init({
     overlaySelector = "#ntMenuOverlay",
@@ -19,7 +18,22 @@ window.NTMenu = (() => {
 
     if (!overlayEl) return;
 
-    panelEl = overlayEl.querySelector(".ntMenuPanel");
+    /*
+      Supporta sia il layout nuovo previsto dal CSS menu
+      (.ntMenuPanel / .ntMenuBackdrop)
+      sia la struttura che stai usando ora
+      (.ntMenuSheet / #ntMenuBody).
+    */
+    panelEl =
+      overlayEl.querySelector(".ntMenuPanel") ||
+      overlayEl.querySelector(".ntMenuSheet") ||
+      overlayEl.querySelector(".ntMenuBody");
+
+    bodyEl =
+      overlayEl.querySelector("#ntMenuBody") ||
+      overlayEl.querySelector(".ntMenuBody") ||
+      panelEl;
+
     backdropEl = overlayEl.querySelector(".ntMenuBackdrop");
     closeBtnEl = overlayEl.querySelector("[data-nt-close-menu]");
 
@@ -28,11 +42,14 @@ window.NTMenu = (() => {
   }
 
   function mountContent() {
-    if (!panelEl || !window.NTMenuContent?.render) return;
-    panelEl.innerHTML = window.NTMenuContent.render();
+    if (!bodyEl || !window.NTMenuContent?.render) return;
+    bodyEl.innerHTML = window.NTMenuContent.render();
   }
 
   function bind() {
+    if (isBound || !overlayEl) return;
+    isBound = true;
+
     if (openBtnEl) {
       openBtnEl.addEventListener("click", open);
     }
@@ -45,9 +62,20 @@ window.NTMenu = (() => {
       closeBtnEl.addEventListener("click", close);
     }
 
-    overlayEl?.addEventListener("click", (e) => {
+    overlayEl.addEventListener("click", (e) => {
       const clickedCloseZone = e.target.closest(".ntMenuCloseZone");
-      if (clickedCloseZone) close();
+      if (clickedCloseZone) {
+        close();
+        return;
+      }
+
+      /*
+        Se non esiste un backdrop dedicato ma clicchi fuori dal pannello/sheet,
+        chiude comunque il menu.
+      */
+      if (!backdropEl && panelEl && !panelEl.contains(e.target)) {
+        close();
+      }
     });
 
     document.addEventListener("keydown", (e) => {
@@ -56,7 +84,7 @@ window.NTMenu = (() => {
       }
     });
 
-    panelEl?.addEventListener("click", (e) => {
+    bodyEl?.addEventListener("click", (e) => {
       const actionEl = e.target.closest("[data-nt-menu-action]");
       if (!actionEl) return;
 
@@ -67,7 +95,9 @@ window.NTMenu = (() => {
 
   function open() {
     if (!overlayEl) return;
+
     isOpen = true;
+    overlayEl.hidden = false;
     overlayEl.classList.add("isOpen");
     overlayEl.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -75,10 +105,18 @@ window.NTMenu = (() => {
 
   function close() {
     if (!overlayEl) return;
+
     isOpen = false;
     overlayEl.classList.remove("isOpen");
     overlayEl.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
+
+    // aspetta la fine della transizione se presente
+    window.setTimeout(() => {
+      if (!isOpen) {
+        overlayEl.hidden = true;
+      }
+    }, 220);
   }
 
   function handleAction(action) {
@@ -86,28 +124,41 @@ window.NTMenu = (() => {
 
     switch (action) {
       case "go-insert":
-        document.getElementById("btnInsert")?.click();
+        openCardById("calendarInsert");
         close();
         break;
 
       case "go-calendar":
-        document.getElementById("btnCalendar")?.click();
+        openCardById("calendarView");
         close();
         break;
 
       case "go-profile":
-        document.getElementById("btnProfile")?.click();
+        openCardById("profile");
         close();
         break;
 
       case "settings-theme":
-        window.NTCardManager?.open("themeSettings");
+        openCardById("themeSettings");
         close();
         break;
 
       default:
         close();
         break;
+    }
+  }
+
+  function openCardById(cardId) {
+    if (!cardId) return;
+
+    if (window.NTCardManager?.open) {
+      window.NTCardManager.open(cardId);
+      return;
+    }
+
+    if (window.NTCards?.openCard) {
+      window.NTCards.openCard(cardId);
     }
   }
 
