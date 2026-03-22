@@ -78,11 +78,16 @@ window.NTProfileCard = (() => {
     }
 
     if (save) {
-      save.textContent = hasData(readStored())
-        ? "Modifica i dati"
-        : "Inserisci i dati";
+      const has = hasData(readStored());
 
-      save.setAttribute("data-nt-action", "profile-open");
+      save.textContent = has ? "Modifica i dati" : "Inserisci i dati";
+
+      /* 🔴 FIX CRITICO */
+      save.disabled = false;
+      save.classList.remove("isBlocked");
+
+      /* 🔴 BIND DIRETTO */
+      save.onclick = () => openWizard();
     }
   }
 
