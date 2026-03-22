@@ -138,6 +138,7 @@ window.NTProfileCard = (() => {
       footer: true,
       footerLeftDisabled: true,
       footerRightDisabled: false,
+      footerRightLabel: primaryLabel(),
       body: renderBody(getData())
     });
   }
@@ -145,9 +146,9 @@ window.NTProfileCard = (() => {
   function onOpen(root) {
     if (!root) return;
 
+    const row = root.querySelector(".ntCardFooterRow");
     const cancel = root.querySelector(".jsNtCardCancel");
     const save = root.querySelector(".jsNtCardSave");
-    const row = root.querySelector(".ntCardFooterRow");
 
     if (row) {
       row.style.display = "flex";
@@ -157,28 +158,28 @@ window.NTProfileCard = (() => {
     }
 
     if (cancel) {
-      cancel.style.display = "none";
       cancel.hidden = true;
+      cancel.style.display = "none";
       cancel.disabled = true;
       cancel.textContent = "";
       cancel.setAttribute("aria-hidden", "true");
     }
 
     if (save) {
-      setTimeout(() => {
-        save.hidden = false;
-        save.style.display = "";
-        save.disabled = false;
-        save.classList.remove("isBlocked");
-        save.textContent = primaryLabel();
-        save.setAttribute("aria-label", primaryLabel());
+      const label = primaryLabel();
 
-        save.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          openWizard();
-        };
-      }, 0);
+      save.hidden = false;
+      save.style.display = "";
+      save.disabled = false;
+      save.classList.remove("isBlocked");
+      save.textContent = label;
+      save.setAttribute("aria-label", label);
+
+      save.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openWizard();
+      };
     }
 
     refreshLive(getData());
