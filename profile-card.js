@@ -66,7 +66,6 @@ window.NTProfileCard = (() => {
     const profile = readProfileData();
     const mode = getWizardMode(profile);
 
-    // Salvo il contesto che il wizard può leggere all'apertura
     try {
       sessionStorage.setItem(
         "ntProfileWizardContext",
@@ -78,13 +77,11 @@ window.NTProfileCard = (() => {
       );
     } catch {}
 
-    // Se il wizard esiste come card, lo apre direttamente
     if (window.NTCards?.state?.registry?.has?.(WIZARD_CARD_ID)) {
       window.NTCards.openCard(WIZARD_CARD_ID);
       return;
     }
 
-    // Fallback: evento custom da intercettare nel file del wizard
     document.dispatchEvent(
       new CustomEvent("nt:open-profile-wizard", {
         detail: {
@@ -132,15 +129,6 @@ window.NTProfileCard = (() => {
     `;
   }
 
-  function bindProfileCard(root) {
-    if (!root) return;
-
-    const primaryBtn = root.querySelector(".jsNtProfilePrimaryAction");
-    if (primaryBtn) {
-      primaryBtn.addEventListener("click", openProfileWizard);
-    }
-  }
-
   function register() {
     if (!window.NTCards || !window.NTCardTemplate) return;
 
@@ -169,11 +157,6 @@ window.NTProfileCard = (() => {
           footerRightAction: "noop",
           footerRightDisabled: true
         });
-      },
-
-      onOpen() {
-        const root = window.NTCards?.getCardRoot?.("profile");
-        bindProfileCard(root);
       }
     });
   }
