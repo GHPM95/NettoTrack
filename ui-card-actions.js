@@ -95,9 +95,7 @@ window.NTCardActions = (() => {
   }
 
   async function handleProfilePrimary() {
-    if (window.NTProfileCard?.openProfileWizard) {
-      window.NTProfileCard.openProfileWizard();
-    }
+    window.NTProfileCard?.openProfileWizard?.();
   }
 
   function bindWithin(root = document) {
@@ -159,7 +157,6 @@ window.NTCardActions = (() => {
       keepEnabled: true
     });
 
-    // profile-primary è sempre cliccabile nella card profilo
     setButtonState(scope.querySelector("[data-nt-action='profile-primary']"), true, {
       keepEnabled: true
     });
