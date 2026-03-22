@@ -40,7 +40,7 @@ window.NTProfileWizardCard = (() => {
 
     box.className = "ntProfileAvatarBox " + avatarClass(g);
 
-    /* forza refresh visivo */
+    /* refresh visivo */
     box.style.transform = "scale(1.01)";
     requestAnimationFrame(() => box.style.transform = "");
   }
@@ -114,7 +114,11 @@ window.NTProfileWizardCard = (() => {
 
     if (save) {
       save.textContent = "avanti";
-      save.setAttribute("data-nt-action", "next");
+      save.disabled = false;
+      save.classList.remove("isBlocked");
+
+      /* 🔴 BIND DIRETTO */
+      save.onclick = () => next();
     }
   }
 
@@ -131,10 +135,22 @@ window.NTProfileWizardCard = (() => {
     root.addEventListener("change", sync);
     root.addEventListener("click", sync);
 
-    /* fix selector custom */
-    setInterval(sync, 200);
-
     requestAnimationFrame(sync);
+  }
+
+  function next() {
+    const d = getDraft();
+
+    if (!d.birthDate || d.birthDate.length < 10) {
+      const root = window.NTCards.getCardRoot("profileWizard");
+      root.querySelector(".ntCardFooter").style.display = "none";
+      alert("Data non valida");
+      return;
+    }
+
+    persist(d);
+    sessionStorage.removeItem(CTX_KEY);
+    window.NTCards.closeCard("profileWizard");
   }
 
   function register() {
@@ -145,20 +161,6 @@ window.NTProfileWizardCard = (() => {
         const root = NTCards.getCardRoot("profileWizard");
         fixFooter(root);
         bind();
-      },
-      onNext() {
-        const d = getDraft();
-
-        if (!d.birthDate || d.birthDate.length < 10) {
-          const root = NTCards.getCardRoot("profileWizard");
-          root.querySelector(".ntCardFooter").style.display = "none";
-          alert("Data non valida");
-          return;
-        }
-
-        persist(d);
-        sessionStorage.removeItem(CTX_KEY);
-        NTCards.closeCard("profileWizard");
       }
     });
   }
