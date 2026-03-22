@@ -141,7 +141,6 @@ window.NTProfileCard = (() => {
       save.setAttribute("aria-label", label);
       save.classList.remove("isBlocked");
 
-      // bind diretto: non dipende dal sistema azioni
       save.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
