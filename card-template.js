@@ -1,4 +1,3 @@
-/* ========================= NettoTrack Card Template ========================= */
 window.NTCardTemplate = (() => {
   function escapeHtml(value) {
     return String(value ?? "")
@@ -9,33 +8,23 @@ window.NTCardTemplate = (() => {
       .replaceAll("'", "&#39;");
   }
 
-  function escapeAttr(value) {
-    return escapeHtml(value);
-  }
-
   function createCard({
     id = "",
     title = "",
     body = "",
-    footer = true,
     subHeader = "",
+    footer = true,
     showBack = true,
     showNext = true,
     footerLeftLabel = "annulla",
     footerRightLabel = "salva",
     footerLeftClass = "ntCardFooterBtn ntCardFooterBtn--ghost jsNtCardCancel",
     footerRightClass = "ntCardFooterBtn ntCardFooterBtn--primary jsNtCardSave",
-    footerLeftAction = "cancel",
-    footerRightAction = "save",
     footerLeftDisabled = true,
     footerRightDisabled = true
   } = {}) {
-    const safeId = escapeAttr(id);
-    const safeTitle = escapeHtml(title);
-    const hasSubHeader = String(subHeader || "").trim().length > 0;
-
     return `
-      <section class="ntCard" data-card-id="${safeId}">
+      <section class="ntCard" data-card-id="${escapeHtml(id)}">
         <div class="ntCardShell">
 
           <div class="ntCardTop">
@@ -47,31 +36,12 @@ window.NTCardTemplate = (() => {
                       <div class="ntCardNav">
                         ${
                           showBack
-                            ? `
-                              <button
-                                type="button"
-                                class="ntIconBtn jsNtCardBack"
-                                data-nt-action="back"
-                                aria-label="Indietro"
-                              >
-                                ←
-                              </button>
-                            `
+                            ? `<button type="button" class="ntIconBtn jsNtCardBack" aria-label="Indietro">←</button>`
                             : ``
                         }
-
                         ${
                           showNext
-                            ? `
-                              <button
-                                type="button"
-                                class="ntIconBtn jsNtCardNext"
-                                data-nt-action="next"
-                                aria-label="Avanti"
-                              >
-                                →
-                              </button>
-                            `
+                            ? `<button type="button" class="ntIconBtn jsNtCardNext" aria-label="Avanti">→</button>`
                             : ``
                         }
                       </div>
@@ -81,28 +51,17 @@ window.NTCardTemplate = (() => {
               </div>
 
               <div class="ntCardTitleWrap">
-                <h2 class="ntCardTitle">${safeTitle}</h2>
+                <h2 class="ntCardTitle">${escapeHtml(title)}</h2>
               </div>
 
               <div class="ntCardHeaderSide ntCardHeaderSide--right">
-                <button
-                  type="button"
-                  class="ntIconBtn jsNtCardClose"
-                  data-nt-action="close"
-                  aria-label="Chiudi"
-                >
-                  ×
-                </button>
+                <button type="button" class="ntIconBtn jsNtCardClose" aria-label="Chiudi">×</button>
               </div>
             </header>
 
             ${
-              hasSubHeader
-                ? `
-                  <div class="ntCardSubHeader">
-                    ${subHeader}
-                  </div>
-                `
+              String(subHeader || "").trim()
+                ? `<div class="ntCardSubHeader">${subHeader}</div>`
                 : ``
             }
           </div>
@@ -118,9 +77,7 @@ window.NTCardTemplate = (() => {
                   <div class="ntCardFooterRow">
                     <button
                       type="button"
-                      class="${escapeAttr(footerLeftClass)}"
-                      data-nt-action="${escapeAttr(footerLeftAction)}"
-                      aria-label="${escapeAttr(footerLeftLabel)}"
+                      class="${escapeHtml(footerLeftClass)}"
                       ${footerLeftDisabled ? "disabled" : ""}
                     >
                       ${escapeHtml(footerLeftLabel)}
@@ -128,9 +85,7 @@ window.NTCardTemplate = (() => {
 
                     <button
                       type="button"
-                      class="${escapeAttr(footerRightClass)}"
-                      data-nt-action="${escapeAttr(footerRightAction)}"
-                      aria-label="${escapeAttr(footerRightLabel)}"
+                      class="${escapeHtml(footerRightClass)}"
                       ${footerRightDisabled ? "disabled" : ""}
                     >
                       ${escapeHtml(footerRightLabel)}
