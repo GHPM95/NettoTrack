@@ -1,5 +1,3 @@
-/* ========================= NettoTrack Profile Wizard ========================= */
-
 .ntProfileWizardSubHeader{
   width:100%;
 }
@@ -26,7 +24,6 @@
   border-radius:inherit;
   background:linear-gradient(90deg, rgba(72,194,255,.95), rgba(210,92,255,.95));
   box-shadow:0 0 12px rgba(120,140,255,.28);
-  transition:width .22s ease;
 }
 
 .ntProfileWizardProgressText{
@@ -38,35 +35,11 @@
   color:rgba(255,255,255,.82);
 }
 
-.ntProfileWizardStep{
-  width:100%;
-}
-
 .ntProfileWizardHero{
   display:grid;
   grid-template-columns:84px 1fr;
   gap:16px;
   align-items:start;
-}
-
-.ntProfileWizardAvatarBox{
-  width:84px;
-  height:84px;
-  border-radius:22px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.06);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 8px 18px rgba(0,0,0,.10);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.ntProfileWizardAvatarCircle{
-  font-size:22px;
-  line-height:1;
-  color:rgba(255,255,255,.92);
 }
 
 .ntProfileWizardFields{
@@ -85,24 +58,6 @@
   font-size:15px;
   font-weight:900;
   color:#fff;
-}
-
-.ntProfileWizardSelectWrap{
-  position:relative;
-}
-
-.ntProfileWizardSelect{
-  appearance:none;
-  -webkit-appearance:none;
-  border:1px solid rgba(255,255,255,.14);
-  background:
-    linear-gradient(rgba(255,255,255,.06), rgba(255,255,255,.06)) padding-box,
-    linear-gradient(135deg, rgba(72,194,255,.45), rgba(210,92,255,.45)) border-box;
-  color:#fff;
-}
-
-.ntProfileWizardSelect option{
-  color:#111;
 }
 
 .ntProfileWizardPlaceholder{
@@ -151,29 +106,4 @@
   line-height:1.45;
   font-weight:800;
   color:rgba(255,255,255,.82);
-}
-
-[data-card-id="profileWizard"] .ntProfileWizardFooterGhost{
-  display:none;
-}
-
-@media (max-width:390px){
-  .ntProfileWizardHero{
-    grid-template-columns:72px 1fr;
-    gap:12px;
-  }
-
-  .ntProfileWizardAvatarBox{
-    width:72px;
-    height:72px;
-    border-radius:20px;
-  }
-
-  .ntProfileWizardAvatarCircle{
-    font-size:20px;
-  }
-
-  .ntProfileWizardLabel{
-    font-size:14px;
-  }
 }
