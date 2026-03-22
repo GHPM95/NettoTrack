@@ -254,6 +254,15 @@ window.NTProfileWizardCard = (() => {
     window.NTCards?.closeCard?.(CARD_ID);
   }
 
+  function restoreFormFromError(root) {
+    const body = root?.querySelector(".ntCardBody");
+    if (!body) return;
+
+    body.innerHTML = renderBody(readCtx().profile || {});
+    bind(root);
+    applyStepUi(root);
+  }
+
   function applyStepUi(root) {
     if (!root) return;
 
@@ -326,7 +335,14 @@ window.NTProfileWizardCard = (() => {
   }
 
   function bind(root) {
-    const formRoot = root?.querySelector("#profileWizardForm");
+    if (!root) return;
+
+    const errorBack = root.querySelector("#wizardErrorBack");
+    if (errorBack) {
+      errorBack.onclick = () => restoreFormFromError(root);
+    }
+
+    const formRoot = root.querySelector("#profileWizardForm");
     if (!formRoot) return;
 
     if (window.NTSelect?.hydrate) {
@@ -351,18 +367,6 @@ window.NTProfileWizardCard = (() => {
     formRoot.addEventListener("change", syncDraft);
 
     requestAnimationFrame(syncDraft);
-
-    const errorBack = root.querySelector("#wizardErrorBack");
-    if (errorBack) {
-      errorBack.onclick = () => {
-        const body = root.querySelector(".ntCardBody");
-        if (!body) return;
-
-        body.innerHTML = renderBody(readCtx().profile || {});
-        bind(root);
-        applyStepUi(root);
-      };
-    }
   }
 
   function goBack(root) {
