@@ -141,6 +141,7 @@ window.NTProfileCard = (() => {
       cancelBtn.classList.add("ntProfileFooterGhost");
       cancelBtn.disabled = true;
       cancelBtn.setAttribute("aria-hidden", "true");
+      cancelBtn.textContent = "";
     }
 
     if (saveBtn) {
@@ -150,8 +151,7 @@ window.NTProfileCard = (() => {
       saveBtn.setAttribute("aria-label", label);
       saveBtn.classList.add("jsNtProfilePrimaryAction");
 
-      /* QUESTO È IL PUNTO CHIAVE:
-         lasciamo l’azione footer standard attiva */
+      /* punto chiave: l'azione footer resta attiva */
       saveBtn.setAttribute("data-nt-action", "profile-primary");
       saveBtn.disabled = false;
       saveBtn.classList.remove("isBlocked");
