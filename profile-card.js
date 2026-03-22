@@ -1,70 +1,121 @@
+/* ========================= NettoTrack Profile Card ========================= */
 window.NTProfileCard = (() => {
   const STORAGE_KEY = "ntUserProfileData";
 
-  function read() {
+  function safeText(value) {
+    return String(value ?? "").trim();
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function readProfileData() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return null;
+
+      return {
+        firstName: safeText(parsed.firstName),
+        lastName: safeText(parsed.lastName),
+        gender: safeText(parsed.gender),
+        birthDate: safeText(parsed.birthDate),
+        country: safeText(parsed.country),
+        occupation: safeText(parsed.occupation)
+      };
     } catch {
       return null;
     }
   }
 
-  function hasData(data = read()) {
-    if (!data) return false;
-    return Object.values(data).some(v => String(v || "").trim() !== "");
+  function hasProfileData(profile = readProfileData()) {
+    if (!profile) return false;
+
+    return [
+      profile.firstName,
+      profile.lastName,
+      profile.gender,
+      profile.birthDate,
+      profile.country,
+      profile.occupation
+    ].some(Boolean);
   }
 
-  function label() {
-    return hasData() ? "Modifica i dati" : "Inserisci i dati";
+  function formatValue(value, fallback = "—") {
+    return safeText(value) || fallback;
   }
 
-  function openWizard() {
-    if (window.NTCards?.openCard) {
+  function getPrimaryActionLabel(profile = readProfileData()) {
+    return hasProfileData(profile) ? "Modifica i dati" : "Inserisci i dati";
+  }
+
+  function openProfileWizard() {
+    if (window.NTCards?.openCard && window.NTCards.state?.registry?.has?.("profileWizard")) {
       window.NTCards.openCard("profileWizard");
+      return;
     }
+
+    document.dispatchEvent(new CustomEvent("nt:open-profile-wizard", {
+      detail: {
+        sourceCard: "profile",
+        mode: hasProfileData() ? "edit" : "create"
+      }
+    }));
   }
 
-  function renderBody(data = read()) {
+  function renderProfileBody(profile = readProfileData()) {
+    const helper = hasProfileData(profile)
+      ? "Consulta le informazioni principali del tuo profilo utente."
+      : "Inserisci le informazioni principali per creare il tuo profilo utente.";
+
     return `
       <div class="ntProfileContent">
-
         <div class="ntProfileHero">
-
-          <div class="ntProfileAvatarBox">
-            <div class="ntProfileAvatarCircle">●</div>
+          <div class="ntProfileAvatarBox" aria-hidden="true">
+            <div class="ntProfileAvatarCalendarIcon">○</div>
           </div>
 
           <div class="ntProfileMainInfo">
-
-            ${row("Nome", data?.firstName)}
-            ${row("Cognome", data?.lastName)}
-            ${row("Sesso", data?.gender)}
-            ${row("Data di nascita", data?.birthDate)}
-            ${row("Paese", data?.country)}
-            ${row("Occupazione", data?.occupation)}
-
+            ${renderRow("Nome", profile?.firstName)}
+            ${renderRow("Cognome", profile?.lastName)}
+            ${renderRow("Sesso", profile?.gender)}
+            ${renderRow("Data di nascita", profile?.birthDate)}
+            ${renderRow("Paese", profile?.country)}
+            ${renderRow("Occupazione", profile?.occupation)}
           </div>
         </div>
 
-        <p class="ntProfileHelperText">
-          ${
-            hasData(data)
-              ? "Consulta i dati del tuo profilo."
-              : "Inserisci le informazioni per creare il tuo profilo."
-          }
-        </p>
-
+        <p class="ntProfileHelperText">${escapeHtml(helper)}</p>
       </div>
     `;
   }
 
-  function row(label, value) {
+  function renderRow(label, value) {
     return `
       <div class="ntProfileRow">
-        <span class="ntProfileLabel">${label}:</span>
-        <span class="ntProfileValue">${value || "—"}</span>
+        <span class="ntProfileLabel">${escapeHtml(label)}:</span>
+        <span class="ntProfileValue">${escapeHtml(formatValue(value))}</span>
       </div>
     `;
+  }
+
+  function bindProfileCard(root) {
+    if (!root) return;
+
+    const primaryBtn = root.querySelector(".jsNtProfilePrimaryAction");
+    if (primaryBtn) {
+      primaryBtn.addEventListener("click", () => {
+        openProfileWizard();
+      });
+    }
   }
 
   function register() {
@@ -74,24 +125,40 @@ window.NTProfileCard = (() => {
       id: "profile",
 
       render() {
+        const profile = readProfileData();
+        const actionLabel = getPrimaryActionLabel(profile);
+
         return NTCardTemplate.createCard({
           id: "profile",
           title: "Profilo utente",
-          body: renderBody(),
-
-          // 👇 QUESTO È IL PUNTO GIUSTO
-          footer: true,
-          footerPrimary: {
-            label: label(),
-            onClick: openWizard
-          },
-
+          body: renderProfileBody(profile),
           showBack: false,
-          showNext: false
+          showNext: false,
+          footer: true,
+
+          footerLeftLabel: actionLabel,
+          footerLeftClass: "ntCardFooterBtn ntCardFooterBtn--primary jsNtProfilePrimaryAction",
+          footerLeftAction: "profile-primary",
+          footerLeftDisabled: false,
+
+          footerRightLabel: "",
+          footerRightClass: "ntProfileFooterGhost",
+          footerRightAction: "noop",
+          footerRightDisabled: true
         });
+      },
+
+      onOpen() {
+        const root = window.NTCards?.getCardRoot?.("profile");
+        bindProfileCard(root);
       }
     });
   }
 
-  return { register };
+  return {
+    register,
+    readProfileData,
+    hasProfileData,
+    openProfileWizard
+  };
 })();
