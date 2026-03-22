@@ -90,6 +90,15 @@ window.NTProfileWizardCard = (() => {
     );
   }
 
+  function allRequiredFilled(draft) {
+    return !!(
+      safe(draft.firstName) &&
+      safe(draft.lastName) &&
+      safe(draft.gender) &&
+      safe(draft.birthDate)
+    );
+  }
+
   function syncDraft() {
     const d = getDraft();
     writeCtx({
@@ -223,6 +232,18 @@ window.NTProfileWizardCard = (() => {
     });
   }
 
+  function setFooterVisible(root, visible) {
+    const footer = root?.querySelector(".ntCardFooter");
+    if (footer) {
+      footer.style.display = visible ? "" : "none";
+    }
+  }
+
+  function closeWizardAutosave() {
+    syncDraft();
+    window.NTCards?.closeCard?.(CARD_ID);
+  }
+
   function applyStepUi(root) {
     if (!root) return;
 
@@ -230,10 +251,10 @@ window.NTProfileWizardCard = (() => {
     const title = root.querySelector(".ntCardTitle");
     const subHeader = root.querySelector(".ntCardSubHeader");
     const body = root.querySelector(".ntCardBody");
-    const footer = root.querySelector(".ntCardFooter");
     const row = root.querySelector(".ntCardFooterRow");
     const cancel = root.querySelector(".jsNtCardCancel");
     const save = root.querySelector(".jsNtCardSave");
+    const close = root.querySelector(".jsNtCardClose");
 
     if (title) title.textContent = getHeaderTitle(step);
     if (subHeader) subHeader.innerHTML = renderProgress(step);
@@ -242,26 +263,30 @@ window.NTProfileWizardCard = (() => {
       el.hidden = Number(el.dataset.step) !== step;
     });
 
-    if (footer) footer.style.display = "";
+    setFooterVisible(root, true);
+
     if (row) {
-      row.style.display = "flex";
+      row.style.display = "grid";
+      row.style.gridTemplateColumns = "1fr 1fr";
       row.style.alignItems = "center";
       row.style.gap = "12px";
-      row.style.justifyContent = step === 0 ? "flex-end" : "space-between";
     }
 
     if (cancel) {
       if (step === 0) {
-        cancel.hidden = true;
-        cancel.style.display = "none";
+        cancel.hidden = false;
+        cancel.style.display = "";
+        cancel.style.visibility = "hidden";
         cancel.disabled = true;
         cancel.textContent = "";
         cancel.setAttribute("aria-hidden", "true");
       } else {
         cancel.hidden = false;
         cancel.style.display = "";
+        cancel.style.visibility = "";
         cancel.disabled = false;
         cancel.textContent = "indietro";
+        cancel.removeAttribute("aria-hidden");
         cancel.onclick = () => goBack(root);
       }
     }
@@ -269,6 +294,7 @@ window.NTProfileWizardCard = (() => {
     if (save) {
       save.hidden = false;
       save.style.display = "";
+      save.style.visibility = "";
       save.disabled = false;
       save.classList.remove("isBlocked");
 
@@ -279,6 +305,14 @@ window.NTProfileWizardCard = (() => {
         save.textContent = "salva";
         save.onclick = () => finish();
       }
+    }
+
+    if (close) {
+      close.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeWizardAutosave();
+      };
     }
   }
 
@@ -313,11 +347,9 @@ window.NTProfileWizardCard = (() => {
     if (errorBack) {
       errorBack.onclick = () => {
         const body = root.querySelector(".ntCardBody");
-        const footer = root.querySelector(".ntCardFooter");
         if (!body) return;
 
         body.innerHTML = renderBody(readCtx().profile || {});
-        if (footer) footer.style.display = "";
         bind(root);
         applyStepUi(root);
       };
@@ -332,17 +364,30 @@ window.NTProfileWizardCard = (() => {
 
   function goNext(root) {
     const step = getStep(root);
+    const draft = getDraft();
 
-    if (step === 0 && !validBirth(getDraft().birthDate)) {
-      const footer = root?.querySelector(".ntCardFooter");
-      const body = root?.querySelector(".ntCardBody");
+    if (step === 0) {
+      if (!allRequiredFilled(draft)) {
+        const body = root?.querySelector(".ntCardBody");
+        setFooterVisible(root, false);
 
-      if (footer) footer.style.display = "none";
-      if (body) {
-        body.innerHTML = renderError("Data non valida");
-        bind(root);
+        if (body) {
+          body.innerHTML = renderError("Compila tutti i dati prima di proseguire.");
+          bind(root);
+        }
+        return;
       }
-      return;
+
+      if (!validBirth(draft.birthDate)) {
+        const body = root?.querySelector(".ntCardBody");
+        setFooterVisible(root, false);
+
+        if (body) {
+          body.innerHTML = renderError("Data non valida");
+          bind(root);
+        }
+        return;
+      }
     }
 
     setStep(root, Math.min(TOTAL_STEPS - 1, step + 1));
