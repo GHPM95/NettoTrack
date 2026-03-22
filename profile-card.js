@@ -58,16 +58,12 @@ window.NTProfileCard = (() => {
       : "Inserisci i dati per creare il tuo profilo.";
   }
 
-  function primaryLabel() {
-    return hasData(readStored()) ? "Modifica i dati" : "Inserisci i dati";
-  }
-
-  function openWizard() {
+  function openWizard(mode = "edit") {
     const d = getData();
 
     writeCtx({
       profile: d,
-      mode: hasData(d) ? "edit" : "create"
+      mode
     });
 
     if (window.NTProfileWizardCard?.register) {
@@ -84,7 +80,9 @@ window.NTProfileCard = (() => {
       <div class="ntProfileContent">
         <div class="ntProfileHero">
           <div class="ntProfileAvatarBox ${avatarClass(d.gender)}" data-avatar>
-            <div class="ntProfileAvatarCalendarIcon" data-avatar-glyph>${avatarGlyph(d.gender)}</div>
+            <div class="ntProfileAvatarCalendarIcon" data-avatar-glyph>
+              <span>${avatarGlyph(d.gender)}</span>
+            </div>
           </div>
 
           <div class="ntProfileMainInfo">
@@ -118,40 +116,63 @@ window.NTProfileCard = (() => {
   function applyFooter(root) {
     if (!root) return;
 
+    const data = getData();
+    const exists = hasData(data);
+
     const row = root.querySelector(".ntCardFooterRow");
-    const cancel = root.querySelector(".jsNtCardCancel");
-    const save = root.querySelector(".jsNtCardSave");
+    const leftBtn = root.querySelector(".jsNtCardCancel");
+    const rightBtn = root.querySelector(".jsNtCardSave");
 
     if (row) {
       row.style.display = "flex";
-      row.style.justifyContent = "flex-end";
+      row.style.justifyContent = exists ? "space-between" : "flex-end";
       row.style.alignItems = "center";
       row.style.gap = "12px";
     }
 
-    if (cancel) {
-      cancel.hidden = true;
-      cancel.disabled = true;
-      cancel.style.display = "none";
-      cancel.textContent = "";
-      cancel.setAttribute("aria-hidden", "true");
+    if (leftBtn) {
+      if (exists) {
+        leftBtn.hidden = false;
+        leftBtn.style.display = "";
+        leftBtn.disabled = false;
+        leftBtn.classList.remove("isBlocked");
+        leftBtn.removeAttribute("aria-hidden");
+        leftBtn.textContent = "Modifica i dati";
+        leftBtn.setAttribute("aria-label", "Modifica i dati");
+        leftBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openWizard("edit");
+        };
+      } else {
+        leftBtn.hidden = true;
+        leftBtn.style.display = "none";
+        leftBtn.disabled = true;
+        leftBtn.textContent = "";
+        leftBtn.setAttribute("aria-hidden", "true");
+        leftBtn.onclick = null;
+      }
     }
 
-    if (save) {
-      const label = primaryLabel();
+    if (rightBtn) {
+      rightBtn.hidden = false;
+      rightBtn.style.display = "";
+      rightBtn.textContent = "Inserisci i dati";
+      rightBtn.setAttribute("aria-label", "Inserisci i dati");
+      rightBtn.onclick = null;
 
-      save.hidden = false;
-      save.disabled = false;
-      save.style.display = "";
-      save.textContent = label;
-      save.setAttribute("aria-label", label);
-      save.classList.remove("isBlocked");
-
-      save.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openWizard();
-      };
+      if (exists) {
+        rightBtn.disabled = true;
+        rightBtn.classList.add("isBlocked");
+      } else {
+        rightBtn.disabled = false;
+        rightBtn.classList.remove("isBlocked");
+        rightBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openWizard("create");
+        };
+      }
     }
   }
 
@@ -166,7 +187,7 @@ window.NTProfileCard = (() => {
       avatar.className = "ntProfileAvatarBox " + avatarClass(data.gender);
     }
 
-    const glyph = root.querySelector("[data-avatar-glyph]");
+    const glyph = root.querySelector("[data-avatar-glyph] span");
     if (glyph) {
       glyph.textContent = avatarGlyph(data.gender);
     }
@@ -191,7 +212,8 @@ window.NTProfileCard = (() => {
       footer: true,
       footerLeftDisabled: true,
       footerRightDisabled: false,
-      footerRightLabel: primaryLabel(),
+      footerLeftLabel: "Modifica i dati",
+      footerRightLabel: "Inserisci i dati",
       body: renderBody(getData())
     });
   }
