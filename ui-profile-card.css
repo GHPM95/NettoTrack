@@ -77,23 +77,23 @@
   color:rgba(255,255,255,.78);
 }
 
+/* footer profilo: un solo pulsante sempre a destra */
 [data-card-id="profile"] .ntCardFooterRow{
-  grid-template-columns:1fr 1fr;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  width:100%;
+  gap:0;
 }
 
 [data-card-id="profile"] .jsNtProfilePrimaryAction{
-  width:100%;
+  width:auto;
+  min-width:220px;
+  margin-left:auto;
 }
 
-.ntProfileFooterGhost{
-  display:block;
-  width:100%;
-  min-height:48px;
-  visibility:hidden;
-  pointer-events:none;
-  border:none;
-  background:transparent;
-  box-shadow:none;
+[data-card-id="profile"] .ntProfileFooterGhost{
+  display:none;
 }
 
 @media (max-width:390px){
@@ -124,5 +124,9 @@
 
   .ntProfileHelperText{
     font-size:13px;
+  }
+
+  [data-card-id="profile"] .jsNtProfilePrimaryAction{
+    min-width:200px;
   }
 }
