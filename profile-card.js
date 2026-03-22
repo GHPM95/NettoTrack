@@ -1,8 +1,8 @@
 /* ========================= NettoTrack Profile Card ========================= */
 window.NTProfileCard = (() => {
   const STORAGE_KEY = "ntUserProfileData";
-  const WIZARD_CARD_ID = "profileWizard";
   const CTX_KEY = "ntProfileWizardContext";
+  const WIZARD_CARD_ID = "profileWizard";
 
   function safeText(value) {
     return String(value ?? "").trim();
@@ -79,10 +79,6 @@ window.NTProfileCard = (() => {
       profile
     });
 
-    if (!window.NTCards?.state?.registry?.has?.(WIZARD_CARD_ID) && window.NTProfileWizardCard?.register) {
-      window.NTProfileWizardCard.register();
-    }
-
     if (window.NTCards?.state?.registry?.has?.(WIZARD_CARD_ID)) {
       window.NTCards.openCard(WIZARD_CARD_ID);
       return;
@@ -148,15 +144,17 @@ window.NTProfileCard = (() => {
     }
 
     if (saveBtn) {
-      saveBtn.textContent = getPrimaryActionLabel();
-      saveBtn.setAttribute("aria-label", getPrimaryActionLabel());
+      const label = getPrimaryActionLabel();
+
+      saveBtn.textContent = label;
+      saveBtn.setAttribute("aria-label", label);
       saveBtn.classList.add("jsNtProfilePrimaryAction");
+
+      /* QUESTO È IL PUNTO CHIAVE:
+         lasciamo l’azione footer standard attiva */
+      saveBtn.setAttribute("data-nt-action", "profile-primary");
       saveBtn.disabled = false;
-      saveBtn.removeAttribute("data-nt-action");
-      saveBtn.onclick = (e) => {
-        e.preventDefault();
-        openProfileWizard();
-      };
+      saveBtn.classList.remove("isBlocked");
     }
   }
 
