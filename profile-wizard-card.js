@@ -4,6 +4,7 @@ window.NTProfileWizardCard = (() => {
   const CTX_KEY = "ntProfileWizardContext";
   const CARD_ID = "profileWizard";
   const PROFILE_CARD_ID = "profile";
+  const TOTAL_STEPS = 4;
 
   function safeText(value) {
     return String(value ?? "").trim();
@@ -55,10 +56,7 @@ window.NTProfileWizardCard = (() => {
   function getInitialDraft() {
     const ctx = readWizardContext();
     const stored = readStoredProfile();
-
-    const source = ctx?.profile && typeof ctx.profile === "object"
-      ? ctx.profile
-      : (stored || {});
+    const source = ctx?.profile && typeof ctx.profile === "object" ? ctx.profile : (stored || {});
 
     return {
       firstName: safeText(source.firstName),
@@ -81,47 +79,89 @@ window.NTProfileWizardCard = (() => {
     }));
   }
 
-  function renderStepOne(draft) {
+  function renderSubHeader() {
     return `
-      <div class="ntWizardStep" data-step="0">
-        <div class="ntSection">
-          <label class="ntField">
-            <span class="ntFieldLabel">Nome</span>
-            <input id="ntProfileFirstName" class="ntInput" type="text" value="${escapeHtml(draft.firstName)}" placeholder="Nome" />
-          </label>
-
-          <label class="ntField">
-            <span class="ntFieldLabel">Cognome</span>
-            <input id="ntProfileLastName" class="ntInput" type="text" value="${escapeHtml(draft.lastName)}" placeholder="Cognome" />
-          </label>
-
-          <label class="ntField">
-            <span class="ntFieldLabel">Sesso</span>
-            <input id="ntProfileGender" class="ntInput" type="text" value="${escapeHtml(draft.gender)}" placeholder="Sesso" />
-          </label>
+      <div class="ntProfileWizardSubHeader">
+        <div class="ntProfileWizardProgress">
+          <div class="ntProfileWizardProgressBar">
+            <div class="ntProfileWizardProgressFill" id="ntProfileWizardProgressFill"></div>
+          </div>
+          <div class="ntProfileWizardProgressText" id="ntProfileWizardProgressText">1/4</div>
         </div>
       </div>
     `;
   }
 
-  function renderStepTwo(draft) {
+  function renderStepOne(draft) {
     return `
-      <div class="ntWizardStep" data-step="1" hidden>
-        <div class="ntSection">
-          <label class="ntField">
-            <span class="ntFieldLabel">Data di nascita</span>
-            <input id="ntProfileBirthDate" class="ntInput" type="text" value="${escapeHtml(draft.birthDate)}" placeholder="GG/MM/AAAA" />
-          </label>
+      <div class="ntWizardStep ntProfileWizardStep" data-step="0">
+        <div class="ntProfileWizardSectionTitle">Sezione Dati Anagrafici:</div>
 
-          <label class="ntField">
-            <span class="ntFieldLabel">Paese</span>
-            <input id="ntProfileCountry" class="ntInput" type="text" value="${escapeHtml(draft.country)}" placeholder="Paese" />
-          </label>
+        <div class="ntProfileWizardHero">
+          <div class="ntProfileWizardAvatarBox" aria-hidden="true">
+            <div class="ntProfileWizardAvatarCircle">○</div>
+          </div>
 
-          <label class="ntField">
-            <span class="ntFieldLabel">Occupazione</span>
-            <input id="ntProfileOccupation" class="ntInput" type="text" value="${escapeHtml(draft.occupation)}" placeholder="Occupazione" />
-          </label>
+          <div class="ntProfileWizardFields">
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Nome</span>
+              <input
+                id="ntProfileFirstName"
+                class="ntInput"
+                type="text"
+                value="${escapeHtml(draft.firstName)}"
+                placeholder=""
+                autocomplete="given-name"
+              />
+            </label>
+
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Cognome</span>
+              <input
+                id="ntProfileLastName"
+                class="ntInput"
+                type="text"
+                value="${escapeHtml(draft.lastName)}"
+                placeholder=""
+                autocomplete="family-name"
+              />
+            </label>
+
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Sesso</span>
+              <select id="ntProfileGender" class="ntInput ntProfileWizardSelect">
+                <option value=""></option>
+                <option value="Uomo" ${draft.gender === "Uomo" ? "selected" : ""}>Uomo</option>
+                <option value="Donna" ${draft.gender === "Donna" ? "selected" : ""}>Donna</option>
+                <option value="Preferisco non specificare" ${draft.gender === "Preferisco non specificare" ? "selected" : ""}>Preferisco non specificare</option>
+              </select>
+            </label>
+
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Data di nascita</span>
+              <input
+                id="ntProfileBirthDate"
+                class="ntInput"
+                type="text"
+                inputmode="numeric"
+                autocomplete="bday"
+                maxlength="10"
+                placeholder="GG/MM/AAAA"
+                value="${escapeHtml(draft.birthDate)}"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPlaceholderStep(step, title, text) {
+    return `
+      <div class="ntWizardStep ntProfileWizardStep" data-step="${step}" hidden>
+        <div class="ntProfileWizardSectionTitle">${escapeHtml(title)}</div>
+        <div class="ntProfileWizardPlaceholder">
+          <div class="ntProfileWizardPlaceholderTitle">${escapeHtml(text)}</div>
         </div>
       </div>
     `;
@@ -134,11 +174,14 @@ window.NTProfileWizardCard = (() => {
 
     return {
       title,
+      subHeader: renderSubHeader(),
       body: `
         <div class="ntWizard" id="ntProfileWizard">
           <div class="ntWizardContent" id="ntProfileWizardContent">
             ${renderStepOne(draft)}
-            ${renderStepTwo(draft)}
+            ${renderPlaceholderStep(1, "Sezione Dati Personali:", "Pagina 2 in preparazione")}
+            ${renderPlaceholderStep(2, "Sezione Dati Lavorativi:", "Pagina 3 in preparazione")}
+            ${renderPlaceholderStep(3, "Riepilogo:", "Pagina 4 in preparazione")}
           </div>
         </div>
       `
@@ -177,42 +220,195 @@ window.NTProfileWizardCard = (() => {
     return JSON.stringify(draft || {}) !== JSON.stringify(committedDraft || {});
   }
 
-  function refreshWizardStep() {
+  function formatBirthDateInput(raw) {
+    const digits = String(raw || "").replace(/\D/g, "").slice(0, 8);
+    let out = "";
+
+    if (digits.length > 0) out += digits.slice(0, 2);
+    if (digits.length >= 3) out += "/" + digits.slice(2, 4);
+    if (digits.length >= 5) out += "/" + digits.slice(4, 8);
+
+    return out;
+  }
+
+  function parseBirthDate(value) {
+    const clean = safeText(value);
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(clean)) {
+      return { valid: false, reason: "Inserisci la data completa nel formato GG/MM/AAAA." };
+    }
+
+    const [dd, mm, yyyy] = clean.split("/").map(Number);
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
+    if (yyyy > currentYear) {
+      return { valid: false, reason: "L'anno di nascita non può essere futuro." };
+    }
+
+    if (mm < 1 || mm > 12) {
+      return { valid: false, reason: "Il mese inserito non è valido." };
+    }
+
+    const test = new Date(yyyy, mm - 1, dd);
+    const same =
+      test.getFullYear() === yyyy &&
+      test.getMonth() === mm - 1 &&
+      test.getDate() === dd;
+
+    if (!same) {
+      return { valid: false, reason: "La data di nascita non è valida." };
+    }
+
+    if (test > now) {
+      return { valid: false, reason: "La data di nascita non può essere futura." };
+    }
+
+    return { valid: true };
+  }
+
+  function showInvalidDateAlert(message) {
+    if (window.NTToast?.show) {
+      window.NTToast.show({
+        title: "Data di nascita non valida",
+        text: message
+      });
+      return;
+    }
+
+    window.alert(message);
+  }
+
+  function refreshProgress() {
+    const wizard = window.NTCardWizard?.get?.(CARD_ID);
+    const step = Number(wizard?.step || 0);
+    const current = step + 1;
+    const percent = `${(current / TOTAL_STEPS) * 100}%`;
+
+    const fill = document.getElementById("ntProfileWizardProgressFill");
+    const text = document.getElementById("ntProfileWizardProgressText");
+
+    if (fill) fill.style.width = percent;
+    if (text) text.textContent = `${current}/${TOTAL_STEPS}`;
+  }
+
+  function refreshFooterForStep(step) {
+    const root = window.NTCards?.getCardRoot?.(CARD_ID);
+    if (!root) return;
+
+    const backBtn = root.querySelector(".jsNtCardCancel");
+    const actionBtn = root.querySelector(".jsNtCardSave");
+
+    if (!backBtn || !actionBtn) return;
+
+    if (step === 0) {
+      backBtn.classList.add("ntProfileWizardFooterGhost");
+      backBtn.disabled = true;
+      backBtn.setAttribute("aria-hidden", "true");
+      backBtn.textContent = "";
+
+      actionBtn.textContent = "avanti";
+      actionBtn.setAttribute("aria-label", "Avanti");
+      actionBtn.setAttribute("data-nt-action", "next");
+      actionBtn.disabled = false;
+      actionBtn.classList.remove("isBlocked");
+    } else if (step < TOTAL_STEPS - 1) {
+      backBtn.classList.remove("ntProfileWizardFooterGhost");
+      backBtn.removeAttribute("aria-hidden");
+      backBtn.textContent = "indietro";
+      backBtn.setAttribute("aria-label", "Indietro");
+      backBtn.setAttribute("data-nt-action", "back");
+      backBtn.disabled = false;
+      backBtn.classList.remove("isBlocked");
+
+      actionBtn.textContent = "avanti";
+      actionBtn.setAttribute("aria-label", "Avanti");
+      actionBtn.setAttribute("data-nt-action", "next");
+      actionBtn.disabled = false;
+      actionBtn.classList.remove("isBlocked");
+    } else {
+      backBtn.classList.remove("ntProfileWizardFooterGhost");
+      backBtn.removeAttribute("aria-hidden");
+      backBtn.textContent = "indietro";
+      backBtn.setAttribute("aria-label", "Indietro");
+      backBtn.setAttribute("data-nt-action", "back");
+      backBtn.disabled = false;
+      backBtn.classList.remove("isBlocked");
+
+      actionBtn.textContent = "salva";
+      actionBtn.setAttribute("aria-label", "Salva");
+      actionBtn.setAttribute("data-nt-action", "save");
+      actionBtn.disabled = false;
+      actionBtn.classList.remove("isBlocked");
+    }
+
+    window.NTCardActions?.bindWithin?.(root);
+    window.NTCardActions?.refreshButtons?.(root);
+  }
+
+  function refreshSteps() {
     const wizard = window.NTCardWizard?.get?.(CARD_ID);
     const step = Number(wizard?.step || 0);
 
     document.querySelectorAll("#ntProfileWizard .ntWizardStep").forEach((el) => {
-      const isCurrent = Number(el.dataset.step) === step;
-      el.hidden = !isCurrent;
+      el.hidden = Number(el.dataset.step) !== step;
     });
 
+    refreshProgress();
+    refreshFooterForStep(step);
     window.NTCards?.refreshActionState?.(CARD_ID);
   }
 
-  function bindWizard() {
-    window.NTCardWizard?.setTotal?.(CARD_ID, 2);
-    window.NTCardWizard?.setStep?.(CARD_ID, 0);
-    refreshWizardStep();
+  function bindMaskAndInputs() {
+    const birthInput = document.getElementById("ntProfileBirthDate");
+    if (birthInput) {
+      birthInput.addEventListener("input", () => {
+        birthInput.value = formatBirthDateInput(birthInput.value);
+        window.NTCards?.refreshCardState?.(CARD_ID);
+        window.NTCards?.refreshActionState?.(CARD_ID);
+      });
+    }
 
     const root = document.getElementById("ntProfileWizard");
-    if (!root) return;
+    if (root) {
+      root.addEventListener("input", () => {
+        window.NTCards?.refreshCardState?.(CARD_ID);
+        window.NTCards?.refreshActionState?.(CARD_ID);
+      });
+      root.addEventListener("change", () => {
+        window.NTCards?.refreshCardState?.(CARD_ID);
+        window.NTCards?.refreshActionState?.(CARD_ID);
+      });
+    }
+  }
 
-    root.addEventListener("input", () => {
-      window.NTCards?.refreshCardState?.(CARD_ID);
-      window.NTCards?.refreshActionState?.(CARD_ID);
-    });
+  function bindWizard() {
+    window.NTCardWizard?.setTotal?.(CARD_ID, TOTAL_STEPS);
+    window.NTCardWizard?.setStep?.(CARD_ID, 0);
+    bindMaskAndInputs();
+    refreshSteps();
   }
 
   function refreshProfileCard() {
     const cards = window.NTCards;
-    if (!cards) return;
+    if (!cards || !cards.state?.registry?.has?.(PROFILE_CARD_ID)) return;
 
     const isOpen = cards.isOpen?.(PROFILE_CARD_ID);
-
     if (isOpen) {
       cards.closeCard?.(PROFILE_CARD_ID);
       cards.openCard?.(PROFILE_CARD_ID);
     }
+  }
+
+  function canLeaveStep(step) {
+    if (step !== 0) return true;
+
+    const result = parseBirthDate(document.getElementById("ntProfileBirthDate")?.value);
+    if (!result.valid) {
+      showInvalidDateAlert(result.reason);
+      return false;
+    }
+
+    return true;
   }
 
   function register() {
@@ -222,11 +418,12 @@ window.NTProfileWizardCard = (() => {
       id: CARD_ID,
 
       render() {
-        const { title, body } = renderCard();
+        const { title, subHeader, body } = renderCard();
 
         return NTCardTemplate.createCard({
           id: CARD_ID,
           title,
+          subHeader,
           body,
           showBack: true,
           showNext: true,
@@ -272,17 +469,18 @@ window.NTProfileWizardCard = (() => {
 
       onBack() {
         window.NTCardWizard?.prev?.(CARD_ID);
-        refreshWizardStep();
+        refreshSteps();
       },
 
       onNext() {
+        const step = Number(window.NTCardWizard?.get?.(CARD_ID)?.step || 0);
+        if (!canLeaveStep(step)) return;
+
         window.NTCardWizard?.next?.(CARD_ID);
-        refreshWizardStep();
+        refreshSteps();
       }
     });
   }
 
-  return {
-    register
-  };
+  return { register };
 })();
