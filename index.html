@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="ui-animations.css" />
   <link rel="stylesheet" href="ui-menu-layout.css" />
   <link rel="stylesheet" href="ui-theme-settings.css" />
-  <link rel="stylesheet" href="ui-profile-card.css">
+  <link rel="stylesheet" href="ui-profile-card.css" />
   <link rel="stylesheet" href="calendar-day.css" />
   <link rel="stylesheet" href="calendar-day-animations.css" />
   <link rel="stylesheet" href="calendar-days-strip.css" />
@@ -60,25 +60,8 @@
     </div>
   </div>
 
-  <div class="ntMenuOverlay" id="ntMenuOverlay" hidden>
-    <aside class="ntMenuSheet" aria-label="Menu">
-      <div class="ntMenuHead">
-        <div class="ntMenuBrand">
-          <div class="ntMenuTitle">NettoTrack</div>
-          <div class="ntMenuSub">Menu rapido</div>
-        </div>
-
-        <button
-          type="button"
-          class="ntIconBtn ntPress"
-          data-nt-close-menu
-          aria-label="Chiudi menu"
-        >×</button>
-      </div>
-
-      <div class="ntMenuBody" id="ntMenuBody"></div>
-    </aside>
-  </div>
+  <!-- menu overlay: il markup interno viene creato da ui-menu.js -->
+  <div class="ntMenuOverlay" id="ntMenuOverlay" hidden aria-hidden="true"></div>
 
   <script src="ui.js"></script>
   <script src="ui-layout.js"></script>
@@ -106,6 +89,7 @@
   <script src="ui-menu.js"></script>
   <script src="theme-settings-card.js"></script>
   <script src="profile-card.js"></script>
+  <script src="profile-wizard-card.js"></script>
 
   <script>
     const viewportEl = document.getElementById("ntCardsViewport");
@@ -137,8 +121,10 @@
 
       NTCards.registerCard({
         id: "calendarView",
+
         render() {
           const subHeader = `<div class="ntCardSubHeaderContent" id="calendarStripMount"></div>`;
+
           const body = `
             ${NTComponents.section({
               title: "Calendario",
@@ -155,13 +141,14 @@
           return NTCardTemplate.createCard({
             id: "calendarView",
             title: "Calendario",
-            body,
             subHeader,
-            footer: true,
-            showBack: true,
-            showNext: true
+            body,
+            footer: false,
+            showBack: false,
+            showNext: false
           });
         },
+
         onOpen() {
           const mount = document.getElementById("calendarStripMount");
           if (!mount || !window.NTCalendarDaysStrip) return;
@@ -182,6 +169,7 @@
 
       NTCards.registerCard({
         id: "calendarInsert",
+
         render() {
           const body = `
             ${NTComponents.section({
@@ -219,6 +207,7 @@
             showNext: true
           });
         },
+
         onSave() {
           if (window.NTToast) {
             NTToast.show({
@@ -232,16 +221,18 @@
 
     registerDemoCards();
 
-    window.NTThemeSettingsCard?.register();
-    window.NTThemeSettingsCard?.initThemeOnAppStart();
+    window.NTThemeSettingsCard?.register?.();
+    window.NTThemeSettingsCard?.initThemeOnAppStart?.();
+
     window.NTProfileCard?.register?.();
+    window.NTProfileWizardCard?.register?.();
 
     window.NTMenu?.init({
       overlaySelector: "#ntMenuOverlay",
       openBtnSelector: "[data-nt-open-menu]"
     });
 
-    window.NTCardManager?.open("calendarView");
+    window.NTCardManager?.open?.("calendarView");
   </script>
 </body>
 </html>
