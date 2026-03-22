@@ -77,21 +77,23 @@
   color:rgba(255,255,255,.78);
 }
 
-/* footer single action */
-.ntProfileFooterGhost{
-  display:block;
-  width:100%;
-  min-height:48px;
-  visibility:hidden;
-  pointer-events:none;
-}
-
 [data-card-id="profile"] .ntCardFooterRow{
   grid-template-columns:1fr 1fr;
 }
 
 [data-card-id="profile"] .jsNtProfilePrimaryAction{
   width:100%;
+}
+
+.ntProfileFooterGhost{
+  display:block;
+  width:100%;
+  min-height:48px;
+  visibility:hidden;
+  pointer-events:none;
+  border:none;
+  background:transparent;
+  box-shadow:none;
 }
 
 @media (max-width:390px){
