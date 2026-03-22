@@ -2,6 +2,7 @@
 window.NTProfileCard = (() => {
   const STORAGE_KEY = "ntUserProfileData";
   const WIZARD_CARD_ID = "profileWizard";
+  const CTX_KEY = "ntProfileWizardContext";
 
   function safeText(value) {
     return String(value ?? "").trim();
@@ -62,20 +63,25 @@ window.NTProfileCard = (() => {
     return hasProfileData(profile) ? "edit" : "create";
   }
 
+  function writeWizardContext(context) {
+    try {
+      sessionStorage.setItem(CTX_KEY, JSON.stringify(context || {}));
+    } catch {}
+  }
+
   function openProfileWizard() {
     const profile = readProfileData();
     const mode = getWizardMode(profile);
 
-    try {
-      sessionStorage.setItem(
-        "ntProfileWizardContext",
-        JSON.stringify({
-          mode,
-          sourceCard: "profile",
-          profile
-        })
-      );
-    } catch {}
+    writeWizardContext({
+      mode,
+      sourceCard: "profile",
+      profile
+    });
+
+    if (!window.NTCards?.state?.registry?.has?.(WIZARD_CARD_ID) && window.NTProfileWizardCard?.register) {
+      window.NTProfileWizardCard.register();
+    }
 
     if (window.NTCards?.state?.registry?.has?.(WIZARD_CARD_ID)) {
       window.NTCards.openCard(WIZARD_CARD_ID);
@@ -129,6 +135,31 @@ window.NTProfileCard = (() => {
     `;
   }
 
+  function bindProfileCard(root) {
+    if (!root) return;
+
+    const cancelBtn = root.querySelector(".jsNtCardCancel");
+    const saveBtn = root.querySelector(".jsNtCardSave");
+
+    if (cancelBtn) {
+      cancelBtn.classList.add("ntProfileFooterGhost");
+      cancelBtn.disabled = true;
+      cancelBtn.setAttribute("aria-hidden", "true");
+    }
+
+    if (saveBtn) {
+      saveBtn.textContent = getPrimaryActionLabel();
+      saveBtn.setAttribute("aria-label", getPrimaryActionLabel());
+      saveBtn.classList.add("jsNtProfilePrimaryAction");
+      saveBtn.disabled = false;
+      saveBtn.removeAttribute("data-nt-action");
+      saveBtn.onclick = (e) => {
+        e.preventDefault();
+        openProfileWizard();
+      };
+    }
+  }
+
   function register() {
     if (!window.NTCards || !window.NTCardTemplate) return;
 
@@ -136,27 +167,19 @@ window.NTProfileCard = (() => {
       id: "profile",
 
       render() {
-        const profile = readProfileData();
-        const actionLabel = getPrimaryActionLabel(profile);
-
         return NTCardTemplate.createCard({
           id: "profile",
           title: "Profilo utente",
-          body: renderProfileBody(profile),
+          body: renderProfileBody(),
           showBack: false,
           showNext: false,
-          footer: true,
-
-          footerLeftLabel: actionLabel,
-          footerLeftClass: "ntCardFooterBtn ntCardFooterBtn--primary jsNtProfilePrimaryAction",
-          footerLeftAction: "profile-primary",
-          footerLeftDisabled: false,
-
-          footerRightLabel: "",
-          footerRightClass: "ntProfileFooterGhost",
-          footerRightAction: "noop",
-          footerRightDisabled: true
+          footer: true
         });
+      },
+
+      onOpen() {
+        const root = window.NTCards?.getCardRoot?.("profile");
+        bindProfileCard(root);
       }
     });
   }
