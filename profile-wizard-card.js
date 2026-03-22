@@ -79,6 +79,15 @@ window.NTProfileWizardCard = (() => {
     }));
   }
 
+  function getAvatarToneClass(gender) {
+    return window.NTProfileCard?.getAvatarToneClass?.(gender) || "ntAvatar--gradient";
+  }
+
+  function getHeaderTitle(step, ctx) {
+    if (step === 0) return "Dati anagrafici";
+    return ctx?.mode === "edit" ? "Modifica profilo" : "Inserisci profilo";
+  }
+
   function renderSubHeader() {
     return `
       <div class="ntProfileWizardSubHeader">
@@ -93,12 +102,12 @@ window.NTProfileWizardCard = (() => {
   }
 
   function renderStepOne(draft) {
+    const avatarTone = getAvatarToneClass(draft.gender);
+
     return `
       <div class="ntWizardStep ntProfileWizardStep" data-step="0">
-        <div class="ntProfileWizardSectionTitle">Sezione Dati Anagrafici:</div>
-
         <div class="ntProfileWizardHero">
-          <div class="ntProfileWizardAvatarBox" aria-hidden="true">
+          <div id="ntProfileWizardAvatarBox" class="ntProfileWizardAvatarBox ${avatarTone}" aria-hidden="true">
             <div class="ntProfileWizardAvatarCircle">○</div>
           </div>
 
@@ -129,12 +138,14 @@ window.NTProfileWizardCard = (() => {
 
             <label class="ntProfileWizardField">
               <span class="ntProfileWizardLabel">Sesso</span>
-              <select id="ntProfileGender" class="ntInput ntProfileWizardSelect">
-                <option value=""></option>
-                <option value="Uomo" ${draft.gender === "Uomo" ? "selected" : ""}>Uomo</option>
-                <option value="Donna" ${draft.gender === "Donna" ? "selected" : ""}>Donna</option>
-                <option value="Preferisco non specificare" ${draft.gender === "Preferisco non specificare" ? "selected" : ""}>Preferisco non specificare</option>
-              </select>
+              <div class="ntProfileWizardSelectWrap">
+                <select id="ntProfileGender" class="ntInput ntProfileWizardSelect">
+                  <option value=""></option>
+                  <option value="Uomo" ${draft.gender === "Uomo" ? "selected" : ""}>Uomo</option>
+                  <option value="Donna" ${draft.gender === "Donna" ? "selected" : ""}>Donna</option>
+                  <option value="Preferisco non specificare" ${draft.gender === "Preferisco non specificare" ? "selected" : ""}>Preferisco non specificare</option>
+                </select>
+              </div>
             </label>
 
             <label class="ntProfileWizardField">
@@ -156,12 +167,25 @@ window.NTProfileWizardCard = (() => {
     `;
   }
 
-  function renderPlaceholderStep(step, title, text) {
+  function renderPlaceholderStep(step, text) {
     return `
       <div class="ntWizardStep ntProfileWizardStep" data-step="${step}" hidden>
-        <div class="ntProfileWizardSectionTitle">${escapeHtml(title)}</div>
         <div class="ntProfileWizardPlaceholder">
           <div class="ntProfileWizardPlaceholderTitle">${escapeHtml(text)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderErrorState(message) {
+    return `
+      <div class="ntProfileWizardErrorScreen" id="ntProfileWizardErrorScreen">
+        <div class="ntProfileWizardErrorBox">
+          <div class="ntProfileWizardErrorTitle">Errore</div>
+          <div class="ntProfileWizardErrorText">${escapeHtml(message)}</div>
+          <button type="button" class="ntCardFooterBtn ntCardFooterBtn--primary" id="ntProfileWizardErrorBackBtn">
+            Torna indietro
+          </button>
         </div>
       </div>
     `;
@@ -170,18 +194,18 @@ window.NTProfileWizardCard = (() => {
   function renderCard() {
     const draft = getInitialDraft();
     const ctx = readWizardContext();
-    const title = ctx?.mode === "edit" ? "Modifica profilo" : "Inserisci profilo";
+    const step = Number(window.NTCardWizard?.get?.(CARD_ID)?.step || 0);
 
     return {
-      title,
+      title: getHeaderTitle(step, ctx),
       subHeader: renderSubHeader(),
       body: `
         <div class="ntWizard" id="ntProfileWizard">
           <div class="ntWizardContent" id="ntProfileWizardContent">
             ${renderStepOne(draft)}
-            ${renderPlaceholderStep(1, "Sezione Dati Personali:", "Pagina 2 in preparazione")}
-            ${renderPlaceholderStep(2, "Sezione Dati Lavorativi:", "Pagina 3 in preparazione")}
-            ${renderPlaceholderStep(3, "Riepilogo:", "Pagina 4 in preparazione")}
+            ${renderPlaceholderStep(1, "Pagina 2 in preparazione")}
+            ${renderPlaceholderStep(2, "Pagina 3 in preparazione")}
+            ${renderPlaceholderStep(3, "Pagina 4 in preparazione")}
           </div>
         </div>
       `
@@ -214,6 +238,8 @@ window.NTProfileWizardCard = (() => {
       const el = document.getElementById(id);
       if (el) el.value = safeText(value);
     });
+
+    updateAvatarFromGender();
   }
 
   function hasChanges({ draft, committedDraft }) {
@@ -266,16 +292,35 @@ window.NTProfileWizardCard = (() => {
     return { valid: true };
   }
 
-  function showInvalidDateAlert(message) {
-    if (window.NTToast?.show) {
-      window.NTToast.show({
-        title: "Data di nascita non valida",
-        text: message
-      });
-      return;
-    }
+  function showInlineError(message) {
+    const content = document.getElementById("ntProfileWizardContent");
+    if (!content) return;
 
-    window.alert(message);
+    content.innerHTML = renderErrorState(message);
+
+    const btn = document.getElementById("ntProfileWizardErrorBackBtn");
+    if (btn) {
+      btn.onclick = () => {
+        const root = window.NTCards?.getCardRoot?.(CARD_ID);
+        if (!root) return;
+
+        const fresh = renderCard();
+        const body = root.querySelector(".ntCardBody");
+        if (body) body.innerHTML = fresh.body;
+
+        bindMaskAndInputs();
+        refreshSteps();
+      };
+    }
+  }
+
+  function refreshHeaderTitle() {
+    const step = Number(window.NTCardWizard?.get?.(CARD_ID)?.step || 0);
+    const ctx = readWizardContext();
+    const titleEl = document.querySelector(`[data-card-id="${CARD_ID}"] .ntCardTitle`);
+    if (titleEl) {
+      titleEl.textContent = getHeaderTitle(step, ctx);
+    }
   }
 
   function refreshProgress() {
@@ -353,9 +398,26 @@ window.NTProfileWizardCard = (() => {
       el.hidden = Number(el.dataset.step) !== step;
     });
 
+    refreshHeaderTitle();
     refreshProgress();
     refreshFooterForStep(step);
     window.NTCards?.refreshActionState?.(CARD_ID);
+  }
+
+  function updateAvatarFromGender() {
+    const avatar = document.getElementById("ntProfileWizardAvatarBox");
+    if (!avatar) return;
+
+    avatar.classList.remove("ntAvatar--male", "ntAvatar--female", "ntAvatar--gradient");
+    avatar.classList.add(getAvatarToneClass(document.getElementById("ntProfileGender")?.value));
+  }
+
+  function autosaveDraft() {
+    const ctx = readWizardContext() || {};
+    writeWizardContext({
+      ...ctx,
+      profile: getDraft()
+    });
   }
 
   function bindMaskAndInputs() {
@@ -363,6 +425,17 @@ window.NTProfileWizardCard = (() => {
     if (birthInput) {
       birthInput.addEventListener("input", () => {
         birthInput.value = formatBirthDateInput(birthInput.value);
+        autosaveDraft();
+        window.NTCards?.refreshCardState?.(CARD_ID);
+        window.NTCards?.refreshActionState?.(CARD_ID);
+      });
+    }
+
+    const genderSelect = document.getElementById("ntProfileGender");
+    if (genderSelect) {
+      genderSelect.addEventListener("change", () => {
+        updateAvatarFromGender();
+        autosaveDraft();
         window.NTCards?.refreshCardState?.(CARD_ID);
         window.NTCards?.refreshActionState?.(CARD_ID);
       });
@@ -371,14 +444,19 @@ window.NTProfileWizardCard = (() => {
     const root = document.getElementById("ntProfileWizard");
     if (root) {
       root.addEventListener("input", () => {
+        autosaveDraft();
         window.NTCards?.refreshCardState?.(CARD_ID);
         window.NTCards?.refreshActionState?.(CARD_ID);
       });
+
       root.addEventListener("change", () => {
+        autosaveDraft();
         window.NTCards?.refreshCardState?.(CARD_ID);
         window.NTCards?.refreshActionState?.(CARD_ID);
       });
     }
+
+    updateAvatarFromGender();
   }
 
   function bindWizard() {
@@ -404,7 +482,7 @@ window.NTProfileWizardCard = (() => {
 
     const result = parseBirthDate(document.getElementById("ntProfileBirthDate")?.value);
     if (!result.valid) {
-      showInvalidDateAlert(result.reason);
+      showInlineError(result.reason);
       return false;
     }
 
