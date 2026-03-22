@@ -17,25 +17,44 @@ window.NTProfileCard = (() => {
       .replaceAll("'", "&#39;");
   }
 
-  function readProfileData() {
+  function readStoredProfileData() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
-
       const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") return null;
-
-      return {
-        firstName: safeText(parsed.firstName),
-        lastName: safeText(parsed.lastName),
-        gender: safeText(parsed.gender),
-        birthDate: safeText(parsed.birthDate),
-        country: safeText(parsed.country),
-        occupation: safeText(parsed.occupation)
-      };
+      return parsed && typeof parsed === "object" ? parsed : null;
     } catch {
       return null;
     }
+  }
+
+  function readWizardContext() {
+    try {
+      const raw = sessionStorage.getItem(CTX_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function readProfileData() {
+    const ctx = readWizardContext();
+    const live = ctx?.profile && typeof ctx.profile === "object" ? ctx.profile : null;
+    const stored = readStoredProfileData();
+
+    const source = live || stored;
+    if (!source) return null;
+
+    return {
+      firstName: safeText(source.firstName),
+      lastName: safeText(source.lastName),
+      gender: safeText(source.gender),
+      birthDate: safeText(source.birthDate),
+      country: safeText(source.country),
+      occupation: safeText(source.occupation)
+    };
   }
 
   function hasProfileData(profile = readProfileData()) {
@@ -55,11 +74,11 @@ window.NTProfileCard = (() => {
     return safeText(value) || fallback;
   }
 
-  function getPrimaryActionLabel(profile = readProfileData()) {
+  function getPrimaryActionLabel(profile = readStoredProfileData()) {
     return hasProfileData(profile) ? "Modifica i dati" : "Inserisci i dati";
   }
 
-  function getWizardMode(profile = readProfileData()) {
+  function getWizardMode(profile = readStoredProfileData()) {
     return hasProfileData(profile) ? "edit" : "create";
   }
 
@@ -101,11 +120,11 @@ window.NTProfileCard = (() => {
     );
   }
 
-  function renderRow(label, value) {
+  function renderRow(key, label, value) {
     return `
       <div class="ntProfileRow">
         <span class="ntProfileLabel">${escapeHtml(label)}:</span>
-        <span class="ntProfileValue">${escapeHtml(formatValue(value))}</span>
+        <span class="ntProfileValue" data-nt-profile-value="${escapeHtml(key)}">${escapeHtml(formatValue(value))}</span>
       </div>
     `;
   }
@@ -120,50 +139,84 @@ window.NTProfileCard = (() => {
     return `
       <div class="ntProfileContent">
         <div class="ntProfileHero">
-          <div class="ntProfileAvatarBox ${avatarTone}" aria-hidden="true">
+          <div class="ntProfileAvatarBox ${avatarTone}" data-nt-profile-avatar aria-hidden="true">
             <div class="ntProfileAvatarCalendarIcon">○</div>
           </div>
 
           <div class="ntProfileMainInfo">
-            ${renderRow("Nome", profile?.firstName)}
-            ${renderRow("Cognome", profile?.lastName)}
-            ${renderRow("Sesso", profile?.gender)}
-            ${renderRow("Data di nascita", profile?.birthDate)}
+            ${renderRow("firstName", "Nome", profile?.firstName)}
+            ${renderRow("lastName", "Cognome", profile?.lastName)}
+            ${renderRow("gender", "Sesso", profile?.gender)}
+            ${renderRow("birthDate", "Data di nascita", profile?.birthDate)}
           </div>
         </div>
 
-        <p class="ntProfileHelperText">${escapeHtml(helper)}</p>
+        <p class="ntProfileHelperText" data-nt-profile-helper>${escapeHtml(helper)}</p>
       </div>
     `;
   }
 
-  function bindProfileCard(root) {
+  function applyFooterState(root) {
     if (!root) return;
 
     const cancelBtn = root.querySelector(".jsNtCardCancel");
     const saveBtn = root.querySelector(".jsNtCardSave");
 
     if (cancelBtn) {
-      cancelBtn.hidden = true;
+      cancelBtn.style.visibility = "hidden";
+      cancelBtn.style.pointerEvents = "none";
       cancelBtn.disabled = true;
       cancelBtn.setAttribute("aria-hidden", "true");
       cancelBtn.textContent = "";
     }
 
     if (saveBtn) {
-      const label = getPrimaryActionLabel();
+      const label = getPrimaryActionLabel(readStoredProfileData());
 
-      saveBtn.hidden = false;
+      saveBtn.style.visibility = "";
+      saveBtn.style.pointerEvents = "";
       saveBtn.disabled = false;
       saveBtn.textContent = label;
       saveBtn.setAttribute("aria-label", label);
-      saveBtn.classList.add("jsNtProfilePrimaryAction");
       saveBtn.setAttribute("data-nt-action", "profile-primary");
+      saveBtn.classList.add("jsNtProfilePrimaryAction");
       saveBtn.classList.remove("isBlocked");
     }
 
     window.NTCardActions?.bindWithin?.(root);
     window.NTCardActions?.refreshButtons?.(root);
+  }
+
+  function refreshLiveCard(nextProfile = readProfileData()) {
+    const root = window.NTCards?.getCardRoot?.("profile");
+    if (!root || !nextProfile) return;
+
+    const avatar = root.querySelector("[data-nt-profile-avatar]");
+    if (avatar) {
+      avatar.classList.remove("ntAvatar--male", "ntAvatar--female", "ntAvatar--gradient");
+      avatar.classList.add(getAvatarToneClass(nextProfile.gender));
+    }
+
+    const map = {
+      firstName: formatValue(nextProfile.firstName),
+      lastName: formatValue(nextProfile.lastName),
+      gender: formatValue(nextProfile.gender),
+      birthDate: formatValue(nextProfile.birthDate)
+    };
+
+    Object.entries(map).forEach(([key, value]) => {
+      const el = root.querySelector(`[data-nt-profile-value="${key}"]`);
+      if (el) el.textContent = value;
+    });
+
+    const helper = root.querySelector("[data-nt-profile-helper]");
+    if (helper) {
+      helper.textContent = hasProfileData(nextProfile)
+        ? "Consulta i dati del tuo profilo."
+        : "Inserisci i dati per creare il tuo profilo.";
+    }
+
+    applyFooterState(root);
   }
 
   function register() {
@@ -185,7 +238,8 @@ window.NTProfileCard = (() => {
 
       onOpen() {
         const root = window.NTCards?.getCardRoot?.("profile");
-        bindProfileCard(root);
+        applyFooterState(root);
+        refreshLiveCard(readProfileData());
       }
     });
   }
@@ -195,6 +249,7 @@ window.NTProfileCard = (() => {
     readProfileData,
     hasProfileData,
     openProfileWizard,
-    getAvatarToneClass
+    getAvatarToneClass,
+    refreshLiveCard
   };
 })();
