@@ -1,94 +1,71 @@
 window.NTCardActions = (() => {
-  function labelOf(el) {
-    return String(el?.textContent || "").trim().toLowerCase();
+
+  function getLabel(el){
+    return (el?.textContent || "").trim().toLowerCase();
   }
 
-  function getCardIdFromElement(el) {
-    return el?.closest?.("[data-card-id]")?.getAttribute?.("data-card-id") || "";
-  }
+  function handleClick(e){
+    const btn = e.target.closest("button");
+    if (!btn) return;
 
-  function handleClose(cardId) {
-    if (!cardId) return;
+    const label = getLabel(btn);
 
-    if (cardId === "profileWizard") {
-      window.NTProfileWizardCard?.closeWithAutosave?.();
-      return;
-    }
+    const card = btn.closest("[data-card-id]");
+    const cardId = card?.getAttribute("data-card-id");
 
-    window.NTCards?.closeCard?.(cardId);
-  }
+    /* ===================== PROFILO ===================== */
 
-  function handleByLabel(label, cardId) {
     if (label === "inserisci i dati") {
+      e.preventDefault();
+      e.stopPropagation();
       window.NTProfileCard?.openWizard?.("create");
-      return true;
+      return;
     }
 
     if (label === "modifica i dati") {
+      e.preventDefault();
+      e.stopPropagation();
       window.NTProfileCard?.openWizard?.("edit");
-      return true;
+      return;
     }
 
-    if (label === "avanti" && cardId === "profileWizard") {
+    /* ===================== WIZARD ===================== */
+
+    if (label === "avanti") {
+      e.preventDefault();
+      e.stopPropagation();
+
       const root = window.NTCards?.getCardRoot?.("profileWizard");
       window.NTProfileWizardCard?.goNext?.(root);
-      return true;
+      return;
     }
 
-    if (label === "indietro" && cardId === "profileWizard") {
+    if (label === "indietro") {
+      e.preventDefault();
+      e.stopPropagation();
+
       const root = window.NTCards?.getCardRoot?.("profileWizard");
       window.NTProfileWizardCard?.goBack?.(root);
-      return true;
+      return;
     }
 
-    if (label === "salva" && cardId === "profileWizard") {
+    if (label === "salva") {
+      e.preventDefault();
+      e.stopPropagation();
+
       window.NTProfileWizardCard?.finish?.();
-      return true;
+      return;
     }
 
-    return false;
+    /* ===================== DEFAULT ===================== */
+
+    // lascia comportamento standard se non matcha
   }
 
-  function handleClick(event) {
-    const btn = event.target.closest("button");
-    if (!btn) return;
-
-    const cardId = getCardIdFromElement(btn);
-
-    if (btn.classList.contains("jsNtCardClose")) {
-      event.preventDefault();
-      event.stopPropagation();
-      handleClose(cardId);
-      return;
-    }
-
-    if (btn.classList.contains("jsNtCardBack") && cardId === "profileWizard") {
-      event.preventDefault();
-      event.stopPropagation();
-      const root = window.NTCards?.getCardRoot?.("profileWizard");
-      window.NTProfileWizardCard?.goBack?.(root);
-      return;
-    }
-
-    if (btn.classList.contains("jsNtCardNext") && cardId === "profileWizard") {
-      event.preventDefault();
-      event.stopPropagation();
-      const root = window.NTCards?.getCardRoot?.("profileWizard");
-      window.NTProfileWizardCard?.goNext?.(root);
-      return;
-    }
-
-    const handled = handleByLabel(labelOf(btn), cardId);
-    if (handled) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  }
-
-  function init() {
-    document.removeEventListener("click", handleClick);
+  function init(){
     document.addEventListener("click", handleClick);
   }
 
   return { init };
+
 })();
