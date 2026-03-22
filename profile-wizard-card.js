@@ -138,14 +138,12 @@ window.NTProfileWizardCard = (() => {
 
             <label class="ntProfileWizardField">
               <span class="ntProfileWizardLabel">Sesso</span>
-              <div class="ntProfileWizardSelectWrap">
-                <select id="ntProfileGender" class="ntInput ntProfileWizardSelect">
-                  <option value=""></option>
-                  <option value="Uomo" ${draft.gender === "Uomo" ? "selected" : ""}>Uomo</option>
-                  <option value="Donna" ${draft.gender === "Donna" ? "selected" : ""}>Donna</option>
-                  <option value="Preferisco non specificare" ${draft.gender === "Preferisco non specificare" ? "selected" : ""}>Preferisco non specificare</option>
-                </select>
-              </div>
+              <select id="ntProfileGender" class="ntSelect jsNtSelect">
+                <option value=""></option>
+                <option value="Uomo" ${draft.gender === "Uomo" ? "selected" : ""}>Uomo</option>
+                <option value="Donna" ${draft.gender === "Donna" ? "selected" : ""}>Donna</option>
+                <option value="Preferisco non specificare" ${draft.gender === "Preferisco non specificare" ? "selected" : ""}>Preferisco non specificare</option>
+              </select>
             </label>
 
             <label class="ntProfileWizardField">
@@ -346,10 +344,11 @@ window.NTProfileWizardCard = (() => {
     if (!backBtn || !actionBtn) return;
 
     if (step === 0) {
-      backBtn.classList.add("ntProfileWizardFooterGhost");
+      backBtn.hidden = true;
       backBtn.disabled = true;
       backBtn.setAttribute("aria-hidden", "true");
       backBtn.textContent = "";
+      backBtn.classList.add("ntProfileWizardFooterGhost");
 
       actionBtn.textContent = "avanti";
       actionBtn.setAttribute("aria-label", "Avanti");
@@ -357,13 +356,13 @@ window.NTProfileWizardCard = (() => {
       actionBtn.disabled = false;
       actionBtn.classList.remove("isBlocked");
     } else if (step < TOTAL_STEPS - 1) {
-      backBtn.classList.remove("ntProfileWizardFooterGhost");
+      backBtn.hidden = false;
+      backBtn.disabled = false;
       backBtn.removeAttribute("aria-hidden");
       backBtn.textContent = "indietro";
       backBtn.setAttribute("aria-label", "Indietro");
       backBtn.setAttribute("data-nt-action", "back");
-      backBtn.disabled = false;
-      backBtn.classList.remove("isBlocked");
+      backBtn.classList.remove("ntProfileWizardFooterGhost", "isBlocked");
 
       actionBtn.textContent = "avanti";
       actionBtn.setAttribute("aria-label", "Avanti");
@@ -371,13 +370,13 @@ window.NTProfileWizardCard = (() => {
       actionBtn.disabled = false;
       actionBtn.classList.remove("isBlocked");
     } else {
-      backBtn.classList.remove("ntProfileWizardFooterGhost");
+      backBtn.hidden = false;
+      backBtn.disabled = false;
       backBtn.removeAttribute("aria-hidden");
       backBtn.textContent = "indietro";
       backBtn.setAttribute("aria-label", "Indietro");
       backBtn.setAttribute("data-nt-action", "back");
-      backBtn.disabled = false;
-      backBtn.classList.remove("isBlocked");
+      backBtn.classList.remove("ntProfileWizardFooterGhost", "isBlocked");
 
       actionBtn.textContent = "salva";
       actionBtn.setAttribute("aria-label", "Salva");
@@ -406,10 +405,11 @@ window.NTProfileWizardCard = (() => {
 
   function updateAvatarFromGender() {
     const avatar = document.getElementById("ntProfileWizardAvatarBox");
+    const gender = document.getElementById("ntProfileGender")?.value;
     if (!avatar) return;
 
     avatar.classList.remove("ntAvatar--male", "ntAvatar--female", "ntAvatar--gradient");
-    avatar.classList.add(getAvatarToneClass(document.getElementById("ntProfileGender")?.value));
+    avatar.classList.add(getAvatarToneClass(gender));
   }
 
   function autosaveDraft() {
@@ -420,7 +420,15 @@ window.NTProfileWizardCard = (() => {
     });
   }
 
+  function hydrateSystemSelect() {
+    if (window.NTSelect?.hydrate) {
+      window.NTSelect.hydrate(document.getElementById("ntProfileWizard"));
+    }
+  }
+
   function bindMaskAndInputs() {
+    hydrateSystemSelect();
+
     const birthInput = document.getElementById("ntProfileBirthDate");
     if (birthInput) {
       birthInput.addEventListener("input", () => {
