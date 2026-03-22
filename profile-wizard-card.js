@@ -348,8 +348,8 @@ window.NTProfileWizardCard = (() => {
       backBtn.disabled = true;
       backBtn.setAttribute("aria-hidden", "true");
       backBtn.textContent = "";
-      backBtn.classList.add("ntProfileWizardFooterGhost");
 
+      actionBtn.hidden = false;
       actionBtn.textContent = "avanti";
       actionBtn.setAttribute("aria-label", "Avanti");
       actionBtn.setAttribute("data-nt-action", "next");
@@ -362,8 +362,9 @@ window.NTProfileWizardCard = (() => {
       backBtn.textContent = "indietro";
       backBtn.setAttribute("aria-label", "Indietro");
       backBtn.setAttribute("data-nt-action", "back");
-      backBtn.classList.remove("ntProfileWizardFooterGhost", "isBlocked");
+      backBtn.classList.remove("isBlocked");
 
+      actionBtn.hidden = false;
       actionBtn.textContent = "avanti";
       actionBtn.setAttribute("aria-label", "Avanti");
       actionBtn.setAttribute("data-nt-action", "next");
@@ -376,8 +377,9 @@ window.NTProfileWizardCard = (() => {
       backBtn.textContent = "indietro";
       backBtn.setAttribute("aria-label", "Indietro");
       backBtn.setAttribute("data-nt-action", "back");
-      backBtn.classList.remove("ntProfileWizardFooterGhost", "isBlocked");
+      backBtn.classList.remove("isBlocked");
 
+      actionBtn.hidden = false;
       actionBtn.textContent = "salva";
       actionBtn.setAttribute("aria-label", "Salva");
       actionBtn.setAttribute("data-nt-action", "save");
