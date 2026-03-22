@@ -2,6 +2,7 @@ window.NTProfileWizardCard = (() => {
   const STORAGE_KEY = "ntUserProfileData";
   const CTX_KEY = "ntProfileWizardContext";
   const CARD_ID = "profileWizard";
+  const TOTAL_STEPS = 4;
 
   const safe = (v) => String(v ?? "").trim();
 
@@ -13,12 +14,20 @@ window.NTProfileWizardCard = (() => {
     }
   }
 
-  function saveCtx(d) {
-    sessionStorage.setItem(CTX_KEY, JSON.stringify(d));
+  function writeCtx(data) {
+    try {
+      sessionStorage.setItem(CTX_KEY, JSON.stringify(data || {}));
+    } catch {}
   }
 
-  function persist(d) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+  function clearCtx() {
+    try {
+      sessionStorage.removeItem(CTX_KEY);
+    } catch {}
+  }
+
+  function persist(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
   function avatarClass(gender) {
@@ -27,36 +36,44 @@ window.NTProfileWizardCard = (() => {
 
   function getDraft() {
     return {
-      firstName: safe(document.getElementById("name")?.value),
-      lastName: safe(document.getElementById("last")?.value),
-      gender: safe(document.getElementById("gender")?.value),
-      birthDate: safe(document.getElementById("birth")?.value)
+      firstName: safe(document.getElementById("ntProfileFirstName")?.value),
+      lastName: safe(document.getElementById("ntProfileLastName")?.value),
+      gender: safe(document.getElementById("ntProfileGender")?.value),
+      birthDate: safe(document.getElementById("ntProfileBirthDate")?.value),
+      country: safe(document.getElementById("ntProfileCountry")?.value),
+      occupation: safe(document.getElementById("ntProfileOccupation")?.value)
     };
   }
 
-  function updateAvatar() {
-    const box = document.getElementById("wizardAvatar");
-    const gender = document.getElementById("gender")?.value;
-
-    if (!box) return;
-    box.className = "ntProfileAvatarBox " + avatarClass(gender);
+  function getInitialDraft() {
+    const ctx = readCtx();
+    return ctx.profile || {};
   }
 
-  function syncAll() {
-    const d = getDraft();
-    saveCtx({ profile: d });
-    updateAvatar();
-    window.NTProfileCard?.refreshLive?.(d);
+  function getStep() {
+    const root = window.NTCards?.getCardRoot?.(CARD_ID);
+    const value = Number(root?.dataset?.wizardStep ?? 0);
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  function setStep(step) {
+    const root = window.NTCards?.getCardRoot?.(CARD_ID);
+    if (!root) return;
+    root.dataset.wizardStep = String(step);
+  }
+
+  function getHeaderTitle(step) {
+    if (step === 0) return "Dati anagrafici";
+    const ctx = readCtx();
+    return ctx.mode === "edit" ? "Modifica profilo" : "Inserisci profilo";
   }
 
   function formatBirth(value) {
     const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
     let out = "";
-
     if (digits.length > 0) out += digits.slice(0, 2);
     if (digits.length >= 3) out += "/" + digits.slice(2, 4);
     if (digits.length >= 5) out += "/" + digits.slice(4, 8);
-
     return out;
   }
 
@@ -78,6 +95,96 @@ window.NTProfileWizardCard = (() => {
     );
   }
 
+  function syncDraft() {
+    const d = getDraft();
+    writeCtx({
+      ...readCtx(),
+      profile: d
+    });
+    updateAvatar();
+    window.NTProfileCard?.refreshLive?.(d);
+  }
+
+  function updateAvatar() {
+    const box = document.getElementById("ntProfileWizardAvatar");
+    const gender = document.getElementById("ntProfileGender")?.value;
+    if (!box) return;
+
+    box.className = "ntProfileAvatarBox " + avatarClass(gender);
+  }
+
+  function renderProgress(step) {
+    const current = step + 1;
+    const pct = (current / TOTAL_STEPS) * 100;
+
+    return `
+      <div class="ntProfileWizardSubHeader">
+        <div class="ntProfileWizardProgress">
+          <div class="ntProfileWizardProgressBar">
+            <div class="ntProfileWizardProgressFill" style="width:${pct}%"></div>
+          </div>
+          <div class="ntProfileWizardProgressText">${current}/${TOTAL_STEPS}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderStepOne(d) {
+    return `
+      <div class="ntProfileWizardStep" data-step="0">
+        <div class="ntProfileWizardHero">
+          <div id="ntProfileWizardAvatar" class="ntProfileAvatarBox ${avatarClass(d.gender)}">
+            <div class="ntProfileAvatarCalendarIcon">○</div>
+          </div>
+
+          <div class="ntProfileWizardFields">
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Nome</span>
+              <input id="ntProfileFirstName" class="ntInput" value="${safe(d.firstName)}" />
+            </label>
+
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Cognome</span>
+              <input id="ntProfileLastName" class="ntInput" value="${safe(d.lastName)}" />
+            </label>
+
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Sesso</span>
+              <select id="ntProfileGender" class="ntSelect jsNtSelect">
+                <option value=""></option>
+                <option value="Uomo" ${d.gender === "Uomo" ? "selected" : ""}>Uomo</option>
+                <option value="Donna" ${d.gender === "Donna" ? "selected" : ""}>Donna</option>
+                <option value="Preferisco non specificare" ${d.gender === "Preferisco non specificare" ? "selected" : ""}>Preferisco non specificare</option>
+              </select>
+            </label>
+
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Data di nascita</span>
+              <input
+                id="ntProfileBirthDate"
+                class="ntInput"
+                inputmode="numeric"
+                maxlength="10"
+                placeholder="GG/MM/AAAA"
+                value="${safe(d.birthDate)}"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPlaceholder(step) {
+    return `
+      <div class="ntProfileWizardStep" data-step="${step}" hidden>
+        <div class="ntProfileWizardPlaceholder">
+          <div class="ntProfileWizardPlaceholderTitle">Pagina ${step + 1} in preparazione</div>
+        </div>
+      </div>
+    `;
+  }
+
   function renderError(message) {
     return `
       <div class="ntProfileWizardErrorScreen">
@@ -92,103 +199,89 @@ window.NTProfileWizardCard = (() => {
     `;
   }
 
-  function renderForm(d) {
+  function renderBody(d) {
     return `
       <div id="profileWizard" class="ntWizard">
-        <div class="ntProfileWizardHero">
-          <div id="wizardAvatar" class="ntProfileAvatarBox ${avatarClass(d.gender)}">
-            <div class="ntProfileAvatarCalendarIcon">○</div>
-          </div>
-
-          <div class="ntProfileWizardFields">
-            <label class="ntProfileWizardField">
-              <span class="ntProfileWizardLabel">Nome</span>
-              <input id="name" class="ntInput" value="${safe(d.firstName)}" />
-            </label>
-
-            <label class="ntProfileWizardField">
-              <span class="ntProfileWizardLabel">Cognome</span>
-              <input id="last" class="ntInput" value="${safe(d.lastName)}" />
-            </label>
-
-            <label class="ntProfileWizardField">
-              <span class="ntProfileWizardLabel">Sesso</span>
-              <select id="gender" class="ntSelect jsNtSelect">
-                <option value=""></option>
-                <option value="Uomo" ${d.gender === "Uomo" ? "selected" : ""}>Uomo</option>
-                <option value="Donna" ${d.gender === "Donna" ? "selected" : ""}>Donna</option>
-                <option value="Preferisco non specificare" ${d.gender === "Preferisco non specificare" ? "selected" : ""}>Preferisco non specificare</option>
-              </select>
-            </label>
-
-            <label class="ntProfileWizardField">
-              <span class="ntProfileWizardLabel">Data di nascita</span>
-              <input
-                id="birth"
-                class="ntInput"
-                inputmode="numeric"
-                maxlength="10"
-                placeholder="GG/MM/AAAA"
-                value="${safe(d.birthDate)}"
-              />
-            </label>
-          </div>
+        <div id="profileWizardContent" class="ntWizardContent">
+          ${renderStepOne(d)}
+          ${renderPlaceholder(1)}
+          ${renderPlaceholder(2)}
+          ${renderPlaceholder(3)}
         </div>
       </div>
     `;
   }
 
   function render() {
-    const d = readCtx().profile || {};
+    const d = getInitialDraft();
+    const step = 0;
 
     return NTCardTemplate.createCard({
       id: CARD_ID,
-      title: "Dati anagrafici",
-      subHeader: `
-        <div class="ntProfileWizardSubHeader">
-          <div class="ntProfileWizardProgress">
-            <div class="ntProfileWizardProgressBar">
-              <div class="ntProfileWizardProgressFill" style="width:25%"></div>
-            </div>
-            <div class="ntProfileWizardProgressText">1/4</div>
-          </div>
-        </div>
-      `,
+      title: getHeaderTitle(step),
+      subHeader: renderProgress(step),
       footer: true,
-      body: renderForm(d)
+      body: renderBody(d)
     });
   }
 
-  function fixFooter(root) {
+  function applyStepUi(root) {
     if (!root) return;
 
+    const step = getStep();
+    const title = root.querySelector(".ntCardTitle");
+    const subHeader = root.querySelector(".ntCardSubHeader");
+    const body = root.querySelector(".ntCardBody");
+    const footer = root.querySelector(".ntCardFooter");
+    const row = root.querySelector(".ntCardFooterRow");
     const cancel = root.querySelector(".jsNtCardCancel");
     const save = root.querySelector(".jsNtCardSave");
-    const row = root.querySelector(".ntCardFooterRow");
 
+    if (title) title.textContent = getHeaderTitle(step);
+    if (subHeader) subHeader.innerHTML = renderProgress(step);
+
+    body?.querySelectorAll(".ntProfileWizardStep").forEach((el) => {
+      el.hidden = Number(el.dataset.step) !== step;
+    });
+
+    if (footer) footer.style.display = "";
     if (row) {
       row.classList.add("ntFooterSingleRight");
     }
 
     if (cancel) {
-      cancel.hidden = true;
-      cancel.style.display = "none";
-      cancel.disabled = true;
-      cancel.textContent = "";
-      cancel.setAttribute("aria-hidden", "true");
+      if (step === 0) {
+        cancel.hidden = true;
+        cancel.style.display = "none";
+        cancel.disabled = true;
+        cancel.textContent = "";
+        cancel.setAttribute("aria-hidden", "true");
+      } else {
+        cancel.hidden = false;
+        cancel.style.display = "";
+        cancel.disabled = false;
+        cancel.textContent = "indietro";
+        cancel.onclick = () => goBack();
+      }
     }
 
     if (save) {
       save.hidden = false;
       save.style.display = "";
       save.disabled = false;
-      save.textContent = "avanti";
       save.classList.remove("isBlocked");
-      save.onclick = () => next();
+
+      if (step < TOTAL_STEPS - 1) {
+        save.textContent = "avanti";
+        save.onclick = () => goNext();
+      } else {
+        save.textContent = "salva";
+        save.onclick = () => finish();
+      }
     }
   }
 
-  function bind(rootCard) {
+  function bind(root) {
     const formRoot = document.getElementById("profileWizard");
     if (!formRoot) return;
 
@@ -196,44 +289,52 @@ window.NTProfileWizardCard = (() => {
       window.NTSelect.hydrate(formRoot);
     }
 
-    const birth = document.getElementById("birth");
+    const birth = document.getElementById("ntProfileBirthDate");
     if (birth) {
       birth.addEventListener("input", () => {
         birth.value = formatBirth(birth.value);
-        syncAll();
+        syncDraft();
       });
     }
 
-    const gender = document.getElementById("gender");
+    const gender = document.getElementById("ntProfileGender");
     if (gender) {
-      gender.addEventListener("change", syncAll);
-      gender.addEventListener("input", syncAll);
+      gender.addEventListener("change", syncDraft);
+      gender.addEventListener("input", syncDraft);
     }
 
-    formRoot.addEventListener("input", syncAll);
-    formRoot.addEventListener("change", syncAll);
+    formRoot.addEventListener("input", syncDraft);
+    formRoot.addEventListener("change", syncDraft);
 
-    requestAnimationFrame(syncAll);
+    requestAnimationFrame(syncDraft);
 
     const errorBack = document.getElementById("wizardErrorBack");
     if (errorBack) {
       errorBack.onclick = () => {
-        const body = rootCard?.querySelector(".ntCardBody");
-        const footer = rootCard?.querySelector(".ntCardFooter");
+        const body = root?.querySelector(".ntCardBody");
+        const footer = root?.querySelector(".ntCardFooter");
         if (!body) return;
 
-        body.innerHTML = renderForm(readCtx().profile || {});
+        body.innerHTML = renderBody(readCtx().profile || {});
         if (footer) footer.style.display = "";
-        bind(rootCard);
+        bind(root);
+        applyStepUi(root);
       };
     }
   }
 
-  function next() {
-    const d = getDraft();
+  function goBack() {
     const root = window.NTCards?.getCardRoot?.(CARD_ID);
+    const step = Math.max(0, getStep() - 1);
+    setStep(step);
+    applyStepUi(root);
+  }
 
-    if (!validBirth(d.birthDate)) {
+  function goNext() {
+    const root = window.NTCards?.getCardRoot?.(CARD_ID);
+    const step = getStep();
+
+    if (step === 0 && !validBirth(getDraft().birthDate)) {
       const footer = root?.querySelector(".ntCardFooter");
       const body = root?.querySelector(".ntCardBody");
 
@@ -245,8 +346,14 @@ window.NTProfileWizardCard = (() => {
       return;
     }
 
+    setStep(Math.min(TOTAL_STEPS - 1, step + 1));
+    applyStepUi(root);
+  }
+
+  function finish() {
+    const d = getDraft();
     persist(d);
-    sessionStorage.removeItem(CTX_KEY);
+    clearCtx();
     window.NTCards.closeCard(CARD_ID);
     window.NTProfileCard?.refreshLive?.(d);
   }
@@ -259,7 +366,8 @@ window.NTProfileWizardCard = (() => {
       render,
       onOpen() {
         const root = NTCards.getCardRoot(CARD_ID);
-        fixFooter(root);
+        setStep(0);
+        applyStepUi(root);
         bind(root);
       }
     });
