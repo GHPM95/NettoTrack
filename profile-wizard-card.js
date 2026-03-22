@@ -34,6 +34,10 @@ window.NTProfileWizardCard = (() => {
     return window.NTProfileCard?.avatarClass?.(gender) || "ntAvatar--gradient";
   }
 
+  function avatarGlyph(gender) {
+    return window.NTProfileCard?.avatarGlyph?.(gender) || "○";
+  }
+
   function getDraft() {
     return {
       firstName: safe(document.getElementById("ntProfileFirstName")?.value),
@@ -111,10 +115,16 @@ window.NTProfileWizardCard = (() => {
 
   function updateAvatar() {
     const box = document.getElementById("ntProfileWizardAvatar");
+    const glyph = document.getElementById("ntProfileWizardAvatarGlyph");
     const gender = document.getElementById("ntProfileGender")?.value;
-    if (!box) return;
 
-    box.className = "ntProfileAvatarBox " + avatarClass(gender);
+    if (box) {
+      box.className = "ntProfileAvatarBox " + avatarClass(gender);
+    }
+
+    if (glyph) {
+      glyph.textContent = avatarGlyph(gender);
+    }
   }
 
   function renderProgress(step) {
@@ -138,7 +148,7 @@ window.NTProfileWizardCard = (() => {
       <div class="ntProfileWizardStep" data-step="0">
         <div class="ntProfileWizardHero">
           <div id="ntProfileWizardAvatar" class="ntProfileAvatarBox ${avatarClass(d.gender)}">
-            <div class="ntProfileAvatarCalendarIcon">○</div>
+            <div id="ntProfileWizardAvatarGlyph" class="ntProfileAvatarCalendarIcon">${avatarGlyph(d.gender)}</div>
           </div>
 
           <div class="ntProfileWizardFields">
