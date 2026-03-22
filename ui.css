@@ -491,3 +491,21 @@ h1,h2,h3,h4,h5,h6,p{
     margin-right:-20px;
   }
 }
+/* ========================= Footer 1 solo pulsante ========================= */
+
+.ntCardFooterRow:has(.ntCardFooterBtn:only-child){
+  display:flex;
+  justify-content:flex-end;
+}
+
+/* fallback se hai ghost button */
+.ntCardFooterRow:has(.ntProfileFooterGhost){
+  display:flex;
+  justify-content:flex-end;
+}
+
+
+/* sicurezza: pulsante singolo allineato a destra */
+.ntCardFooterRow .ntCardFooterBtn:only-child{
+  margin-left:auto;
+}
