@@ -14,6 +14,7 @@
   --nt-dots-space: 26px;
 }
 
+/* ========================= CARD CONTAINER ========================= */
 .ntCard{
   width:100%;
   max-width:var(--nt-card-max-w);
@@ -76,6 +77,7 @@
   z-index:2;
 }
 
+/* ========================= CARD HEADER ========================= */
 .ntCardTop{
   flex:0 0 auto;
   display:flex;
@@ -145,6 +147,7 @@
   flex:0 0 auto;
 }
 
+/* ========================= HEADER ICON BUTTONS ========================= */
 .ntIconBtn{
   width:var(--nt-header-btn-size);
   height:var(--nt-header-btn-size);
@@ -185,6 +188,7 @@
   pointer-events:none;
 }
 
+/* ========================= SUB HEADER ========================= */
 .ntCardSubHeader{
   flex:0 0 auto;
   min-height:var(--nt-card-subheader-min-h);
@@ -211,6 +215,7 @@
   min-width:max-content;
 }
 
+/* ========================= CARD BODY ========================= */
 .ntCardBody{
   flex:1 1 auto;
   min-height:0;
@@ -225,6 +230,7 @@
   display:none;
 }
 
+/* ========================= CARD FOOTER ========================= */
 .ntCardFooter{
   flex:0 0 auto;
   min-height:var(--nt-card-footer-min-h);
@@ -241,20 +247,12 @@
   align-items:center;
 }
 
-/* universale: se il primo bottone è hidden o invisibile, il secondo va a destra */
-.ntCardFooterRow:has(.jsNtCardCancel[hidden]),
-.ntCardFooterRow:has(.jsNtCardCancel[aria-hidden="true"]){
-  display:flex;
-  justify-content:flex-end;
-}
-
-.ntCardFooterRow:has(.ntCardFooterBtn:only-child){
-  display:flex;
-  justify-content:flex-end;
-}
-
-.ntCardFooterBtn:only-child{
-  margin-left:auto;
+/* footer singolo a destra */
+.ntFooterSingleRight{
+  display:flex !important;
+  justify-content:flex-end !important;
+  align-items:center !important;
+  gap:12px !important;
 }
 
 .ntCardFooterBtn{
@@ -308,6 +306,7 @@
   pointer-events:none;
 }
 
+/* ========================= WIZARD ========================= */
 .ntWizard{
   width:100%;
   height:100%;
@@ -342,6 +341,7 @@
   gap:12px;
 }
 
+/* ========================= CARD SWIPE VIEWPORT ========================= */
 .ntCardsViewport{
   position:relative;
   width:100%;
@@ -354,6 +354,7 @@
   justify-content:center;
 }
 
+/* ========================= CARD TRACK ========================= */
 .ntCardsTrack{
   width:100%;
   height:var(--nt-card-max-h);
@@ -370,6 +371,7 @@
   touch-action:pan-x;
 }
 
+/* ========================= CARD SLIDE ========================= */
 .ntCardSlide{
   flex:0 0 100%;
   width:100%;
@@ -383,6 +385,7 @@
   justify-content:center;
 }
 
+/* ========================= INTERNAL PROPORTIONS ========================= */
 .ntCardBody .ntEmptyState{
   min-height:124px;
   padding:12px 10px;
@@ -424,6 +427,7 @@
   margin:10px 0;
 }
 
+/* ========================= DOTS SPACE SUPPORT ========================= */
 .ntDotsRail{
   min-height:var(--nt-dots-space);
   height:var(--nt-dots-space);
@@ -432,6 +436,7 @@
   justify-content:center;
 }
 
+/* ========================= DIVIDER ========================= */
 .ntDivider{
   height:1px;
   width:100%;
