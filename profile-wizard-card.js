@@ -81,7 +81,53 @@ window.NTProfileWizardCard = (() => {
     }));
   }
 
-  function renderBody() {
+  function renderStepOne(draft) {
+    return `
+      <div class="ntWizardStep" data-step="0">
+        <div class="ntSection">
+          <label class="ntField">
+            <span class="ntFieldLabel">Nome</span>
+            <input id="ntProfileFirstName" class="ntInput" type="text" value="${escapeHtml(draft.firstName)}" placeholder="Nome" />
+          </label>
+
+          <label class="ntField">
+            <span class="ntFieldLabel">Cognome</span>
+            <input id="ntProfileLastName" class="ntInput" type="text" value="${escapeHtml(draft.lastName)}" placeholder="Cognome" />
+          </label>
+
+          <label class="ntField">
+            <span class="ntFieldLabel">Sesso</span>
+            <input id="ntProfileGender" class="ntInput" type="text" value="${escapeHtml(draft.gender)}" placeholder="Sesso" />
+          </label>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderStepTwo(draft) {
+    return `
+      <div class="ntWizardStep" data-step="1" hidden>
+        <div class="ntSection">
+          <label class="ntField">
+            <span class="ntFieldLabel">Data di nascita</span>
+            <input id="ntProfileBirthDate" class="ntInput" type="text" value="${escapeHtml(draft.birthDate)}" placeholder="GG/MM/AAAA" />
+          </label>
+
+          <label class="ntField">
+            <span class="ntFieldLabel">Paese</span>
+            <input id="ntProfileCountry" class="ntInput" type="text" value="${escapeHtml(draft.country)}" placeholder="Paese" />
+          </label>
+
+          <label class="ntField">
+            <span class="ntFieldLabel">Occupazione</span>
+            <input id="ntProfileOccupation" class="ntInput" type="text" value="${escapeHtml(draft.occupation)}" placeholder="Occupazione" />
+          </label>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCard() {
     const draft = getInitialDraft();
     const ctx = readWizardContext();
     const title = ctx?.mode === "edit" ? "Modifica profilo" : "Inserisci profilo";
@@ -91,43 +137,8 @@ window.NTProfileWizardCard = (() => {
       body: `
         <div class="ntWizard" id="ntProfileWizard">
           <div class="ntWizardContent" id="ntProfileWizardContent">
-            <div class="ntWizardStep" data-step="0">
-              <div class="ntSection">
-                <label class="ntField">
-                  <span class="ntFieldLabel">Nome</span>
-                  <input id="ntProfileFirstName" class="ntInput" type="text" value="${escapeHtml(draft.firstName)}" placeholder="Nome" />
-                </label>
-
-                <label class="ntField">
-                  <span class="ntFieldLabel">Cognome</span>
-                  <input id="ntProfileLastName" class="ntInput" type="text" value="${escapeHtml(draft.lastName)}" placeholder="Cognome" />
-                </label>
-
-                <label class="ntField">
-                  <span class="ntFieldLabel">Sesso</span>
-                  <input id="ntProfileGender" class="ntInput" type="text" value="${escapeHtml(draft.gender)}" placeholder="Sesso" />
-                </label>
-              </div>
-            </div>
-
-            <div class="ntWizardStep" data-step="1" hidden>
-              <div class="ntSection">
-                <label class="ntField">
-                  <span class="ntFieldLabel">Data di nascita</span>
-                  <input id="ntProfileBirthDate" class="ntInput" type="text" value="${escapeHtml(draft.birthDate)}" placeholder="GG/MM/AAAA" />
-                </label>
-
-                <label class="ntField">
-                  <span class="ntFieldLabel">Paese</span>
-                  <input id="ntProfileCountry" class="ntInput" type="text" value="${escapeHtml(draft.country)}" placeholder="Paese" />
-                </label>
-
-                <label class="ntField">
-                  <span class="ntFieldLabel">Occupazione</span>
-                  <input id="ntProfileOccupation" class="ntInput" type="text" value="${escapeHtml(draft.occupation)}" placeholder="Occupazione" />
-                </label>
-              </div>
-            </div>
+            ${renderStepOne(draft)}
+            ${renderStepTwo(draft)}
           </div>
         </div>
       `
@@ -171,8 +182,8 @@ window.NTProfileWizardCard = (() => {
     const step = Number(wizard?.step || 0);
 
     document.querySelectorAll("#ntProfileWizard .ntWizardStep").forEach((el) => {
-      const current = Number(el.dataset.step) === step;
-      el.hidden = !current;
+      const isCurrent = Number(el.dataset.step) === step;
+      el.hidden = !isCurrent;
     });
 
     window.NTCards?.refreshActionState?.(CARD_ID);
@@ -211,7 +222,7 @@ window.NTProfileWizardCard = (() => {
       id: CARD_ID,
 
       render() {
-        const { title, body } = renderBody();
+        const { title, body } = renderCard();
 
         return NTCardTemplate.createCard({
           id: CARD_ID,
