@@ -21,6 +21,12 @@ window.NTProfileCard = (() => {
     }
   }
 
+  function writeCtx(data) {
+    try {
+      sessionStorage.setItem(CTX_KEY, JSON.stringify(data || {}));
+    } catch {}
+  }
+
   function getData() {
     return readCtx()?.profile || readStored() || {};
   }
@@ -38,91 +44,93 @@ window.NTProfileCard = (() => {
   function openWizard() {
     const d = getData();
 
-    sessionStorage.setItem(
-      CTX_KEY,
-      JSON.stringify({
-        profile: d,
-        mode: hasData(d) ? "edit" : "create"
-      })
-    );
+    writeCtx({
+      profile: d,
+      mode: hasData(d) ? "edit" : "create"
+    });
 
     if (window.NTCards?.state?.registry?.has?.(WIZARD_CARD_ID)) {
       window.NTCards.openCard(WIZARD_CARD_ID);
     }
   }
 
-  function render() {
-    const d = getData();
-
-    return NTCardTemplate.createCard({
-      id: "profile",
-      title: "Profilo utente",
-      showBack: false,
-      showNext: false,
-      footer: true,
-      body: `
-        <div class="ntProfileContent">
-          <div class="ntProfileHero">
-            <div class="ntProfileAvatarBox ${avatarClass(d.gender)}" data-avatar>
-              <div class="ntProfileAvatarCalendarIcon">○</div>
-            </div>
-
-            <div class="ntProfileMainInfo">
-              <div class="ntProfileRow">
-                <span class="ntProfileLabel">Nome:</span>
-                <span class="ntProfileValue" data-k="firstName">${safe(d.firstName) || "—"}</span>
-              </div>
-
-              <div class="ntProfileRow">
-                <span class="ntProfileLabel">Cognome:</span>
-                <span class="ntProfileValue" data-k="lastName">${safe(d.lastName) || "—"}</span>
-              </div>
-
-              <div class="ntProfileRow">
-                <span class="ntProfileLabel">Sesso:</span>
-                <span class="ntProfileValue" data-k="gender">${safe(d.gender) || "—"}</span>
-              </div>
-
-              <div class="ntProfileRow">
-                <span class="ntProfileLabel">Data di nascita:</span>
-                <span class="ntProfileValue" data-k="birthDate">${safe(d.birthDate) || "—"}</span>
-              </div>
-            </div>
-          </div>
-
-          <p class="ntProfileHelperText">
-            ${hasData(d) ? "Consulta i dati del tuo profilo." : "Inserisci i dati per creare il tuo profilo."}
-          </p>
-        </div>
-      `
-    });
+  function formatValue(v) {
+    return safe(v) || "—";
   }
 
-  function fixFooter(root) {
+  function helperText(d) {
+    return hasData(d)
+      ? "Consulta i dati del tuo profilo."
+      : "Inserisci i dati per creare il tuo profilo.";
+  }
+
+  function renderBody(d) {
+    return `
+      <div class="ntProfileContent">
+        <div class="ntProfileHero">
+          <div class="ntProfileAvatarBox ${avatarClass(d.gender)}" data-avatar>
+            <div class="ntProfileAvatarCalendarIcon">○</div>
+          </div>
+
+          <div class="ntProfileMainInfo">
+            <div class="ntProfileRow">
+              <span class="ntProfileLabel">Nome:</span>
+              <span class="ntProfileValue" data-k="firstName">${formatValue(d.firstName)}</span>
+            </div>
+
+            <div class="ntProfileRow">
+              <span class="ntProfileLabel">Cognome:</span>
+              <span class="ntProfileValue" data-k="lastName">${formatValue(d.lastName)}</span>
+            </div>
+
+            <div class="ntProfileRow">
+              <span class="ntProfileLabel">Sesso:</span>
+              <span class="ntProfileValue" data-k="gender">${formatValue(d.gender)}</span>
+            </div>
+
+            <div class="ntProfileRow">
+              <span class="ntProfileLabel">Data di nascita:</span>
+              <span class="ntProfileValue" data-k="birthDate">${formatValue(d.birthDate)}</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="ntProfileHelperText" data-helper>${helperText(d)}</p>
+      </div>
+    `;
+  }
+
+  function primaryLabel() {
+    return hasData(readStored()) ? "Modifica i dati" : "Inserisci i dati";
+  }
+
+  function applyFooter(root) {
     if (!root) return;
 
+    const row = root.querySelector(".ntCardFooterRow");
     const cancel = root.querySelector(".jsNtCardCancel");
     const save = root.querySelector(".jsNtCardSave");
-    const row = root.querySelector(".ntCardFooterRow");
 
     if (row) {
-      row.classList.add("ntFooterSingleRight");
+      row.style.display = "flex";
+      row.style.justifyContent = "flex-end";
+      row.style.alignItems = "center";
+      row.style.gap = "12px";
     }
 
     if (cancel) {
       cancel.hidden = true;
-      cancel.style.display = "none";
       cancel.disabled = true;
+      cancel.style.display = "none";
       cancel.textContent = "";
       cancel.setAttribute("aria-hidden", "true");
     }
 
     if (save) {
-      const label = hasData(readStored()) ? "Modifica i dati" : "Inserisci i dati";
-
+      const label = primaryLabel();
       save.hidden = false;
-      save.style.display = "";
       save.disabled = false;
+      save.style.display = "";
       save.textContent = label;
       save.setAttribute("aria-label", label);
       save.classList.remove("isBlocked");
@@ -134,24 +142,33 @@ window.NTProfileCard = (() => {
     const root = window.NTCards?.getCardRoot?.("profile");
     if (!root) return;
 
+    const data = d || getData();
+
     const avatar = root.querySelector("[data-avatar]");
     if (avatar) {
-      avatar.className = "ntProfileAvatarBox " + avatarClass(d.gender);
+      avatar.className = "ntProfileAvatarBox " + avatarClass(data.gender);
     }
 
     ["firstName", "lastName", "gender", "birthDate"].forEach((k) => {
       const el = root.querySelector(`[data-k="${k}"]`);
-      if (el) el.textContent = safe(d[k]) || "—";
+      if (el) el.textContent = formatValue(data[k]);
     });
 
-    const helper = root.querySelector(".ntProfileHelperText");
-    if (helper) {
-      helper.textContent = hasData(d)
-        ? "Consulta i dati del tuo profilo."
-        : "Inserisci i dati per creare il tuo profilo.";
-    }
+    const helper = root.querySelector("[data-helper]");
+    if (helper) helper.textContent = helperText(data);
 
-    fixFooter(root);
+    applyFooter(root);
+  }
+
+  function render() {
+    return NTCardTemplate.createCard({
+      id: "profile",
+      title: "Profilo utente",
+      showBack: false,
+      showNext: false,
+      footer: true,
+      body: renderBody(getData())
+    });
   }
 
   function register() {
@@ -162,7 +179,7 @@ window.NTProfileCard = (() => {
       render,
       onOpen() {
         const root = NTCards.getCardRoot("profile");
-        fixFooter(root);
+        applyFooter(root);
         refreshLive(getData());
       }
     });
