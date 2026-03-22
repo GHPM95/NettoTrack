@@ -63,6 +63,12 @@ window.NTProfileCard = (() => {
     return hasProfileData(profile) ? "edit" : "create";
   }
 
+  function getAvatarToneClass(gender) {
+    if (gender === "Uomo") return "ntAvatar--male";
+    if (gender === "Donna") return "ntAvatar--female";
+    return "ntAvatar--gradient";
+  }
+
   function writeWizardContext(context) {
     try {
       sessionStorage.setItem(CTX_KEY, JSON.stringify(context || {}));
@@ -109,10 +115,12 @@ window.NTProfileCard = (() => {
       ? "Consulta i dati del tuo profilo."
       : "Inserisci i dati per creare il tuo profilo.";
 
+    const avatarTone = getAvatarToneClass(profile?.gender);
+
     return `
       <div class="ntProfileContent">
         <div class="ntProfileHero">
-          <div class="ntProfileAvatarBox" aria-hidden="true">
+          <div class="ntProfileAvatarBox ${avatarTone}" aria-hidden="true">
             <div class="ntProfileAvatarCalendarIcon">○</div>
           </div>
 
@@ -121,8 +129,6 @@ window.NTProfileCard = (() => {
             ${renderRow("Cognome", profile?.lastName)}
             ${renderRow("Sesso", profile?.gender)}
             ${renderRow("Data di nascita", profile?.birthDate)}
-            ${renderRow("Paese", profile?.country)}
-            ${renderRow("Occupazione", profile?.occupation)}
           </div>
         </div>
 
@@ -150,8 +156,6 @@ window.NTProfileCard = (() => {
       saveBtn.textContent = label;
       saveBtn.setAttribute("aria-label", label);
       saveBtn.classList.add("jsNtProfilePrimaryAction");
-
-      /* punto chiave: l'azione footer resta attiva */
       saveBtn.setAttribute("data-nt-action", "profile-primary");
       saveBtn.disabled = false;
       saveBtn.classList.remove("isBlocked");
@@ -186,6 +190,7 @@ window.NTProfileCard = (() => {
     register,
     readProfileData,
     hasProfileData,
-    openProfileWizard
+    openProfileWizard,
+    getAvatarToneClass
   };
 })();
