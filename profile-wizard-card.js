@@ -266,17 +266,16 @@ window.NTProfileWizardCard = (() => {
     setFooterVisible(root, true);
 
     if (row) {
-      row.style.display = "grid";
-      row.style.gridTemplateColumns = "1fr 1fr";
+      row.style.display = "flex";
+      row.style.justifyContent = step === 0 ? "flex-end" : "space-between";
       row.style.alignItems = "center";
       row.style.gap = "12px";
     }
 
     if (cancel) {
       if (step === 0) {
-        cancel.hidden = false;
-        cancel.style.display = "";
-        cancel.style.visibility = "hidden";
+        cancel.hidden = true;
+        cancel.style.display = "none";
         cancel.disabled = true;
         cancel.textContent = "";
         cancel.setAttribute("aria-hidden", "true");
