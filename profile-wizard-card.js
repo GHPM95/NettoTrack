@@ -39,25 +39,20 @@ window.NTProfileWizardCard = (() => {
       firstName: safe(document.getElementById("ntProfileFirstName")?.value),
       lastName: safe(document.getElementById("ntProfileLastName")?.value),
       gender: safe(document.getElementById("ntProfileGender")?.value),
-      birthDate: safe(document.getElementById("ntProfileBirthDate")?.value),
-      country: safe(document.getElementById("ntProfileCountry")?.value),
-      occupation: safe(document.getElementById("ntProfileOccupation")?.value)
+      birthDate: safe(document.getElementById("ntProfileBirthDate")?.value)
     };
   }
 
   function getInitialDraft() {
-    const ctx = readCtx();
-    return ctx.profile || {};
+    return readCtx().profile || {};
   }
 
-  function getStep() {
-    const root = window.NTCards?.getCardRoot?.(CARD_ID);
+  function getStep(root) {
     const value = Number(root?.dataset?.wizardStep ?? 0);
     return Number.isFinite(value) ? value : 0;
   }
 
-  function setStep(step) {
-    const root = window.NTCards?.getCardRoot?.(CARD_ID);
+  function setStep(root, step) {
     if (!root) return;
     root.dataset.wizardStep = String(step);
   }
@@ -71,11 +66,9 @@ window.NTProfileWizardCard = (() => {
   function formatBirth(value) {
     const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
     let out = "";
-
     if (digits.length > 0) out += digits.slice(0, 2);
     if (digits.length >= 3) out += "/" + digits.slice(2, 4);
     if (digits.length >= 5) out += "/" + digits.slice(4, 8);
-
     return out;
   }
 
@@ -203,7 +196,7 @@ window.NTProfileWizardCard = (() => {
 
   function renderBody(d) {
     return `
-      <div id="profileWizard" class="ntWizard">
+      <div id="profileWizardForm" class="ntWizard">
         <div id="profileWizardContent" class="ntWizardContent">
           ${renderStepOne(d)}
           ${renderPlaceholder(1)}
@@ -225,6 +218,7 @@ window.NTProfileWizardCard = (() => {
       footer: true,
       footerLeftDisabled: true,
       footerRightDisabled: false,
+      footerRightLabel: "avanti",
       body: renderBody(d)
     });
   }
@@ -232,7 +226,7 @@ window.NTProfileWizardCard = (() => {
   function applyStepUi(root) {
     if (!root) return;
 
-    const step = getStep();
+    const step = getStep(root);
     const title = root.querySelector(".ntCardTitle");
     const subHeader = root.querySelector(".ntCardSubHeader");
     const body = root.querySelector(".ntCardBody");
@@ -268,7 +262,7 @@ window.NTProfileWizardCard = (() => {
         cancel.style.display = "";
         cancel.disabled = false;
         cancel.textContent = "indietro";
-        cancel.onclick = () => goBack();
+        cancel.onclick = () => goBack(root);
       }
     }
 
@@ -280,7 +274,7 @@ window.NTProfileWizardCard = (() => {
 
       if (step < TOTAL_STEPS - 1) {
         save.textContent = "avanti";
-        save.onclick = () => goNext();
+        save.onclick = () => goNext(root);
       } else {
         save.textContent = "salva";
         save.onclick = () => finish();
@@ -289,14 +283,14 @@ window.NTProfileWizardCard = (() => {
   }
 
   function bind(root) {
-    const formRoot = document.getElementById("profileWizard");
+    const formRoot = root?.querySelector("#profileWizardForm");
     if (!formRoot) return;
 
     if (window.NTSelect?.hydrate) {
       window.NTSelect.hydrate(formRoot);
     }
 
-    const birth = document.getElementById("ntProfileBirthDate");
+    const birth = root.querySelector("#ntProfileBirthDate");
     if (birth) {
       birth.addEventListener("input", () => {
         birth.value = formatBirth(birth.value);
@@ -304,7 +298,7 @@ window.NTProfileWizardCard = (() => {
       });
     }
 
-    const gender = document.getElementById("ntProfileGender");
+    const gender = root.querySelector("#ntProfileGender");
     if (gender) {
       gender.addEventListener("change", syncDraft);
       gender.addEventListener("input", syncDraft);
@@ -315,11 +309,11 @@ window.NTProfileWizardCard = (() => {
 
     requestAnimationFrame(syncDraft);
 
-    const errorBack = document.getElementById("wizardErrorBack");
+    const errorBack = root.querySelector("#wizardErrorBack");
     if (errorBack) {
       errorBack.onclick = () => {
-        const body = root?.querySelector(".ntCardBody");
-        const footer = root?.querySelector(".ntCardFooter");
+        const body = root.querySelector(".ntCardBody");
+        const footer = root.querySelector(".ntCardFooter");
         if (!body) return;
 
         body.innerHTML = renderBody(readCtx().profile || {});
@@ -330,16 +324,14 @@ window.NTProfileWizardCard = (() => {
     }
   }
 
-  function goBack() {
-    const root = window.NTCards?.getCardRoot?.(CARD_ID);
-    const step = Math.max(0, getStep() - 1);
-    setStep(step);
+  function goBack(root) {
+    const step = Math.max(0, getStep(root) - 1);
+    setStep(root, step);
     applyStepUi(root);
   }
 
-  function goNext() {
-    const root = window.NTCards?.getCardRoot?.(CARD_ID);
-    const step = getStep();
+  function goNext(root) {
+    const step = getStep(root);
 
     if (step === 0 && !validBirth(getDraft().birthDate)) {
       const footer = root?.querySelector(".ntCardFooter");
@@ -353,7 +345,7 @@ window.NTProfileWizardCard = (() => {
       return;
     }
 
-    setStep(Math.min(TOTAL_STEPS - 1, step + 1));
+    setStep(root, Math.min(TOTAL_STEPS - 1, step + 1));
     applyStepUi(root);
   }
 
@@ -374,22 +366,12 @@ window.NTProfileWizardCard = (() => {
       render,
       onOpen() {
         const root = window.NTCards.getCardRoot(CARD_ID);
-        setStep(0);
+        setStep(root, 0);
         applyStepUi(root);
         bind(root);
       }
     });
   }
-
-  function autoRegister() {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", register, { once: true });
-    } else {
-      register();
-    }
-  }
-
-  autoRegister();
 
   return { register };
 })();
