@@ -1,8 +1,8 @@
 window.NTProfileCard = (() => {
   const STORAGE_KEY = "ntUserProfileData";
   const CTX_KEY = "ntProfileWizardContext";
-  const CARD_ID = "profile";
   const WIZARD_CARD_ID = "profileWizard";
+  const CARD_ID = "profile";
 
   const safe = (v) => String(v ?? "").trim();
 
@@ -109,41 +109,6 @@ window.NTProfileCard = (() => {
     `;
   }
 
-  function applyFooter(root) {
-    if (!root) return;
-
-    const row = root.querySelector(".ntCardFooterRow");
-    const cancel = root.querySelector(".jsNtCardCancel");
-    const save = root.querySelector(".jsNtCardSave");
-
-    if (row) {
-      row.style.display = "flex";
-      row.style.justifyContent = "flex-end";
-      row.style.alignItems = "center";
-      row.style.gap = "12px";
-    }
-
-    if (cancel) {
-      cancel.hidden = true;
-      cancel.disabled = true;
-      cancel.style.display = "none";
-      cancel.textContent = "";
-      cancel.setAttribute("aria-hidden", "true");
-    }
-
-    if (save) {
-      const label = primaryLabel();
-
-      save.hidden = false;
-      save.disabled = false;
-      save.style.display = "";
-      save.textContent = label;
-      save.setAttribute("aria-label", label);
-      save.classList.remove("isBlocked");
-      save.onclick = () => openWizard();
-    }
-  }
-
   function refreshLive(d) {
     const root = window.NTCards?.getCardRoot?.(CARD_ID);
     if (!root) return;
@@ -162,12 +127,10 @@ window.NTProfileCard = (() => {
 
     const helper = root.querySelector("[data-helper]");
     if (helper) helper.textContent = helperText(data);
-
-    applyFooter(root);
   }
 
   function render() {
-    return NTCardTemplate.createCard({
+    return window.NTCardTemplate.createCard({
       id: CARD_ID,
       title: "Profilo utente",
       showBack: false,
@@ -179,6 +142,48 @@ window.NTProfileCard = (() => {
     });
   }
 
+  function onOpen(root) {
+    if (!root) return;
+
+    const cancel = root.querySelector(".jsNtCardCancel");
+    const save = root.querySelector(".jsNtCardSave");
+    const row = root.querySelector(".ntCardFooterRow");
+
+    if (row) {
+      row.style.display = "flex";
+      row.style.justifyContent = "flex-end";
+      row.style.alignItems = "center";
+      row.style.gap = "12px";
+    }
+
+    if (cancel) {
+      cancel.style.display = "none";
+      cancel.hidden = true;
+      cancel.disabled = true;
+      cancel.textContent = "";
+      cancel.setAttribute("aria-hidden", "true");
+    }
+
+    if (save) {
+      setTimeout(() => {
+        save.hidden = false;
+        save.style.display = "";
+        save.disabled = false;
+        save.classList.remove("isBlocked");
+        save.textContent = primaryLabel();
+        save.setAttribute("aria-label", primaryLabel());
+
+        save.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openWizard();
+        };
+      }, 0);
+    }
+
+    refreshLive(getData());
+  }
+
   function register() {
     if (!window.NTCards || !window.NTCardTemplate) return;
     if (window.NTCards?.state?.registry?.has?.(CARD_ID)) return;
@@ -186,11 +191,7 @@ window.NTProfileCard = (() => {
     window.NTCards.registerCard({
       id: CARD_ID,
       render,
-      onOpen() {
-        const root = window.NTCards.getCardRoot(CARD_ID);
-        applyFooter(root);
-        refreshLive(getData());
-      }
+      onOpen
     });
   }
 
