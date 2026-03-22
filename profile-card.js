@@ -72,13 +72,13 @@ window.NTProfileCard = (() => {
   }
 
   function renderProfileSummary(profile = readProfileData()) {
-    const hasData = hasProfileData(profile);
-
     return `
-      <div class="ntProfileSummaryCard">
+      <div class="ntProfileContent">
         <div class="ntProfileHero">
           <div class="ntProfileAvatarBox" aria-hidden="true">
-            <div class="ntProfileAvatarGlyph">◌</div>
+            <div class="ntProfileAvatarCalendarIcon">
+              ○
+            </div>
           </div>
 
           <div class="ntProfileMainInfo">
@@ -115,11 +115,9 @@ window.NTProfileCard = (() => {
         </div>
 
         <p class="ntProfileHelperText">
-          ${
-            hasData
-              ? "Consulta i dati principali del tuo profilo personale e lavorativo."
-              : "Inserisci le informazioni principali per creare il tuo profilo utente."
-          }
+          ${hasProfileData(profile)
+            ? "Consulta i dati principali del tuo profilo personale e lavorativo."
+            : "Inserisci le informazioni principali per creare il tuo profilo utente."}
         </p>
       </div>
     `;
@@ -136,6 +134,18 @@ window.NTProfileCard = (() => {
     }
   }
 
+  function buildFooterButton(label) {
+    return `
+      <button
+        type="button"
+        class="ntCardFooterBtn ntCardFooterBtn--primary jsNtProfilePrimaryAction"
+        aria-label="${escapeHtml(label)}"
+      >
+        ${escapeHtml(label)}
+      </button>
+    `;
+  }
+
   function register() {
     if (!window.NTCards || !window.NTCardTemplate) return;
 
@@ -146,41 +156,26 @@ window.NTProfileCard = (() => {
         const profile = readProfileData();
         const actionLabel = getPrimaryActionLabel(profile);
 
-        const body = `
-          <div class="ntProfileCardRoot">
-            ${renderProfileSummary(profile)}
+        const body = renderProfileSummary(profile);
 
-            <div class="ntProfileActionRow">
-              ${window.NTComponents?.button
-                ? window.NTComponents.button({
-                    label: actionLabel,
-                    kind: "primary",
-                    pressed: false
-                  }).replace(
-                    '<button class="ntBtn ntBtn-primary ">',
-                    '<button type="button" class="ntBtn ntBtn-primary jsNtProfilePrimaryAction">'
-                  )
-                : `
-                  <button
-                    type="button"
-                    class="ntBtn ntBtn-primary jsNtProfilePrimaryAction"
-                  >
-                    ${escapeHtml(actionLabel)}
-                  </button>
-                `
-              }
-            </div>
-          </div>
-        `;
-
-        return NTCardTemplate.createCard({
+        const html = NTCardTemplate.createCard({
           id: "profile",
           title: "Profilo utente",
           body,
           showBack: false,
           showNext: false,
-          footer: false
+          footer: true
         });
+
+        return html
+          .replace(
+            /<button[\s\S]*?jsNtCardCancel[\s\S]*?<\/button>/,
+            buildFooterButton(actionLabel)
+          )
+          .replace(
+            /<button[\s\S]*?jsNtCardSave[\s\S]*?<\/button>/,
+            `<span class="ntProfileFooterGhost" aria-hidden="true"></span>`
+          );
       },
 
       onOpen() {
