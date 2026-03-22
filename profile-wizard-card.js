@@ -238,6 +238,7 @@ window.NTProfileWizardCard = (() => {
     });
 
     updateAvatarFromGender();
+    window.NTProfileCard?.refreshLiveCard?.(next);
   }
 
   function hasChanges({ draft, committedDraft }) {
@@ -290,10 +291,19 @@ window.NTProfileWizardCard = (() => {
     return { valid: true };
   }
 
+  function setFooterVisible(isVisible) {
+    const root = window.NTCards?.getCardRoot?.(CARD_ID);
+    const footer = root?.querySelector(".ntCardFooter");
+    if (!footer) return;
+
+    footer.style.display = isVisible ? "" : "none";
+  }
+
   function showInlineError(message) {
     const content = document.getElementById("ntProfileWizardContent");
     if (!content) return;
 
+    setFooterVisible(false);
     content.innerHTML = renderErrorState(message);
 
     const btn = document.getElementById("ntProfileWizardErrorBackBtn");
@@ -308,6 +318,7 @@ window.NTProfileWizardCard = (() => {
 
         bindMaskAndInputs();
         refreshSteps();
+        setFooterVisible(true);
       };
     }
   }
@@ -343,20 +354,25 @@ window.NTProfileWizardCard = (() => {
 
     if (!backBtn || !actionBtn) return;
 
+    setFooterVisible(true);
+
     if (step === 0) {
-      backBtn.hidden = true;
+      backBtn.style.visibility = "hidden";
+      backBtn.style.pointerEvents = "none";
       backBtn.disabled = true;
       backBtn.setAttribute("aria-hidden", "true");
       backBtn.textContent = "";
 
-      actionBtn.hidden = false;
+      actionBtn.style.visibility = "";
+      actionBtn.style.pointerEvents = "";
       actionBtn.textContent = "avanti";
       actionBtn.setAttribute("aria-label", "Avanti");
       actionBtn.setAttribute("data-nt-action", "next");
       actionBtn.disabled = false;
       actionBtn.classList.remove("isBlocked");
     } else if (step < TOTAL_STEPS - 1) {
-      backBtn.hidden = false;
+      backBtn.style.visibility = "";
+      backBtn.style.pointerEvents = "";
       backBtn.disabled = false;
       backBtn.removeAttribute("aria-hidden");
       backBtn.textContent = "indietro";
@@ -364,14 +380,16 @@ window.NTProfileWizardCard = (() => {
       backBtn.setAttribute("data-nt-action", "back");
       backBtn.classList.remove("isBlocked");
 
-      actionBtn.hidden = false;
+      actionBtn.style.visibility = "";
+      actionBtn.style.pointerEvents = "";
       actionBtn.textContent = "avanti";
       actionBtn.setAttribute("aria-label", "Avanti");
       actionBtn.setAttribute("data-nt-action", "next");
       actionBtn.disabled = false;
       actionBtn.classList.remove("isBlocked");
     } else {
-      backBtn.hidden = false;
+      backBtn.style.visibility = "";
+      backBtn.style.pointerEvents = "";
       backBtn.disabled = false;
       backBtn.removeAttribute("aria-hidden");
       backBtn.textContent = "indietro";
@@ -379,7 +397,8 @@ window.NTProfileWizardCard = (() => {
       backBtn.setAttribute("data-nt-action", "back");
       backBtn.classList.remove("isBlocked");
 
-      actionBtn.hidden = false;
+      actionBtn.style.visibility = "";
+      actionBtn.style.pointerEvents = "";
       actionBtn.textContent = "salva";
       actionBtn.setAttribute("aria-label", "Salva");
       actionBtn.setAttribute("data-nt-action", "save");
@@ -415,11 +434,15 @@ window.NTProfileWizardCard = (() => {
   }
 
   function autosaveDraft() {
+    const draft = getDraft();
     const ctx = readWizardContext() || {};
+
     writeWizardContext({
       ...ctx,
-      profile: getDraft()
+      profile: draft
     });
+
+    window.NTProfileCard?.refreshLiveCard?.(draft);
   }
 
   function hydrateSystemSelect() {
@@ -467,6 +490,7 @@ window.NTProfileWizardCard = (() => {
     }
 
     updateAvatarFromGender();
+    autosaveDraft();
   }
 
   function bindWizard() {
