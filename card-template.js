@@ -32,7 +32,6 @@ window.NTCardTemplate = (() => {
                   class="ntIconBtn jsNtCardBack"
                   data-nt-action="back"
                   aria-label="Indietro"
-                  ${footerLeftDisabled ? "disabled" : ""}
                 >
                   ←
                 </button>
@@ -48,7 +47,6 @@ window.NTCardTemplate = (() => {
                   class="ntIconBtn jsNtCardNext"
                   data-nt-action="next"
                   aria-label="Avanti"
-                  ${footerRightDisabled ? "disabled" : ""}
                 >
                   →
                 </button>
