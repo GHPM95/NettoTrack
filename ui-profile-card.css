@@ -1,5 +1,3 @@
-/* ========================= NettoTrack Profile Card ========================= */
-
 .ntProfileContent{
   width:100%;
   display:flex;
@@ -77,24 +75,6 @@
   color:rgba(255,255,255,.78);
 }
 
-/* footer profilo */
-[data-card-id="profile"] .ntCardFooterRow{
-  display:flex;
-  justify-content:flex-end;
-  align-items:center;
-  width:100%;
-  gap:0;
-}
-
-[data-card-id="profile"] .jsNtProfilePrimaryAction{
-  margin-left:auto;
-}
-
-[data-card-id="profile"] .ntProfileFooterGhost{
-  display:none;
-}
-
-/* avatar tones */
 .ntAvatar--male{
   background:linear-gradient(135deg,#4facfe,#00f2fe);
 }
@@ -105,35 +85,4 @@
 
 .ntAvatar--gradient{
   background:linear-gradient(135deg,#7f7fd5,#86a8e7,#91eae4);
-}
-
-@media (max-width:390px){
-  .ntProfileHero{
-    grid-template-columns:72px 1fr;
-    gap:12px;
-  }
-
-  .ntProfileAvatarBox{
-    width:72px;
-    height:72px;
-    border-radius:20px;
-  }
-
-  .ntProfileAvatarCalendarIcon{
-    font-size:20px;
-  }
-
-  .ntProfileRow{
-    grid-template-columns:124px 1fr;
-    gap:8px;
-  }
-
-  .ntProfileLabel,
-  .ntProfileValue{
-    font-size:14px;
-  }
-
-  .ntProfileHelperText{
-    font-size:13px;
-  }
 }
