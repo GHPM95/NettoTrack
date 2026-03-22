@@ -1,8 +1,8 @@
 window.NTProfileCard = (() => {
   const STORAGE_KEY = "ntUserProfileData";
   const CTX_KEY = "ntProfileWizardContext";
-  const CARD_ID = "profile";
   const WIZARD_CARD_ID = "profileWizard";
+  const CARD_ID = "profile";
 
   const safe = (v) => String(v ?? "").trim();
 
@@ -42,6 +42,12 @@ window.NTProfileCard = (() => {
     return "ntAvatar--gradient";
   }
 
+  function avatarGlyph(gender) {
+    if (gender === "Uomo") return "♂";
+    if (gender === "Donna") return "♀";
+    return "○";
+  }
+
   function formatValue(v) {
     return safe(v) || "—";
   }
@@ -78,7 +84,7 @@ window.NTProfileCard = (() => {
       <div class="ntProfileContent">
         <div class="ntProfileHero">
           <div class="ntProfileAvatarBox ${avatarClass(d.gender)}" data-avatar>
-            <div class="ntProfileAvatarCalendarIcon">○</div>
+            <div class="ntProfileAvatarCalendarIcon" data-avatar-glyph>${avatarGlyph(d.gender)}</div>
           </div>
 
           <div class="ntProfileMainInfo">
@@ -160,6 +166,11 @@ window.NTProfileCard = (() => {
       avatar.className = "ntProfileAvatarBox " + avatarClass(data.gender);
     }
 
+    const glyph = root.querySelector("[data-avatar-glyph]");
+    if (glyph) {
+      glyph.textContent = avatarGlyph(data.gender);
+    }
+
     ["firstName", "lastName", "gender", "birthDate"].forEach((k) => {
       const el = root.querySelector(`[data-k="${k}"]`);
       if (el) el.textContent = formatValue(data[k]);
@@ -204,6 +215,7 @@ window.NTProfileCard = (() => {
     register,
     refreshLive,
     openWizard,
-    avatarClass
+    avatarClass,
+    avatarGlyph
   };
 })();
