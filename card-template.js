@@ -1,3 +1,4 @@
+/* ========================= NettoTrack Card Template ========================= */
 window.NTCardTemplate = (() => {
   function createCard({
     id = "",
@@ -6,13 +7,21 @@ window.NTCardTemplate = (() => {
     footer = true,
     subHeader = "",
     showBack = true,
-    showNext = true
+    showNext = true,
+    footerLeftLabel = "annulla",
+    footerRightLabel = "salva",
+    footerLeftClass = "ntCardFooterBtn ntCardFooterBtn--ghost jsNtCardCancel",
+    footerRightClass = "ntCardFooterBtn ntCardFooterBtn--primary jsNtCardSave",
+    footerLeftAction = "cancel",
+    footerRightAction = "save",
+    footerLeftDisabled = true,
+    footerRightDisabled = true
   } = {}) {
     const safeId = escapeHtml(id);
     const safeTitle = escapeHtml(title);
     const hasSubHeader = String(subHeader || "").trim().length > 0;
 
-    const leftSideHtml = (showBack || showNext)
+    const leftNavHtml = (showBack || showNext)
       ? `
         <div class="ntCardNav">
           ${
@@ -23,7 +32,7 @@ window.NTCardTemplate = (() => {
                   class="ntIconBtn jsNtCardBack"
                   data-nt-action="back"
                   aria-label="Indietro"
-                  disabled
+                  ${footerLeftDisabled ? "disabled" : ""}
                 >
                   ←
                 </button>
@@ -39,7 +48,7 @@ window.NTCardTemplate = (() => {
                   class="ntIconBtn jsNtCardNext"
                   data-nt-action="next"
                   aria-label="Avanti"
-                  disabled
+                  ${footerRightDisabled ? "disabled" : ""}
                 >
                   →
                 </button>
@@ -59,7 +68,7 @@ window.NTCardTemplate = (() => {
           <div class="ntCardTop">
             <header class="ntCardHeader">
               <div class="ntCardHeaderSide ntCardHeaderSide--left">
-                ${leftSideHtml}
+                ${leftNavHtml}
               </div>
 
               <div class="ntCardTitleWrap">
@@ -100,22 +109,22 @@ window.NTCardTemplate = (() => {
                   <div class="ntCardFooterRow">
                     <button
                       type="button"
-                      class="ntCardFooterBtn ntCardFooterBtn--ghost jsNtCardCancel"
-                      data-nt-action="cancel"
-                      aria-label="Annulla"
-                      disabled
+                      class="${escapeAttr(footerLeftClass)}"
+                      data-nt-action="${escapeAttr(footerLeftAction)}"
+                      aria-label="${escapeAttr(footerLeftLabel)}"
+                      ${footerLeftDisabled ? "disabled" : ""}
                     >
-                      annulla
+                      ${escapeHtml(footerLeftLabel)}
                     </button>
 
                     <button
                       type="button"
-                      class="ntCardFooterBtn ntCardFooterBtn--primary jsNtCardSave"
-                      data-nt-action="save"
-                      aria-label="Salva"
-                      disabled
+                      class="${escapeAttr(footerRightClass)}"
+                      data-nt-action="${escapeAttr(footerRightAction)}"
+                      aria-label="${escapeAttr(footerRightLabel)}"
+                      ${footerRightDisabled ? "disabled" : ""}
                     >
-                      salva
+                      ${escapeHtml(footerRightLabel)}
                     </button>
                   </div>
                 </footer>
@@ -135,6 +144,10 @@ window.NTCardTemplate = (() => {
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
+  }
+
+  function escapeAttr(value) {
+    return escapeHtml(value);
   }
 
   return { createCard };
