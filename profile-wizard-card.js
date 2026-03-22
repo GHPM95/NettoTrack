@@ -1,6 +1,7 @@
 window.NTProfileWizardCard = (() => {
   const STORAGE_KEY = "ntUserProfileData";
   const CTX_KEY = "ntProfileWizardContext";
+  const CARD_ID = "profileWizard";
 
   const safe = (v) => String(v ?? "").trim();
 
@@ -34,7 +35,7 @@ window.NTProfileWizardCard = (() => {
   }
 
   function updateAvatar() {
-    const box = document.getElementById("avatar");
+    const box = document.getElementById("wizardAvatar");
     const gender = document.getElementById("gender")?.value;
 
     if (!box) return;
@@ -51,9 +52,11 @@ window.NTProfileWizardCard = (() => {
   function formatBirth(value) {
     const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
     let out = "";
+
     if (digits.length > 0) out += digits.slice(0, 2);
     if (digits.length >= 3) out += "/" + digits.slice(2, 4);
     if (digits.length >= 5) out += "/" + digits.slice(4, 8);
+
     return out;
   }
 
@@ -89,11 +92,57 @@ window.NTProfileWizardCard = (() => {
     `;
   }
 
+  function renderForm(d) {
+    return `
+      <div id="profileWizard" class="ntWizard">
+        <div class="ntProfileWizardHero">
+          <div id="wizardAvatar" class="ntProfileAvatarBox ${avatarClass(d.gender)}">
+            <div class="ntProfileAvatarCalendarIcon">○</div>
+          </div>
+
+          <div class="ntProfileWizardFields">
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Nome</span>
+              <input id="name" class="ntInput" value="${safe(d.firstName)}" />
+            </label>
+
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Cognome</span>
+              <input id="last" class="ntInput" value="${safe(d.lastName)}" />
+            </label>
+
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Sesso</span>
+              <select id="gender" class="ntSelect jsNtSelect">
+                <option value=""></option>
+                <option value="Uomo" ${d.gender === "Uomo" ? "selected" : ""}>Uomo</option>
+                <option value="Donna" ${d.gender === "Donna" ? "selected" : ""}>Donna</option>
+                <option value="Preferisco non specificare" ${d.gender === "Preferisco non specificare" ? "selected" : ""}>Preferisco non specificare</option>
+              </select>
+            </label>
+
+            <label class="ntProfileWizardField">
+              <span class="ntProfileWizardLabel">Data di nascita</span>
+              <input
+                id="birth"
+                class="ntInput"
+                inputmode="numeric"
+                maxlength="10"
+                placeholder="GG/MM/AAAA"
+                value="${safe(d.birthDate)}"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   function render() {
     const d = readCtx().profile || {};
 
     return NTCardTemplate.createCard({
-      id: "profileWizard",
+      id: CARD_ID,
       title: "Dati anagrafici",
       subHeader: `
         <div class="ntProfileWizardSubHeader">
@@ -106,49 +155,7 @@ window.NTProfileWizardCard = (() => {
         </div>
       `,
       footer: true,
-      body: `
-        <div id="profileWizard" class="ntWizard">
-          <div class="ntProfileWizardHero">
-            <div id="avatar" class="ntProfileAvatarBox ${avatarClass(d.gender)}">
-              <div class="ntProfileAvatarCalendarIcon">○</div>
-            </div>
-
-            <div class="ntProfileWizardFields">
-              <label class="ntProfileWizardField">
-                <span class="ntProfileWizardLabel">Nome</span>
-                <input id="name" class="ntInput" value="${safe(d.firstName)}" />
-              </label>
-
-              <label class="ntProfileWizardField">
-                <span class="ntProfileWizardLabel">Cognome</span>
-                <input id="last" class="ntInput" value="${safe(d.lastName)}" />
-              </label>
-
-              <label class="ntProfileWizardField">
-                <span class="ntProfileWizardLabel">Sesso</span>
-                <select id="gender" class="ntSelect jsNtSelect">
-                  <option value=""></option>
-                  <option value="Uomo" ${d.gender === "Uomo" ? "selected" : ""}>Uomo</option>
-                  <option value="Donna" ${d.gender === "Donna" ? "selected" : ""}>Donna</option>
-                  <option value="Preferisco non specificare" ${d.gender === "Preferisco non specificare" ? "selected" : ""}>Preferisco non specificare</option>
-                </select>
-              </label>
-
-              <label class="ntProfileWizardField">
-                <span class="ntProfileWizardLabel">Data di nascita</span>
-                <input
-                  id="birth"
-                  class="ntInput"
-                  inputmode="numeric"
-                  maxlength="10"
-                  placeholder="GG/MM/AAAA"
-                  value="${safe(d.birthDate)}"
-                />
-              </label>
-            </div>
-          </div>
-        </div>
-      `
+      body: renderForm(d)
     });
   }
 
@@ -160,9 +167,7 @@ window.NTProfileWizardCard = (() => {
     const row = root.querySelector(".ntCardFooterRow");
 
     if (row) {
-      row.style.display = "flex";
-      row.style.justifyContent = "flex-end";
-      row.style.alignItems = "center";
+      row.classList.add("ntFooterSingleRight");
     }
 
     if (cancel) {
@@ -183,12 +188,12 @@ window.NTProfileWizardCard = (() => {
     }
   }
 
-  function bind() {
-    const root = document.getElementById("profileWizard");
-    if (!root) return;
+  function bind(rootCard) {
+    const formRoot = document.getElementById("profileWizard");
+    if (!formRoot) return;
 
     if (window.NTSelect?.hydrate) {
-      window.NTSelect.hydrate(root);
+      window.NTSelect.hydrate(formRoot);
     }
 
     const birth = document.getElementById("birth");
@@ -205,15 +210,28 @@ window.NTProfileWizardCard = (() => {
       gender.addEventListener("input", syncAll);
     }
 
-    root.addEventListener("input", syncAll);
-    root.addEventListener("change", syncAll);
+    formRoot.addEventListener("input", syncAll);
+    formRoot.addEventListener("change", syncAll);
 
     requestAnimationFrame(syncAll);
+
+    const errorBack = document.getElementById("wizardErrorBack");
+    if (errorBack) {
+      errorBack.onclick = () => {
+        const body = rootCard?.querySelector(".ntCardBody");
+        const footer = rootCard?.querySelector(".ntCardFooter");
+        if (!body) return;
+
+        body.innerHTML = renderForm(readCtx().profile || {});
+        if (footer) footer.style.display = "";
+        bind(rootCard);
+      };
+    }
   }
 
   function next() {
     const d = getDraft();
-    const root = window.NTCards?.getCardRoot?.("profileWizard");
+    const root = window.NTCards?.getCardRoot?.(CARD_ID);
 
     if (!validBirth(d.birthDate)) {
       const footer = root?.querySelector(".ntCardFooter");
@@ -222,23 +240,14 @@ window.NTProfileWizardCard = (() => {
       if (footer) footer.style.display = "none";
       if (body) {
         body.innerHTML = renderError("Data non valida");
-        const btn = document.getElementById("wizardErrorBack");
-        if (btn) {
-          btn.onclick = () => {
-            const fresh = render();
-            if (body) body.innerHTML = fresh.match(/<div id="profileWizard"[\s\S]*$/)?.[0] || body.innerHTML;
-            if (footer) footer.style.display = "";
-            bind();
-            fixFooter(root);
-          };
-        }
+        bind(root);
       }
       return;
     }
 
     persist(d);
     sessionStorage.removeItem(CTX_KEY);
-    window.NTCards.closeCard("profileWizard");
+    window.NTCards.closeCard(CARD_ID);
     window.NTProfileCard?.refreshLive?.(d);
   }
 
@@ -246,12 +255,12 @@ window.NTProfileWizardCard = (() => {
     if (!window.NTCards || !window.NTCardTemplate) return;
 
     NTCards.registerCard({
-      id: "profileWizard",
+      id: CARD_ID,
       render,
       onOpen() {
-        const root = NTCards.getCardRoot("profileWizard");
+        const root = NTCards.getCardRoot(CARD_ID);
         fixFooter(root);
-        bind();
+        bind(root);
       }
     });
   }
