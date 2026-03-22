@@ -1,5 +1,18 @@
 /* ========================= NettoTrack Card Template ========================= */
 window.NTCardTemplate = (() => {
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function escapeAttr(value) {
+    return escapeHtml(value);
+  }
+
   function createCard({
     id = "",
     title = "",
@@ -17,47 +30,9 @@ window.NTCardTemplate = (() => {
     footerLeftDisabled = true,
     footerRightDisabled = true
   } = {}) {
-    const safeId = escapeHtml(id);
+    const safeId = escapeAttr(id);
     const safeTitle = escapeHtml(title);
     const hasSubHeader = String(subHeader || "").trim().length > 0;
-
-    const leftNavHtml = (showBack || showNext)
-      ? `
-        <div class="ntCardNav">
-          ${
-            showBack
-              ? `
-                <button
-                  type="button"
-                  class="ntIconBtn jsNtCardBack"
-                  data-nt-action="back"
-                  aria-label="Indietro"
-                >
-                  ←
-                </button>
-              `
-              : ``
-          }
-
-          ${
-            showNext
-              ? `
-                <button
-                  type="button"
-                  class="ntIconBtn jsNtCardNext"
-                  data-nt-action="next"
-                  aria-label="Avanti"
-                >
-                  →
-                </button>
-              `
-              : ``
-          }
-        </div>
-      `
-      : `
-        <span class="ntCardHeaderGhost" aria-hidden="true"></span>
-      `;
 
     return `
       <section class="ntCard" data-card-id="${safeId}">
@@ -66,7 +41,43 @@ window.NTCardTemplate = (() => {
           <div class="ntCardTop">
             <header class="ntCardHeader">
               <div class="ntCardHeaderSide ntCardHeaderSide--left">
-                ${leftNavHtml}
+                ${
+                  showBack || showNext
+                    ? `
+                      <div class="ntCardNav">
+                        ${
+                          showBack
+                            ? `
+                              <button
+                                type="button"
+                                class="ntIconBtn jsNtCardBack"
+                                data-nt-action="back"
+                                aria-label="Indietro"
+                              >
+                                ←
+                              </button>
+                            `
+                            : ``
+                        }
+
+                        ${
+                          showNext
+                            ? `
+                              <button
+                                type="button"
+                                class="ntIconBtn jsNtCardNext"
+                                data-nt-action="next"
+                                aria-label="Avanti"
+                              >
+                                →
+                              </button>
+                            `
+                            : ``
+                        }
+                      </div>
+                    `
+                    : `<span class="ntCardHeaderGhost" aria-hidden="true"></span>`
+                }
               </div>
 
               <div class="ntCardTitleWrap">
@@ -133,19 +144,6 @@ window.NTCardTemplate = (() => {
         </div>
       </section>
     `;
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
-  }
-
-  function escapeAttr(value) {
-    return escapeHtml(value);
   }
 
   return { createCard };
