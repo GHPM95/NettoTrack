@@ -23,8 +23,12 @@ window.NTCardTemplate = (() => {
     footerLeftDisabled = true,
     footerRightDisabled = true
   } = {}) {
+    const safeId = escapeHtml(id);
+    const safeTitle = escapeHtml(title);
+    const hasSubHeader = String(subHeader || "").trim().length > 0;
+
     return `
-      <section class="ntCard" data-card-id="${escapeHtml(id)}">
+      <section class="ntCard" data-card-id="${safeId}">
         <div class="ntCardShell">
 
           <div class="ntCardTop">
@@ -36,12 +40,31 @@ window.NTCardTemplate = (() => {
                       <div class="ntCardNav">
                         ${
                           showBack
-                            ? `<button type="button" class="ntIconBtn jsNtCardBack" aria-label="Indietro">←</button>`
+                            ? `
+                              <button
+                                type="button"
+                                class="ntIconBtn jsNtCardBack"
+                                data-nt-action="back"
+                                aria-label="Indietro"
+                              >
+                                ←
+                              </button>
+                            `
                             : ``
                         }
+
                         ${
                           showNext
-                            ? `<button type="button" class="ntIconBtn jsNtCardNext" aria-label="Avanti">→</button>`
+                            ? `
+                              <button
+                                type="button"
+                                class="ntIconBtn jsNtCardNext"
+                                data-nt-action="next"
+                                aria-label="Avanti"
+                              >
+                                →
+                              </button>
+                            `
                             : ``
                         }
                       </div>
@@ -51,17 +74,28 @@ window.NTCardTemplate = (() => {
               </div>
 
               <div class="ntCardTitleWrap">
-                <h2 class="ntCardTitle">${escapeHtml(title)}</h2>
+                <h2 class="ntCardTitle">${safeTitle}</h2>
               </div>
 
               <div class="ntCardHeaderSide ntCardHeaderSide--right">
-                <button type="button" class="ntIconBtn jsNtCardClose" aria-label="Chiudi">×</button>
+                <button
+                  type="button"
+                  class="ntIconBtn jsNtCardClose"
+                  data-nt-action="close"
+                  aria-label="Chiudi"
+                >
+                  ×
+                </button>
               </div>
             </header>
 
             ${
-              String(subHeader || "").trim()
-                ? `<div class="ntCardSubHeader">${subHeader}</div>`
+              hasSubHeader
+                ? `
+                  <div class="ntCardSubHeader">
+                    ${subHeader}
+                  </div>
+                `
                 : ``
             }
           </div>
@@ -78,6 +112,8 @@ window.NTCardTemplate = (() => {
                     <button
                       type="button"
                       class="${escapeHtml(footerLeftClass)}"
+                      data-nt-action="cancel"
+                      aria-label="${escapeHtml(footerLeftLabel)}"
                       ${footerLeftDisabled ? "disabled" : ""}
                     >
                       ${escapeHtml(footerLeftLabel)}
@@ -86,6 +122,8 @@ window.NTCardTemplate = (() => {
                     <button
                       type="button"
                       class="${escapeHtml(footerRightClass)}"
+                      data-nt-action="save"
+                      aria-label="${escapeHtml(footerRightLabel)}"
                       ${footerRightDisabled ? "disabled" : ""}
                     >
                       ${escapeHtml(footerRightLabel)}
