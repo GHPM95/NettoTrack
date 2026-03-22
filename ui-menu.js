@@ -1,12 +1,13 @@
 /* ========================= NettoTrack Menu ========================= */
 window.NTMenu = (() => {
   let overlayEl = null;
+  let backdropEl = null;
   let shellEl = null;
   let panelWrapEl = null;
   let panelEl = null;
-  let backdropEl = null;
   let closeBtnEl = null;
   let openBtnEl = null;
+
   let isOpen = false;
   let isBound = false;
 
@@ -25,7 +26,6 @@ window.NTMenu = (() => {
   }
 
   function ensureStructure() {
-    // Se la struttura corretta esiste già, la riusiamo.
     backdropEl = overlayEl.querySelector(".ntMenuBackdrop");
     shellEl = overlayEl.querySelector(".ntMenuShell");
     panelWrapEl = overlayEl.querySelector(".ntMenuPanelWrap");
@@ -36,13 +36,12 @@ window.NTMenu = (() => {
       return;
     }
 
-    // Ricostruiamo il menu nella struttura che ui-menu-layout.css si aspetta.
     overlayEl.innerHTML = `
       <div class="ntMenuBackdrop"></div>
 
-      <div class="ntMenuShell">
+      <div class="ntMenuShell" role="dialog" aria-modal="true" aria-label="Menu">
         <div class="ntMenuPanelWrap">
-          <aside class="ntMenuPanel" aria-label="Menu"></aside>
+          <aside class="ntMenuPanel"></aside>
         </div>
 
         <div class="ntMenuCloseZone">
@@ -92,14 +91,8 @@ window.NTMenu = (() => {
     }
 
     overlayEl.addEventListener("click", (e) => {
-      const clickedCloseZone = e.target.closest(".ntMenuCloseZone");
-      if (clickedCloseZone) {
-        close();
-      }
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && isOpen) {
+      const closeZone = e.target.closest(".ntMenuCloseZone");
+      if (closeZone) {
         close();
       }
     });
@@ -107,18 +100,27 @@ window.NTMenu = (() => {
     panelEl?.addEventListener("click", (e) => {
       const actionEl = e.target.closest("[data-nt-menu-action]");
       if (!actionEl) return;
+
       handleAction(actionEl.dataset.ntMenuAction);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && isOpen) {
+        close();
+      }
     });
   }
 
   function open() {
     if (!overlayEl) return;
 
+    mountContent();
+
     isOpen = true;
     overlayEl.hidden = false;
     overlayEl.classList.add("isOpen");
     overlayEl.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
+    document.body.classList.add("ntMenuOpen");
   }
 
   function close() {
@@ -127,11 +129,13 @@ window.NTMenu = (() => {
     isOpen = false;
     overlayEl.classList.remove("isOpen");
     overlayEl.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
+    document.body.classList.remove("ntMenuOpen");
 
     window.setTimeout(() => {
-      if (!isOpen) overlayEl.hidden = true;
-    }, 240);
+      if (!isOpen) {
+        overlayEl.hidden = true;
+      }
+    }, 220);
   }
 
   function handleAction(action) {
