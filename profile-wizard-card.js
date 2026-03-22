@@ -71,9 +71,11 @@ window.NTProfileWizardCard = (() => {
   function formatBirth(value) {
     const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
     let out = "";
+
     if (digits.length > 0) out += digits.slice(0, 2);
     if (digits.length >= 3) out += "/" + digits.slice(2, 4);
     if (digits.length >= 5) out += "/" + digits.slice(4, 8);
+
     return out;
   }
 
@@ -216,11 +218,13 @@ window.NTProfileWizardCard = (() => {
     const d = getInitialDraft();
     const step = 0;
 
-    return NTCardTemplate.createCard({
+    return window.NTCardTemplate.createCard({
       id: CARD_ID,
       title: getHeaderTitle(step),
       subHeader: renderProgress(step),
       footer: true,
+      footerLeftDisabled: true,
+      footerRightDisabled: false,
       body: renderBody(d)
     });
   }
@@ -246,7 +250,10 @@ window.NTProfileWizardCard = (() => {
 
     if (footer) footer.style.display = "";
     if (row) {
-      row.classList.add("ntFooterSingleRight");
+      row.style.display = "flex";
+      row.style.alignItems = "center";
+      row.style.gap = "12px";
+      row.style.justifyContent = step === 0 ? "flex-end" : "space-between";
     }
 
     if (cancel) {
@@ -360,18 +367,29 @@ window.NTProfileWizardCard = (() => {
 
   function register() {
     if (!window.NTCards || !window.NTCardTemplate) return;
+    if (window.NTCards?.state?.registry?.has?.(CARD_ID)) return;
 
-    NTCards.registerCard({
+    window.NTCards.registerCard({
       id: CARD_ID,
       render,
       onOpen() {
-        const root = NTCards.getCardRoot(CARD_ID);
+        const root = window.NTCards.getCardRoot(CARD_ID);
         setStep(0);
         applyStepUi(root);
         bind(root);
       }
     });
   }
+
+  function autoRegister() {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", register, { once: true });
+    } else {
+      register();
+    }
+  }
+
+  autoRegister();
 
   return { register };
 })();
