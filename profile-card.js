@@ -144,7 +144,7 @@ window.NTProfileCard = (() => {
     const saveBtn = root.querySelector(".jsNtCardSave");
 
     if (cancelBtn) {
-      cancelBtn.classList.add("ntProfileFooterGhost");
+      cancelBtn.hidden = true;
       cancelBtn.disabled = true;
       cancelBtn.setAttribute("aria-hidden", "true");
       cancelBtn.textContent = "";
@@ -153,13 +153,17 @@ window.NTProfileCard = (() => {
     if (saveBtn) {
       const label = getPrimaryActionLabel();
 
+      saveBtn.hidden = false;
+      saveBtn.disabled = false;
       saveBtn.textContent = label;
       saveBtn.setAttribute("aria-label", label);
       saveBtn.classList.add("jsNtProfilePrimaryAction");
       saveBtn.setAttribute("data-nt-action", "profile-primary");
-      saveBtn.disabled = false;
       saveBtn.classList.remove("isBlocked");
     }
+
+    window.NTCardActions?.bindWithin?.(root);
+    window.NTCardActions?.refreshButtons?.(root);
   }
 
   function register() {
