@@ -1,6 +1,7 @@
 window.NTProfileCard = (() => {
   const STORAGE_KEY = "ntUserProfileData";
   const CTX_KEY = "ntProfileWizardContext";
+  const WIZARD_CARD_ID = "profileWizard";
 
   const safe = (v) => String(v ?? "").trim();
 
@@ -45,8 +46,8 @@ window.NTProfileCard = (() => {
       })
     );
 
-    if (window.NTCards?.state?.registry?.has?.("profileWizard")) {
-      window.NTCards.openCard("profileWizard");
+    if (window.NTCards?.state?.registry?.has?.(WIZARD_CARD_ID)) {
+      window.NTCards.openCard(WIZARD_CARD_ID);
     }
   }
 
@@ -67,10 +68,25 @@ window.NTProfileCard = (() => {
             </div>
 
             <div class="ntProfileMainInfo">
-              <div class="ntProfileRow">Nome: <span data-k="firstName">${safe(d.firstName) || "—"}</span></div>
-              <div class="ntProfileRow">Cognome: <span data-k="lastName">${safe(d.lastName) || "—"}</span></div>
-              <div class="ntProfileRow">Sesso: <span data-k="gender">${safe(d.gender) || "—"}</span></div>
-              <div class="ntProfileRow">Data: <span data-k="birthDate">${safe(d.birthDate) || "—"}</span></div>
+              <div class="ntProfileRow">
+                <span class="ntProfileLabel">Nome:</span>
+                <span class="ntProfileValue" data-k="firstName">${safe(d.firstName) || "—"}</span>
+              </div>
+
+              <div class="ntProfileRow">
+                <span class="ntProfileLabel">Cognome:</span>
+                <span class="ntProfileValue" data-k="lastName">${safe(d.lastName) || "—"}</span>
+              </div>
+
+              <div class="ntProfileRow">
+                <span class="ntProfileLabel">Sesso:</span>
+                <span class="ntProfileValue" data-k="gender">${safe(d.gender) || "—"}</span>
+              </div>
+
+              <div class="ntProfileRow">
+                <span class="ntProfileLabel">Data di nascita:</span>
+                <span class="ntProfileValue" data-k="birthDate">${safe(d.birthDate) || "—"}</span>
+              </div>
             </div>
           </div>
 
@@ -90,10 +106,7 @@ window.NTProfileCard = (() => {
     const row = root.querySelector(".ntCardFooterRow");
 
     if (row) {
-      row.style.display = "flex";
-      row.style.justifyContent = "flex-end";
-      row.style.alignItems = "center";
-      row.style.gap = "";
+      row.classList.add("ntFooterSingleRight");
     }
 
     if (cancel) {
