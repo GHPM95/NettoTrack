@@ -148,7 +148,9 @@ window.NTProfileWizardCard = (() => {
       <div class="ntProfileWizardStep" data-step="0">
         <div class="ntProfileWizardHero">
           <div id="ntProfileWizardAvatar" class="ntProfileAvatarBox ${avatarClass(d.gender)}">
-            <div id="ntProfileWizardAvatarGlyph" class="ntProfileAvatarCalendarIcon">${avatarGlyph(d.gender)}</div>
+            <div id="ntProfileWizardAvatarGlyph" class="ntProfileAvatarCalendarIcon">
+              <span>${avatarGlyph(d.gender)}</span>
+            </div>
           </div>
 
           <div class="ntProfileWizardFields">
@@ -249,7 +251,7 @@ window.NTProfileWizardCard = (() => {
     }
   }
 
-  function closeWizardAutosave() {
+  function closeWithAutosave() {
     syncDraft();
     window.NTCards?.closeCard?.(CARD_ID);
   }
@@ -273,7 +275,6 @@ window.NTProfileWizardCard = (() => {
     const row = root.querySelector(".ntCardFooterRow");
     const cancel = root.querySelector(".jsNtCardCancel");
     const save = root.querySelector(".jsNtCardSave");
-    const close = root.querySelector(".jsNtCardClose");
 
     if (title) title.textContent = getHeaderTitle(step);
     if (subHeader) subHeader.innerHTML = renderProgress(step);
@@ -301,36 +302,18 @@ window.NTProfileWizardCard = (() => {
       } else {
         cancel.hidden = false;
         cancel.style.display = "";
-        cancel.style.visibility = "";
         cancel.disabled = false;
         cancel.textContent = "indietro";
         cancel.removeAttribute("aria-hidden");
-        cancel.onclick = () => goBack(root);
       }
     }
 
     if (save) {
       save.hidden = false;
       save.style.display = "";
-      save.style.visibility = "";
       save.disabled = false;
       save.classList.remove("isBlocked");
-
-      if (step < TOTAL_STEPS - 1) {
-        save.textContent = "avanti";
-        save.onclick = () => goNext(root);
-      } else {
-        save.textContent = "salva";
-        save.onclick = () => finish();
-      }
-    }
-
-    if (close) {
-      close.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        closeWizardAutosave();
-      };
+      save.textContent = step < TOTAL_STEPS - 1 ? "avanti" : "salva";
     }
   }
 
@@ -431,5 +414,11 @@ window.NTProfileWizardCard = (() => {
     });
   }
 
-  return { register };
+  return {
+    register,
+    goNext,
+    goBack,
+    finish,
+    closeWithAutosave
+  };
 })();
