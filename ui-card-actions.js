@@ -94,6 +94,12 @@ window.NTCardActions = (() => {
     window.NTCards?.refreshActionState?.(activeId);
   }
 
+  async function handleProfilePrimary() {
+    if (window.NTProfileCard?.openProfileWizard) {
+      window.NTProfileCard.openProfileWizard();
+    }
+  }
+
   function bindWithin(root = document) {
     root.querySelectorAll("[data-nt-action='close']").forEach((el) => {
       el.onclick = () => {
@@ -125,6 +131,12 @@ window.NTCardActions = (() => {
       };
     });
 
+    root.querySelectorAll("[data-nt-action='profile-primary']").forEach((el) => {
+      el.onclick = () => {
+        handleProfilePrimary().catch(() => {});
+      };
+    });
+
     refreshButtons(root);
   }
 
@@ -144,6 +156,11 @@ window.NTCardActions = (() => {
     setButtonState(scope.querySelector("[data-nt-action='save']"), Boolean(actionState?.canSave));
 
     setButtonState(scope.querySelector("[data-nt-action='close']"), Boolean(actionState?.canClose), {
+      keepEnabled: true
+    });
+
+    // profile-primary è sempre cliccabile nella card profilo
+    setButtonState(scope.querySelector("[data-nt-action='profile-primary']"), true, {
       keepEnabled: true
     });
   }
@@ -192,6 +209,7 @@ window.NTCardActions = (() => {
     handleSave,
     handleCancel,
     handleBack,
-    handleNext
+    handleNext,
+    handleProfilePrimary
   };
 })();
