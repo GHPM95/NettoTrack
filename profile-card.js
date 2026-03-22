@@ -139,18 +139,12 @@ window.NTProfileCard = (() => {
         leftBtn.removeAttribute("aria-hidden");
         leftBtn.textContent = "Modifica i dati";
         leftBtn.setAttribute("aria-label", "Modifica i dati");
-        leftBtn.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          openWizard("edit");
-        };
       } else {
         leftBtn.hidden = true;
         leftBtn.style.display = "none";
         leftBtn.disabled = true;
         leftBtn.textContent = "";
         leftBtn.setAttribute("aria-hidden", "true");
-        leftBtn.onclick = null;
       }
     }
 
@@ -159,7 +153,6 @@ window.NTProfileCard = (() => {
       rightBtn.style.display = "";
       rightBtn.textContent = "Inserisci i dati";
       rightBtn.setAttribute("aria-label", "Inserisci i dati");
-      rightBtn.onclick = null;
 
       if (exists) {
         rightBtn.disabled = true;
@@ -167,11 +160,6 @@ window.NTProfileCard = (() => {
       } else {
         rightBtn.disabled = false;
         rightBtn.classList.remove("isBlocked");
-        rightBtn.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          openWizard("create");
-        };
       }
     }
   }
