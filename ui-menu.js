@@ -1,11 +1,12 @@
 /* ========================= NettoTrack Menu ========================= */
 window.NTMenu = (() => {
   let overlayEl = null;
+  let shellEl = null;
+  let panelWrapEl = null;
   let panelEl = null;
   let backdropEl = null;
   let closeBtnEl = null;
   let openBtnEl = null;
-  let bodyEl = null;
   let isOpen = false;
   let isBound = false;
 
@@ -18,32 +19,60 @@ window.NTMenu = (() => {
 
     if (!overlayEl) return;
 
-    /*
-      Supporta sia il layout nuovo previsto dal CSS menu
-      (.ntMenuPanel / .ntMenuBackdrop)
-      sia la struttura che stai usando ora
-      (.ntMenuSheet / #ntMenuBody).
-    */
-    panelEl =
-      overlayEl.querySelector(".ntMenuPanel") ||
-      overlayEl.querySelector(".ntMenuSheet") ||
-      overlayEl.querySelector(".ntMenuBody");
-
-    bodyEl =
-      overlayEl.querySelector("#ntMenuBody") ||
-      overlayEl.querySelector(".ntMenuBody") ||
-      panelEl;
-
-    backdropEl = overlayEl.querySelector(".ntMenuBackdrop");
-    closeBtnEl = overlayEl.querySelector("[data-nt-close-menu]");
-
+    ensureStructure();
     mountContent();
     bind();
   }
 
+  function ensureStructure() {
+    // Se la struttura corretta esiste già, la riusiamo.
+    backdropEl = overlayEl.querySelector(".ntMenuBackdrop");
+    shellEl = overlayEl.querySelector(".ntMenuShell");
+    panelWrapEl = overlayEl.querySelector(".ntMenuPanelWrap");
+    panelEl = overlayEl.querySelector(".ntMenuPanel");
+    closeBtnEl = overlayEl.querySelector("[data-nt-close-menu]");
+
+    if (backdropEl && shellEl && panelWrapEl && panelEl && closeBtnEl) {
+      return;
+    }
+
+    // Ricostruiamo il menu nella struttura che ui-menu-layout.css si aspetta.
+    overlayEl.innerHTML = `
+      <div class="ntMenuBackdrop"></div>
+
+      <div class="ntMenuShell">
+        <div class="ntMenuPanelWrap">
+          <aside class="ntMenuPanel" aria-label="Menu"></aside>
+        </div>
+
+        <div class="ntMenuCloseZone">
+          <div class="ntMenuCloseBtnWrap">
+            <button
+              type="button"
+              class="ntIconBtn"
+              data-nt-close-menu
+              aria-label="Chiudi menu"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    backdropEl = overlayEl.querySelector(".ntMenuBackdrop");
+    shellEl = overlayEl.querySelector(".ntMenuShell");
+    panelWrapEl = overlayEl.querySelector(".ntMenuPanelWrap");
+    panelEl = overlayEl.querySelector(".ntMenuPanel");
+    closeBtnEl = overlayEl.querySelector("[data-nt-close-menu]");
+
+    overlayEl.hidden = true;
+    overlayEl.setAttribute("aria-hidden", "true");
+  }
+
   function mountContent() {
-    if (!bodyEl || !window.NTMenuContent?.render) return;
-    bodyEl.innerHTML = window.NTMenuContent.render();
+    if (!panelEl || !window.NTMenuContent?.render) return;
+    panelEl.innerHTML = window.NTMenuContent.render();
   }
 
   function bind() {
@@ -66,15 +95,6 @@ window.NTMenu = (() => {
       const clickedCloseZone = e.target.closest(".ntMenuCloseZone");
       if (clickedCloseZone) {
         close();
-        return;
-      }
-
-      /*
-        Se non esiste un backdrop dedicato ma clicchi fuori dal pannello/sheet,
-        chiude comunque il menu.
-      */
-      if (!backdropEl && panelEl && !panelEl.contains(e.target)) {
-        close();
       }
     });
 
@@ -84,12 +104,10 @@ window.NTMenu = (() => {
       }
     });
 
-    bodyEl?.addEventListener("click", (e) => {
+    panelEl?.addEventListener("click", (e) => {
       const actionEl = e.target.closest("[data-nt-menu-action]");
       if (!actionEl) return;
-
-      const action = actionEl.dataset.ntMenuAction;
-      handleAction(action);
+      handleAction(actionEl.dataset.ntMenuAction);
     });
   }
 
@@ -111,35 +129,30 @@ window.NTMenu = (() => {
     overlayEl.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
 
-    // aspetta la fine della transizione se presente
     window.setTimeout(() => {
-      if (!isOpen) {
-        overlayEl.hidden = true;
-      }
-    }, 220);
+      if (!isOpen) overlayEl.hidden = true;
+    }, 240);
   }
 
   function handleAction(action) {
-    if (!action) return;
-
     switch (action) {
       case "go-insert":
-        openCardById("calendarInsert");
+        openCard("calendarInsert");
         close();
         break;
 
       case "go-calendar":
-        openCardById("calendarView");
+        openCard("calendarView");
         close();
         break;
 
       case "go-profile":
-        openCardById("profile");
+        openCard("profile");
         close();
         break;
 
       case "settings-theme":
-        openCardById("themeSettings");
+        openCard("themeSettings");
         close();
         break;
 
@@ -149,7 +162,7 @@ window.NTMenu = (() => {
     }
   }
 
-  function openCardById(cardId) {
+  function openCard(cardId) {
     if (!cardId) return;
 
     if (window.NTCardManager?.open) {
