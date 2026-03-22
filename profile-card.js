@@ -2,16 +2,22 @@ window.NTProfileCard = (() => {
   const STORAGE_KEY = "ntUserProfileData";
   const CTX_KEY = "ntProfileWizardContext";
 
-  const safe = v => String(v ?? "").trim();
+  const safe = (v) => String(v ?? "").trim();
 
   function readStored() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); }
-    catch { return null; }
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    } catch {
+      return null;
+    }
   }
 
   function readCtx() {
-    try { return JSON.parse(sessionStorage.getItem(CTX_KEY)); }
-    catch { return null; }
+    try {
+      return JSON.parse(sessionStorage.getItem(CTX_KEY) || "null");
+    } catch {
+      return null;
+    }
   }
 
   function getData() {
@@ -19,24 +25,29 @@ window.NTProfileCard = (() => {
   }
 
   function hasData(d) {
-    return Object.values(d || {}).some(v => safe(v));
+    return Object.values(d || {}).some((v) => safe(v));
   }
 
-  function avatarClass(g) {
-    if (g === "Uomo") return "ntAvatar--male";
-    if (g === "Donna") return "ntAvatar--female";
+  function avatarClass(gender) {
+    if (gender === "Uomo") return "ntAvatar--male";
+    if (gender === "Donna") return "ntAvatar--female";
     return "ntAvatar--gradient";
   }
 
   function openWizard() {
     const d = getData();
 
-    sessionStorage.setItem(CTX_KEY, JSON.stringify({
-      profile: d,
-      mode: hasData(d) ? "edit" : "create"
-    }));
+    sessionStorage.setItem(
+      CTX_KEY,
+      JSON.stringify({
+        profile: d,
+        mode: hasData(d) ? "edit" : "create"
+      })
+    );
 
-    window.NTCards.openCard("profileWizard");
+    if (window.NTCards?.state?.registry?.has?.("profileWizard")) {
+      window.NTCards.openCard("profileWizard");
+    }
   }
 
   function render() {
@@ -45,54 +56,69 @@ window.NTProfileCard = (() => {
     return NTCardTemplate.createCard({
       id: "profile",
       title: "Profilo utente",
+      showBack: false,
+      showNext: false,
+      footer: true,
       body: `
-        <div class="ntProfileHero">
+        <div class="ntProfileContent">
+          <div class="ntProfileHero">
+            <div class="ntProfileAvatarBox ${avatarClass(d.gender)}" data-avatar>
+              <div class="ntProfileAvatarCalendarIcon">○</div>
+            </div>
 
-          <div class="ntProfileAvatarBox ${avatarClass(d.gender)}" data-avatar>
-            ○
+            <div class="ntProfileMainInfo">
+              <div class="ntProfileRow">Nome: <span data-k="firstName">${safe(d.firstName) || "—"}</span></div>
+              <div class="ntProfileRow">Cognome: <span data-k="lastName">${safe(d.lastName) || "—"}</span></div>
+              <div class="ntProfileRow">Sesso: <span data-k="gender">${safe(d.gender) || "—"}</span></div>
+              <div class="ntProfileRow">Data: <span data-k="birthDate">${safe(d.birthDate) || "—"}</span></div>
+            </div>
           </div>
 
-          <div class="ntProfileInfo">
-            <div>Nome: <span data-k="firstName">${safe(d.firstName) || "—"}</span></div>
-            <div>Cognome: <span data-k="lastName">${safe(d.lastName) || "—"}</span></div>
-            <div>Sesso: <span data-k="gender">${safe(d.gender) || "—"}</span></div>
-            <div>Data: <span data-k="birthDate">${safe(d.birthDate) || "—"}</span></div>
-          </div>
-
+          <p class="ntProfileHelperText">
+            ${hasData(d) ? "Consulta i dati del tuo profilo." : "Inserisci i dati per creare il tuo profilo."}
+          </p>
         </div>
-      `,
-      footer: true
+      `
     });
   }
 
   function fixFooter(root) {
+    if (!root) return;
+
     const cancel = root.querySelector(".jsNtCardCancel");
     const save = root.querySelector(".jsNtCardSave");
     const row = root.querySelector(".ntCardFooterRow");
 
-    if (row) row.style.justifyContent = "flex-end";
+    if (row) {
+      row.style.display = "flex";
+      row.style.justifyContent = "flex-end";
+      row.style.alignItems = "center";
+      row.style.gap = "";
+    }
 
     if (cancel) {
-      cancel.style.display = "none";
       cancel.hidden = true;
+      cancel.style.display = "none";
+      cancel.disabled = true;
+      cancel.textContent = "";
+      cancel.setAttribute("aria-hidden", "true");
     }
 
     if (save) {
-      const has = hasData(readStored());
+      const label = hasData(readStored()) ? "Modifica i dati" : "Inserisci i dati";
 
-      save.textContent = has ? "Modifica i dati" : "Inserisci i dati";
-
-      /* 🔴 FIX CRITICO */
+      save.hidden = false;
+      save.style.display = "";
       save.disabled = false;
+      save.textContent = label;
+      save.setAttribute("aria-label", label);
       save.classList.remove("isBlocked");
-
-      /* 🔴 BIND DIRETTO */
       save.onclick = () => openWizard();
     }
   }
 
   function refreshLive(d) {
-    const root = window.NTCards.getCardRoot("profile");
+    const root = window.NTCards?.getCardRoot?.("profile");
     if (!root) return;
 
     const avatar = root.querySelector("[data-avatar]");
@@ -100,24 +126,39 @@ window.NTProfileCard = (() => {
       avatar.className = "ntProfileAvatarBox " + avatarClass(d.gender);
     }
 
-    Object.entries(d).forEach(([k, v]) => {
+    ["firstName", "lastName", "gender", "birthDate"].forEach((k) => {
       const el = root.querySelector(`[data-k="${k}"]`);
-      if (el) el.textContent = safe(v) || "—";
+      if (el) el.textContent = safe(d[k]) || "—";
     });
+
+    const helper = root.querySelector(".ntProfileHelperText");
+    if (helper) {
+      helper.textContent = hasData(d)
+        ? "Consulta i dati del tuo profilo."
+        : "Inserisci i dati per creare il tuo profilo.";
+    }
 
     fixFooter(root);
   }
 
   function register() {
+    if (!window.NTCards || !window.NTCardTemplate) return;
+
     NTCards.registerCard({
       id: "profile",
       render,
       onOpen() {
         const root = NTCards.getCardRoot("profile");
         fixFooter(root);
+        refreshLive(getData());
       }
     });
   }
 
-  return { register, refreshLive };
+  return {
+    register,
+    refreshLive,
+    openWizard,
+    avatarClass
+  };
 })();
